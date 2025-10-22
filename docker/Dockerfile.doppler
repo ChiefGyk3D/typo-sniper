@@ -1,0 +1,51 @@
+# Typo Sniper - Dockerfile with Doppler Support
+# Mozilla Public License 2.0
+#
+# This Dockerfile includes optional Doppler CLI for secrets management.
+# Use standard Dockerfile if Doppler is not needed.
+
+FROM python:3.14-slim
+
+LABEL maintainer="chiefgyk3d"
+LABEL version="1.0.0"
+LABEL description="Typo Sniper - Advanced Domain Typosquatting Detection Tool with Doppler support"
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies including Doppler CLI
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libssl-dev \
+    curl \
+    gnupg \
+    apt-transport-https \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Doppler CLI (optional - will be skipped if not needed)
+RUN (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh || wget -t 3 -qO- https://cli.doppler.com/install.sh) | sh || echo "Doppler installation skipped"
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir dnspython
+
+# Copy application files from src directory
+COPY src/ .
+
+# Create directories for data and results
+RUN mkdir -p /app/data /app/results /root/.typo_sniper/cache
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV CACHE_DIR=/root/.typo_sniper/cache
+
+# Volume mounts for persistent data
+VOLUME ["/app/data", "/app/results", "/root/.typo_sniper/cache"]
+
+# Smart entrypoint that uses Doppler if DOPPLER_TOKEN is set
+ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then echo 'Using Doppler for secrets...'; doppler run -- python typo_sniper.py \"$@\"; else python typo_sniper.py \"$@\"; fi", "--"]
+CMD ["--help"]

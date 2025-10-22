@@ -1,0 +1,98 @@
+# Docker Compose for Typo Sniper with Threat Intelligence
+# Mozilla Public License 2.0
+#
+# This compose file demonstrates how to run Typo Sniper with API keys
+# loaded from environment variables or .env file.
+
+version: '3.8'
+
+services:
+  typo-sniper:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: typo-sniper:latest
+    
+    # Volume mappings
+    volumes:
+      # Input domain list (read-only)
+      - ./test_domains.txt:/app/data/domains.txt:ro
+      
+      # Results output directory
+      - ../results:/app/results
+      
+      # Configuration file (read-only)
+      - ./config.yaml:/app/config.yaml:ro
+      
+      # Cache directory for persistence
+      - typo-sniper-cache:/root/.typo_sniper/cache
+    
+    # Environment variables for API keys
+    # Option 1: Set directly here (NOT RECOMMENDED for production)
+    # Option 2: Use .env file (RECOMMENDED)
+    # Option 3: Use Doppler (BEST for production)
+    environment:
+      # API Keys (will be loaded from .env file)
+      - TYPO_SNIPER_VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - TYPO_SNIPER_URLSCAN_API_KEY=${URLSCAN_API_KEY}
+      
+      # Optional: Enable Doppler if DOPPLER_TOKEN is set
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN:-}
+      
+      # Python settings
+      - PYTHONUNBUFFERED=1
+    
+    # Command to run
+    command:
+      - "-i"
+      - "/app/data/domains.txt"
+      - "--config"
+      - "/app/config.yaml"
+      - "--format"
+      - "excel"
+      - "json"
+      - "html"
+      - "-v"
+    
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  # Alternative service using Doppler Dockerfile
+  typo-sniper-doppler:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.doppler
+    image: typo-sniper:doppler
+    profiles:
+      - doppler
+    
+    volumes:
+      - ./test_domains.txt:/app/data/domains.txt:ro
+      - ../results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+      - typo-sniper-cache:/root/.typo_sniper/cache
+    
+    environment:
+      # Doppler service token
+      - DOPPLER_TOKEN=${DOPPLER_TOKEN}
+      - PYTHONUNBUFFERED=1
+    
+    command:
+      - "-i"
+      - "/app/data/domains.txt"
+      - "--config"
+      - "/app/config.yaml"
+      - "--format"
+      - "excel"
+      - "-v"
+
+volumes:
+  typo-sniper-cache:
+    driver: local

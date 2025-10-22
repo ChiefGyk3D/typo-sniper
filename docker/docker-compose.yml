@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  typo-sniper:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: typo-sniper:1.0.0
+    container_name: typo-sniper
+    volumes:
+      # Mount your domain list
+      - ../src/monitored_domains.txt:/app/data/monitored_domains.txt:ro
+      # Mount results directory
+      - ../results:/app/results
+      # Mount cache directory for persistent WHOIS data
+      - typo-sniper-cache:/root/.typo_sniper/cache
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["-i", "/app/data/monitored_domains.txt", "-o", "/app/results", "--format", "excel", "json", "csv", "html"]
+    
+  # Optional: scheduled scanning service
+  typo-sniper-scheduled:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: typo-sniper:1.0.0
+    container_name: typo-sniper-scheduled
+    profiles:
+      - scheduled
+    volumes:
+      - ../src/monitored_domains.txt:/app/data/monitored_domains.txt:ro
+      - ../results:/app/results
+      - typo-sniper-cache:/root/.typo_sniper/cache
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Run daily at 2 AM (requires crond or similar in container)
+    restart: unless-stopped
+    command: ["-i", "/app/data/monitored_domains.txt", "-o", "/app/results", "--months", "1", "--format", "excel", "json"]
+
+volumes:
+  typo-sniper-cache:
+    driver: local

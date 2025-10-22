@@ -1,0 +1,40 @@
+# Typo Sniper Requirements
+# Python 3.8+
+#
+# SECURITY NOTE: All versions are pinned to protect against supply chain attacks
+# (e.g., Shai-Hulud and similar compromised library incidents). These versions
+# have been verified as secure and working correctly together.
+#
+# Feel free to experiment with newer versions in a test environment, but always
+# review security advisories and changelogs before upgrading in production.
+
+# Core dependencies
+dnstwist==20250130
+python-whois==0.9.6
+PyYAML==6.0.3
+
+# Excel support
+openpyxl==3.1.5
+
+# Rich console output
+rich==14.2.0
+
+# Async support (Python 3.8+ has asyncio built-in)
+aiofiles==25.1.0
+aiohttp==3.13.1
+
+# Optional: Improved WHOIS parsing
+whois-parser==0.3.1
+
+# Local Environment Variables
+python-dotenv==1.1.1
+
+# Secrets management (optional)
+# Uncomment the provider you want to use:
+
+# Doppler secrets manager (https://doppler.com)
+# doppler-sdk==1.3.0
+
+# AWS Secrets Manager (https://aws.amazon.com/secrets-manager/)
+# boto3==1.40.56
+# botocore==1.40.56

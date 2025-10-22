@@ -1,0 +1,51 @@
+# Example configuration for Typo Sniper
+# Copy this file to config.yaml and customize as needed
+
+# Performance settings
+max_workers: 10                    # Maximum concurrent workers for scanning
+rate_limit_delay: 1.0              # Delay between batches (seconds)
+
+# Cache settings
+use_cache: true                    # Enable/disable caching
+cache_dir: ~/.typo_sniper/cache    # Cache directory path
+cache_ttl: 86400                   # Cache time-to-live (24 hours)
+
+# Filter settings
+months_filter: 0                   # Filter domains by registration date (0 = no filter)
+
+# dnstwist settings
+dnstwist_threads: 20               # Number of threads for dnstwist
+dnstwist_mxcheck: true             # Enable MX record checking
+dnstwist_phash: false              # Enable perceptual hashing (requires ssdeep)
+
+# Output settings
+output_dir: results                # Default output directory
+
+# WHOIS settings
+whois_timeout: 30                  # WHOIS query timeout (seconds)
+whois_retry_count: 3               # Number of retry attempts
+whois_retry_delay: 5               # Delay between retries (seconds)
+
+# Enhanced detection features (WARNING: These can significantly slow down scans!)
+# These features generate many additional domain variations and DNS lookups
+# Combo-squatting: ~360+ variations per domain (brand+keyword combinations)
+# IDN Homograph: up to 50 variations per domain (Unicode confusables)
+# Sound-alike: phonetic matching (less impact on performance)
+enable_combosquatting: false       # Detect brand+keyword combinations (SLOW)
+enable_soundalike: false           # Detect phonetically similar domains
+enable_idn_homograph: false        # Detect IDN/Unicode homograph attacks (SLOW)
+
+# Threat intelligence integrations (optional - require API keys)
+enable_urlscan: false              # Enable URLScan.io integration
+urlscan_api_key: null              # URLScan.io API key (required if enabled)
+urlscan_free_tier: true            # true = 30 search req/min (free), false = unlimited (paid)
+urlscan_visibility: public         # public, unlisted, or private (for future scan submissions)
+
+enable_certificate_transparency: true  # Enable CT log monitoring (no API key needed)
+
+# HTTP probing
+enable_http_probe: true            # Probe domains with HTTP/HTTPS
+http_timeout: 10                   # HTTP request timeout (seconds)
+
+# Risk scoring
+enable_risk_scoring: true          # Calculate risk scores for domains

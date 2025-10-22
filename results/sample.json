@@ -1,0 +1,4012 @@
+{
+  "export_date": "2025-10-22T00:14:02.991709",
+  "version": "1.0",
+  "total_domains": 1,
+  "results": [
+    {
+      "original_domain": "eff.org",
+      "scan_date": "2025-10-22",
+      "total_permutations": 77,
+      "registered_count": 72,
+      "filtered_count": 71,
+      "permutations": [
+        {
+          "fuzzer": "addition",
+          "domain": "effu.org",
+          "dns_ns": [
+            "ns1.messagingengine.com"
+          ],
+          "dns_a": [
+            "103.168.172.37"
+          ],
+          "dns_mx": [
+            "in1-smtp.messagingengine.com"
+          ],
+          "whois_created": [
+            "2019-01-17",
+            "2019-01-17"
+          ],
+          "whois_updated": [
+            "2024-01-13",
+            "2024-01-08"
+          ],
+          "whois_expires": [
+            "2026-01-17",
+            "2026-01-17"
+          ],
+          "whois_registrant": "Redacted for Privacy",
+          "whois_org": "Privacy service provided by Withheld for Privacy ehf",
+          "whois_registrar": "NAMECHEAP INC",
+          "whois_emails": [
+            "abuse@namecheap.com",
+            "7f079307da8f44a78cb2147aeb3bb0a3.protect@withheldforprivacy.com"
+          ],
+          "whois_name_servers": [
+            "ns1.messagingengine.com",
+            "ns2.messagingengine.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "IS",
+          "threat_intel": {
+            "domain": "effu.org",
+            "timestamp": "2025-10-22T04:10:08.867948",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 4,
+              "most_recent": {
+                "issuer": "C=US, O=Let's Encrypt, CN=Let's Encrypt Authority X3",
+                "not_before": "2018-10-14T11:54:22",
+                "not_after": "2019-01-12T11:54:22",
+                "common_name": "effu.org"
+              },
+              "all_names": [
+                "effu.org",
+                "effu.org",
+                "effu.org",
+                "effu.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 404,
+              "https_status": null,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effv.org",
+          "dns_ns": [
+            "desi.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "104.21.81.33"
+          ],
+          "dns_aaaa": [
+            "2606:4700:3031::6815:5121"
+          ],
+          "dns_mx": [
+            "mx01.mail.icloud.com"
+          ],
+          "whois_created": [
+            "2025-07-11"
+          ],
+          "whois_updated": [
+            "2025-07-16"
+          ],
+          "whois_expires": [
+            "2026-07-11"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Cloudflare, Inc.",
+          "whois_emails": [
+            "registrar-abuse@cloudflare.com"
+          ],
+          "whois_name_servers": [
+            "desi.ns.cloudflare.com",
+            "merlin.ns.cloudflare.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effv.org",
+            "timestamp": "2025-10-22T04:10:08.867961",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 62,
+              "most_recent": {
+                "issuer": "C=US, O=Let's Encrypt, CN=E7",
+                "not_before": "2025-09-16T13:03:55",
+                "not_after": "2025-12-15T13:03:54",
+                "common_name": "effv.org"
+              },
+              "all_names": [
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org",
+                "effv.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": "Cloudflare"
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effa.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "1997-12-31"
+          ],
+          "whois_updated": [
+            "2025-02-13",
+            "2025-01-19"
+          ],
+          "whois_expires": [
+            "2025-12-30"
+          ],
+          "whois_registrant": "Matthew Klein",
+          "whois_org": null,
+          "whois_registrar": "NETWORK SOLUTIONS, LLC.",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "mklein72@hotmail.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com"
+          ],
+          "whois_status": [
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientTransferProhibited http://icann.org/epp#clientTransferProhibited"
+          ],
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "effa.org",
+            "timestamp": "2025-10-22T04:10:08.867974",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 9,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-08-01T16:59:03",
+                "not_after": "2026-08-01T16:59:03",
+                "common_name": "www.effa.org"
+              },
+              "all_names": [
+                "www.effa.org",
+                "www.effa.org",
+                "effa.org",
+                "effa.org",
+                "www.efai.org",
+                "www.efai.org",
+                "effa.org",
+                "www.effa.org",
+                "effa.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effe.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2003-08-02"
+          ],
+          "whois_updated": [
+            "2025-09-16"
+          ],
+          "whois_expires": [
+            "2026-08-02"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy Online Services Cayman Islands Ltd.",
+          "whois_emails": [
+            "abuse@uniregistry.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effe.org",
+            "timestamp": "2025-10-22T04:10:08.867990",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 8,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-07-25T02:24:33",
+                "not_after": "2026-07-25T02:24:33",
+                "common_name": "www.effe.org"
+              },
+              "all_names": [
+                "www.effe.org",
+                "effe.org",
+                "effe.org",
+                "effe.org",
+                "www.effe.org",
+                "www.effe.org",
+                "effe.org",
+                "www.effe.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "efff.org",
+          "dns_ns": [
+            "ns3.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2017-01-23"
+          ],
+          "whois_updated": [
+            "2025-03-09"
+          ],
+          "whois_expires": [
+            "2026-01-23"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns3.afternic.com",
+            "ns4.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efff.org",
+            "timestamp": "2025-10-22T04:10:15.312779",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 8,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-07-01T20:21:10",
+                "not_after": "2026-07-01T20:21:10",
+                "common_name": "efff.org"
+              },
+              "all_names": [
+                "efff.org",
+                "efff.org",
+                "www.efff.org",
+                "www.efff.org",
+                "efff.org",
+                "www.efff.org",
+                "www.efff.org",
+                "efff.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effx.org",
+          "dns_ns": [
+            "ns5.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2018-03-19"
+          ],
+          "whois_updated": [
+            "2025-04-19"
+          ],
+          "whois_expires": [
+            "2027-03-19"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns5.afternic.com",
+            "ns6.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effx.org",
+            "timestamp": "2025-10-22T04:10:15.312827",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 15,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-07-16T20:34:53",
+                "not_after": "2026-07-16T20:34:52",
+                "common_name": "effx.org"
+              },
+              "all_names": [
+                "effx.org",
+                "effx.org",
+                "www.effx.org",
+                "www.effx.org",
+                "effx.org",
+                "www.provenamarillo.com",
+                "effx.org",
+                "www.effx.org",
+                "effx.org",
+                "effx.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effh.org",
+          "dns_ns": [
+            "ns1.dns-parking.com"
+          ],
+          "dns_a": [
+            "145.223.77.62"
+          ],
+          "dns_aaaa": [
+            "2a02:4780:2b:1816:0:1f99:dff:3"
+          ],
+          "dns_mx": [
+            "mx1.hostinger.com"
+          ],
+          "whois_created": [
+            "2024-11-22"
+          ],
+          "whois_updated": [
+            "2024-11-27"
+          ],
+          "whois_expires": [
+            "2025-11-22"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "HOSTINGER operations, UAB",
+          "whois_emails": [
+            "abuse@hostinger.com"
+          ],
+          "whois_name_servers": [
+            "ns1.dns-parking.com",
+            "ns2.dns-parking.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effh.org",
+            "timestamp": "2025-10-22T04:10:15.312841",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://effh.org/",
+              "title": "Eagles Foundation For Humanity - Official Website"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effg.org",
+          "dns_ns": [
+            "ns1.dreamhost.com"
+          ],
+          "dns_a": [
+            "173.236.142.191"
+          ],
+          "dns_mx": [
+            "mx1.dreamhost.com"
+          ],
+          "whois_created": [
+            "2015-02-04"
+          ],
+          "whois_updated": [
+            "2025-03-21"
+          ],
+          "whois_expires": [
+            "2026-02-04"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "DreamHost, LLC",
+          "whois_emails": [
+            "domain-abuse@dreamhost.com"
+          ],
+          "whois_name_servers": [
+            "ns1.dreamhost.com",
+            "ns2.dreamhost.com",
+            "ns3.dreamhost.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effg.org",
+            "timestamp": "2025-10-22T04:10:31.464780",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "http://educationfoundationforestgrove.blogspot.com/",
+              "title": "Education Foundation of Forest Grove"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effi.org",
+          "dns_ns": [
+            "ns-2-a.gandi.net"
+          ],
+          "dns_a": [
+            "185.185.169.228"
+          ],
+          "dns_aaaa": [
+            "2a0b:5c81:4:800::228"
+          ],
+          "dns_mx": [
+            "kiiski.tarvainen.info"
+          ],
+          "whois_created": [
+            "2001-09-06"
+          ],
+          "whois_updated": [
+            "2025-06-03"
+          ],
+          "whois_expires": [
+            "2028-09-06"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Gandi SAS",
+          "whois_emails": [
+            "abuse@support.gandi.net"
+          ],
+          "whois_name_servers": [
+            "ns-2-a.gandi.net",
+            "ns-33-b.gandi.net",
+            "ns-82-c.gandi.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effi.org",
+            "timestamp": "2025-10-22T04:10:31.464835",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://effi.org/",
+              "title": "Electronic Frontier Finland &#8211; Effi ry &#8211; Electronic Frontier Finland &#8211; Effi ry:n kotisivut"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effd.org",
+          "dns_ns": [
+            "ns53.domaincontrol.com"
+          ],
+          "dns_a": [
+            "192.124.249.7"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "2003-07-02"
+          ],
+          "whois_updated": [
+            "2025-08-16"
+          ],
+          "whois_expires": [
+            "2026-07-02"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns53.domaincontrol.com",
+            "ns54.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effd.org",
+            "timestamp": "2025-10-22T04:10:31.464862",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "http://www.effd.org/",
+              "title": "East Farmington Volunteer Fire Department, Inc. &#8211; Proud of Our Past, Focused on Our Future"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effp.org",
+          "dns_ns": [
+            "dns1.registrar-servers.com"
+          ],
+          "dns_a": [
+            "192.64.119.186"
+          ],
+          "dns_mx": [
+            "mail.protonmail.ch"
+          ],
+          "whois_created": [
+            "2021-07-08",
+            "2021-07-08"
+          ],
+          "whois_updated": [
+            "2024-06-13",
+            "2024-06-08"
+          ],
+          "whois_expires": [
+            "2031-07-08",
+            "2031-07-08"
+          ],
+          "whois_registrant": "Redacted for Privacy",
+          "whois_org": "Privacy service provided by Withheld for Privacy ehf",
+          "whois_registrar": "NAMECHEAP INC",
+          "whois_emails": [
+            "abuse@namecheap.com",
+            "cdee6fecd59340bea9c50c370d25aac1.protect@withheldforprivacy.com"
+          ],
+          "whois_name_servers": [
+            "dns1.registrar-servers.com",
+            "dns2.registrar-servers.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "IS",
+          "threat_intel": {
+            "domain": "effp.org",
+            "timestamp": "2025-10-22T04:10:47.470876",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": "https://koka-lang.github.io/koka/",
+              "title": "Koka Redirect"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "efft.org",
+          "dns_ns": [
+            "ns71.domaincontrol.com"
+          ],
+          "dns_a": [
+            "52.37.117.203"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "2018-05-17"
+          ],
+          "whois_updated": [
+            "2025-02-23"
+          ],
+          "whois_expires": [
+            "2026-05-17"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns71.domaincontrol.com",
+            "ns72.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efft.org",
+            "timestamp": "2025-10-22T04:10:47.470920",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://efft.org/",
+              "title": "Home - EFFT"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effc.org",
+          "dns_ns": [
+            "ns0.zen.co.uk"
+          ],
+          "dns_a": [
+            "80.87.129.95"
+          ],
+          "dns_mx": [
+            "effc-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1998-08-13"
+          ],
+          "whois_updated": [
+            "2025-08-15",
+            "2025-08-10"
+          ],
+          "whois_expires": [
+            "2026-08-12"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": "REDACTED FOR PRIVACY",
+          "whois_registrar": "TUCOWS DOMAINS, INC.",
+          "whois_emails": [
+            "domainabuse@tucows.com",
+            "dnsmaster@zen.co.uk"
+          ],
+          "whois_name_servers": [
+            "ns0.zen.co.uk",
+            "ns1.zen.co.uk"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": "GB",
+          "threat_intel": {
+            "domain": "effc.org",
+            "timestamp": "2025-10-22T04:10:47.470934",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.effc.org/",
+              "title": "EFFC"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effs.org",
+          "dns_ns": [
+            "ns1.nameservice.at"
+          ],
+          "dns_a": [
+            "83.65.2.30"
+          ],
+          "dns_aaaa": [
+            "2a02:8384:11:100::30"
+          ],
+          "dns_mx": [
+            "mx.mymagenta.business"
+          ],
+          "whois_created": [
+            "2000-04-17"
+          ],
+          "whois_updated": [
+            "2025-07-24"
+          ],
+          "whois_expires": [
+            "2026-04-17"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Ascio Technologies, Inc. Danmark - Filial af Ascio technologies, Inc. USA",
+          "whois_emails": [
+            "abuse@ascio.com"
+          ],
+          "whois_name_servers": [
+            "ns1.nameservice.at",
+            "ns2.nameservice.at"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effs.org",
+            "timestamp": "2025-10-22T04:10:47.470948",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.effs.eu/",
+              "title": "Home - European Federation of Funeral Services (EFFS)"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "efn.org",
+          "dns_ns": [
+            "ns1.peak.org"
+          ],
+          "dns_a": [
+            "104.168.142.100"
+          ],
+          "dns_mx": [
+            "efn-org.mx.av-mx.com"
+          ],
+          "whois_created": [
+            "1993-04-05"
+          ],
+          "whois_updated": [
+            "2025-03-13"
+          ],
+          "whois_expires": [
+            "2026-04-06"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "eNom, LLC",
+          "whois_emails": [
+            "abuse@enom.com"
+          ],
+          "whois_name_servers": [
+            "ns1.peak.org",
+            "ns2.peak.org"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efn.org",
+            "timestamp": "2025-10-22T04:11:03.446617",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": "https://www.peakinternet.com/",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "efb.org",
+          "dns_ns": [
+            "ns49.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.225.128"
+          ],
+          "whois_created": [
+            "1998-09-13"
+          ],
+          "whois_updated": [
+            "2025-08-28"
+          ],
+          "whois_expires": [
+            "2026-09-12"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns49.domaincontrol.com",
+            "ns50.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efb.org",
+            "timestamp": "2025-10-22T04:11:03.446692",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": false,
+              "https_active": true,
+              "http_status": null,
+              "https_status": 200,
+              "redirects_to": "https://www.afternic.com/forsale/efb.org?utm_source=TDFS&utm_medium=sn_affiliate_click&utm_campaign=TDFS_Affiliate_namefind_direct8&traffic_type=CL3&traffic_id=Namefind",
+              "title": "efb.org"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "efv.org",
+          "dns_ns": [
+            "ns49.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.225.128"
+          ],
+          "whois_created": [
+            "2003-04-23"
+          ],
+          "whois_updated": [
+            "2025-04-08"
+          ],
+          "whois_expires": [
+            "2026-04-23"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns49.domaincontrol.com",
+            "ns50.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efv.org",
+            "timestamp": "2025-10-22T04:11:03.446706",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.afternic.com/forsale/efv.org?utm_source=TDFS&utm_medium=sn_affiliate_click&utm_campaign=TDFS_Affiliate_namefind_direct8&traffic_type=CL3&traffic_id=Namefind",
+              "title": "efv.org"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "evf.org",
+          "dns_ns": [
+            "ns49.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.225.128"
+          ],
+          "whois_created": [
+            "2001-01-25"
+          ],
+          "whois_updated": [
+            "2025-01-10"
+          ],
+          "whois_expires": [
+            "2026-01-25"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns49.domaincontrol.com",
+            "ns50.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "evf.org",
+            "timestamp": "2025-10-22T04:11:24.447746",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": "https://www.afternic.com/forsale/evf.org?utm_source=TDFS&utm_medium=sn_affiliate_click&utm_campaign=TDFS_Affiliate_namefind_direct8&traffic_type=CL3&traffic_id=Namefind",
+              "title": "evf.org"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "edf.org",
+          "dns_ns": [
+            "ns1-06.azure-dns.com"
+          ],
+          "dns_a": [
+            "151.101.194.216"
+          ],
+          "dns_mx": [
+            "edf-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1991-08-27"
+          ],
+          "whois_updated": [
+            "2025-07-02",
+            "2025-06-27"
+          ],
+          "whois_expires": [
+            "2026-08-26"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "netops@edf.org",
+            "hostmaster@environmentaldefense.org"
+          ],
+          "whois_name_servers": [
+            "ns3-06.azure-dns.org",
+            "ns1-06.azure-dns.com",
+            "ns2-06.azure-dns.net",
+            "ns4-06.azure-dns.info"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "edf.org",
+            "timestamp": "2025-10-22T04:11:24.447774",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.edf.org/",
+              "title": "Environmental Defense Fund - Building a vital Earth for everyone | EDF"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "ebf.org",
+          "dns_ns": [
+            "ns2.wixdns.net"
+          ],
+          "dns_a": [
+            "185.230.63.107"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "1997-05-14"
+          ],
+          "whois_updated": [
+            "2024-06-20",
+            "2024-06-20"
+          ],
+          "whois_expires": [
+            "2026-05-15"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "h63rh6c3942@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "ns2.wixdns.net",
+            "ns3.wixdns.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "ebf.org",
+            "timestamp": "2025-10-22T04:11:24.447790",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.ebf.org/",
+              "title": "Home | European Baptist Federation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "mff.org",
+          "dns_ns": [
+            "ns-1503.awsdns-59.org"
+          ],
+          "dns_a": [
+            "34.238.11.122"
+          ],
+          "dns_mx": [
+            "mxa-001b2501.gslb.pphosted.com"
+          ],
+          "whois_created": [
+            "1996-03-06"
+          ],
+          "whois_updated": [
+            "2021-01-12",
+            "2021-01-12"
+          ],
+          "whois_expires": [
+            "2026-03-07"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Register.com - Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "a92ax4fd794@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "ns-1503.awsdns-59.org",
+            "ns-1706.awsdns-21.co.uk",
+            "ns-261.awsdns-32.com",
+            "ns-592.awsdns-10.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "mff.org",
+            "timestamp": "2025-10-22T04:11:40.454058",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.mff.org/",
+              "title": "Milken Family Foundation - Welcome | Milken Family Foundation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "gff.org",
+          "dns_ns": [
+            "dns1.p06.nsone.net"
+          ],
+          "dns_a": [
+            "75.2.33.211"
+          ],
+          "dns_mx": [
+            "mx1.hc2314-6.iphmx.com"
+          ],
+          "whois_created": [
+            "2003-04-23"
+          ],
+          "whois_updated": [
+            "2025-04-24"
+          ],
+          "whois_expires": [
+            "2026-04-23"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "CSC Corporate Domains, Inc.",
+          "whois_emails": [
+            "domainabuse@cscglobal.com"
+          ],
+          "whois_name_servers": [
+            "dns1.p04.nsone.net",
+            "dns2.p04.nsone.net",
+            "dns3.p04.nsone.net",
+            "dns4.p04.nsone.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "gff.org",
+            "timestamp": "2025-10-22T04:11:40.454090",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 403,
+              "https_status": null,
+              "redirects_to": "https://gilbertfamilyfoundation.org/",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "efd.org",
+          "dns_ns": [
+            "ns1.livedns.co.uk"
+          ],
+          "dns_a": [
+            "77.68.64.46"
+          ],
+          "dns_mx": [
+            "mailserver.efd.org"
+          ],
+          "whois_created": [
+            "1999-11-26"
+          ],
+          "whois_updated": [
+            "2025-09-09"
+          ],
+          "whois_expires": [
+            "2025-11-26"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "IONOS SE",
+          "whois_emails": [
+            "abuse@ionos.com"
+          ],
+          "whois_name_servers": [
+            "ns1.livedns.co.uk",
+            "ns2.livedns.co.uk",
+            "ns3.livedns.co.uk"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efd.org",
+            "timestamp": "2025-10-22T04:11:40.454103",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://efd.org/",
+              "title": "Evidence for Development"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "homoglyph",
+          "domain": "cff.org",
+          "dns_ns": [
+            "ns-1273.awsdns-31.org"
+          ],
+          "dns_a": [
+            "151.101.1.193"
+          ],
+          "dns_mx": [
+            "esa1.hc2873-2.iphmx.com"
+          ],
+          "whois_created": [
+            "1996-08-13"
+          ],
+          "whois_updated": [
+            "2025-06-20",
+            "2025-06-15"
+          ],
+          "whois_expires": [
+            "2030-08-12"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "hostmaster@cff.org"
+          ],
+          "whois_name_servers": [
+            "ns-1273.awsdns-31.org",
+            "ns-1692.awsdns-19.co.uk",
+            "ns-183.awsdns-22.com",
+            "ns-823.awsdns-38.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "cff.org",
+            "timestamp": "2025-10-22T04:11:51.687612",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": "https://www.cff.org/",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "efgf.org",
+          "dns_ns": [
+            "ns63.domaincontrol.com"
+          ],
+          "dns_a": [
+            "13.248.243.5"
+          ],
+          "dns_mx": [
+            "mailstore1.secureserver.net"
+          ],
+          "whois_created": [
+            "2024-09-23"
+          ],
+          "whois_updated": [
+            "2024-09-28"
+          ],
+          "whois_expires": [
+            "2027-09-23"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns63.domaincontrol.com",
+            "ns64.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efgf.org",
+            "timestamp": "2025-10-22T04:11:57.649639",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://efgf.org/",
+              "title": "Erlinda Faderogao Gillespie Foundation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "seff.org",
+          "dns_ns": [
+            "ns1.beebyte.net"
+          ],
+          "dns_a": [
+            "185.133.207.39"
+          ],
+          "dns_aaaa": [
+            "2a01:a560:1:2::7"
+          ],
+          "dns_mx": [
+            "mail2-in.beebyte.se"
+          ],
+          "whois_created": [
+            "1999-12-23"
+          ],
+          "whois_updated": [
+            "2024-11-29",
+            "2024-11-24"
+          ],
+          "whois_expires": [
+            "2025-12-23"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": "REDACTED FOR PRIVACY",
+          "whois_registrar": "TUCOWS DOMAINS, INC.",
+          "whois_emails": [
+            "domainabuse@tucows.com",
+            "registry@beebyte.se"
+          ],
+          "whois_name_servers": [
+            "ns1.beebyte.net",
+            "ns2.beebyte.net",
+            "ns3.beebyte.net"
+          ],
+          "whois_status": [
+            "ok https://icann.org/epp#ok",
+            "serverTransferProhibited https://icann.org/epp#serverTransferProhibited"
+          ],
+          "whois_country": "SE",
+          "threat_intel": {
+            "domain": "seff.org",
+            "timestamp": "2025-10-22T04:11:57.649666",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://seff.org/",
+              "title": "Startsida - SeFF"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "edff.org",
+          "dns_ns": [
+            "ns75.domaincontrol.com"
+          ],
+          "dns_a": [
+            "185.230.63.107"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "2024-04-16"
+          ],
+          "whois_updated": [
+            "2024-09-05"
+          ],
+          "whois_expires": [
+            "2027-04-16"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns75.domaincontrol.com",
+            "ns76.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "edff.org",
+            "timestamp": "2025-10-22T04:12:09.445701",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.edff.org/",
+              "title": "Education Futures Foundation | Education Futures Fo"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "eftf.org",
+          "dns_ns": [
+            "dns-1.dfn.de"
+          ],
+          "dns_a": [
+            "192.53.103.121"
+          ],
+          "dns_mx": [
+            "mx1.berlin.ptb.de"
+          ],
+          "whois_created": [
+            "2001-04-18"
+          ],
+          "whois_updated": [
+            "2025-06-02"
+          ],
+          "whois_expires": [
+            "2026-04-18"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "COREhub, S.R.L.",
+          "whois_emails": [
+            "abuse@corehub.net"
+          ],
+          "whois_name_servers": [
+            "dns-1.dfn.de",
+            "dns-2.dfn.de",
+            "dns-3.dfn.de",
+            "ns1.ptb.de"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "eftf.org",
+            "timestamp": "2025-10-22T04:12:09.445732",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.eftf.org/home",
+              "title": "Home - EFTF"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "deff.org",
+          "dns_a": [
+            "207.148.248.143"
+          ],
+          "whois_created": [
+            "2010-12-20",
+            "2010-12-20"
+          ],
+          "whois_updated": [
+            "2025-02-03",
+            "2025-02-04"
+          ],
+          "whois_expires": [
+            "2025-12-20",
+            "2025-12-20"
+          ],
+          "whois_registrant": "This Domain For Sale Worldwide 3392225132",
+          "whois_org": "BuyDomains.com",
+          "whois_registrar": "AZDOMAINZ.COM, LLC",
+          "whois_emails": [
+            "abuse@azdomainz.com",
+            "brokerage@buydomains.com"
+          ],
+          "whois_name_servers": [
+            "ns.buydomains.com",
+            "this-domain-for-sale.com"
+          ],
+          "whois_status": [
+            "ok https://icann.org/epp#ok",
+            "ok  http://www.icann.org/epp#ok"
+          ],
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "deff.org",
+            "timestamp": "2025-10-22T04:12:09.445750",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 403,
+              "https_status": null,
+              "redirects_to": "https://www.buydomains.com/lander/deff.org?domain=deff.org&utm_source=deff.org&utm_medium=click&utm_campaign=tdfs-AprTest&traffic_id=AprTest&traffic_type=tdfs&redirect=ono-redirect",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "efdf.org",
+          "dns_ns": [
+            "ns5.kasserver.com"
+          ],
+          "dns_a": [
+            "85.13.146.87"
+          ],
+          "dns_mx": [
+            "w0066a93.kasserver.com"
+          ],
+          "whois_created": [
+            "2000-09-04"
+          ],
+          "whois_updated": [
+            "2025-10-19"
+          ],
+          "whois_expires": [
+            "2026-09-04"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "RegistryGate GmbH",
+          "whois_emails": [
+            "abuse@registrygate.com"
+          ],
+          "whois_name_servers": [
+            "ns5.kasserver.com",
+            "ns6.kasserver.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efdf.org",
+            "timestamp": "2025-10-22T04:12:25.444959",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.efdf.org/",
+              "title": "European Flying Disc Federation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "omission",
+          "domain": "ef.org",
+          "dns_ns": [
+            "dns1.easydns.com"
+          ],
+          "dns_a": [
+            "104.198.104.86"
+          ],
+          "dns_mx": [
+            "d161249a.ess.barracudanetworks.com"
+          ],
+          "whois_created": [
+            "1994-08-16"
+          ],
+          "whois_updated": [
+            "2025-08-05"
+          ],
+          "whois_expires": [
+            "2026-08-15"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "easyDNS Technologies Inc.",
+          "whois_emails": [
+            "abuse@easydns.com"
+          ],
+          "whois_name_servers": [
+            "ns3.easydns.org",
+            "ns1.easydns.com",
+            "ns2.easydns.com",
+            "ns6.easydns.net",
+            "remote2.easydns.com",
+            "remote1.easydns.com"
+          ],
+          "whois_status": [
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "ef.org",
+            "timestamp": "2025-10-22T04:12:25.444990",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": "https://www.ef.org/",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "repetition",
+          "domain": "eeff.org",
+          "dns_a": [
+            "207.148.248.143"
+          ],
+          "whois_created": [
+            "2010-04-19",
+            "2010-04-19"
+          ],
+          "whois_updated": [
+            "2025-06-03",
+            "2025-06-04"
+          ],
+          "whois_expires": [
+            "2026-04-19",
+            "2026-04-19"
+          ],
+          "whois_registrant": "This Domain For Sale Worldwide 3392225132",
+          "whois_org": "BuyDomains.com",
+          "whois_registrar": "AZDOMAINZ.COM, LLC",
+          "whois_emails": [
+            "abuse@azdomainz.com",
+            "brokerage@buydomains.com"
+          ],
+          "whois_name_servers": [
+            "ns.buydomains.com",
+            "this-domain-for-sale.com"
+          ],
+          "whois_status": [
+            "ok https://icann.org/epp#ok",
+            "ok  http://www.icann.org/epp#ok"
+          ],
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "eeff.org",
+            "timestamp": "2025-10-22T04:12:47.467125",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 403,
+              "https_status": null,
+              "redirects_to": "https://www.buydomains.com/lander/eeff.org?domain=eeff.org&utm_source=eeff.org&utm_medium=click&utm_campaign=tdfs-AprTest&traffic_id=AprTest&traffic_type=tdfs&redirect=ono-redirect",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "ecf.org",
+          "dns_ns": [
+            "carol.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "104.21.29.129"
+          ],
+          "dns_aaaa": [
+            "2606:4700:3032::6815:1d81"
+          ],
+          "dns_mx": [
+            "ecf-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "2001-10-24"
+          ],
+          "whois_updated": [
+            "2024-12-08"
+          ],
+          "whois_expires": [
+            "2025-10-24"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "carol.ns.cloudflare.com",
+            "dante.ns.cloudflare.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "ecf.org",
+            "timestamp": "2025-10-22T04:12:47.467153",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.ecf.org/",
+              "title": "Episcopal Church Foundation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "rff.org",
+          "dns_ns": [
+            "brianna.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "104.26.0.47"
+          ],
+          "dns_aaaa": [
+            "2606:4700:20::681a:12f"
+          ],
+          "dns_mx": [
+            "rff-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1994-04-22"
+          ],
+          "whois_updated": [
+            "2024-02-28",
+            "2025-10-21"
+          ],
+          "whois_expires": [
+            "2029-04-23"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "xb4zk57j3q5@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "brianna.ns.cloudflare.com",
+            "lynn.ns.cloudflare.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "rff.org",
+            "timestamp": "2025-10-22T04:12:47.467183",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.rff.org/",
+              "title": "Resources for the Future—Healthy Environment, Thriving Economy"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "efc.org",
+          "dns_ns": [
+            "ns7.worldnic.com"
+          ],
+          "dns_a": [
+            "141.193.213.20"
+          ],
+          "dns_mx": [
+            "efc-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1996-02-11"
+          ],
+          "whois_updated": [
+            "2023-12-22",
+            "2023-12-14"
+          ],
+          "whois_expires": [
+            "2029-02-12"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "zp9qy68737m@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "ns7.worldnic.com",
+            "ns8.worldnic.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "efc.org",
+            "timestamp": "2025-10-22T04:13:03.466818",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": "https://www.efc.org/",
+              "title": null
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "etf.org",
+          "dns_ns": [
+            "ns19.worldnic.com"
+          ],
+          "dns_a": [
+            "209.17.116.163"
+          ],
+          "dns_mx": [
+            "etf-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1995-10-03"
+          ],
+          "whois_updated": [
+            "2025-08-10",
+            "2025-08-05"
+          ],
+          "whois_expires": [
+            "2026-10-02"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "xg97j38t5rw@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "ns19.worldnic.com",
+            "ns20.worldnic.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "etf.org",
+            "timestamp": "2025-10-22T04:13:03.466891",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": "https://easttennesseefoundation.org/",
+              "title": "East Tennessee Foundation - East Tennessee Foundation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "zff.org",
+          "dns_ns": [
+            "ns0.dnsmadeeasy.com"
+          ],
+          "dns_a": [
+            "216.24.57.1"
+          ],
+          "dns_mx": [
+            "zff-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1998-05-11"
+          ],
+          "whois_updated": [
+            "2025-04-15"
+          ],
+          "whois_expires": [
+            "2026-05-10"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "eNom, LLC",
+          "whois_emails": [
+            "abuse@enom.com"
+          ],
+          "whois_name_servers": [
+            "ns0.dnsmadeeasy.com",
+            "ns1.dnsmadeeasy.com",
+            "ns2.dnsmadeeasy.com",
+            "ns3.dnsmadeeasy.com",
+            "ns4.dnsmadeeasy.com"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "zff.org",
+            "timestamp": "2025-10-22T04:13:25.445899",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://zff.org/",
+              "title": "Zellerbach Family Foundation"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "various",
+          "domain": "efforg.com",
+          "dns_ns": [
+            "ns67.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.225.128"
+          ],
+          "dns_mx": [
+            "mailstore1.secureserver.net"
+          ],
+          "whois_created": [
+            "2010-07-23",
+            "2010-07-22"
+          ],
+          "whois_updated": [
+            "2025-07-23",
+            "2025-07-23"
+          ],
+          "whois_expires": [
+            "2026-07-23",
+            "2026-07-22"
+          ],
+          "whois_registrant": "Domain Admin",
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com",
+            "domain@holtwork.com"
+          ],
+          "whois_name_servers": [
+            "ns67.domaincontrol.com",
+            "ns68.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "efforg.com",
+            "timestamp": "2025-10-22T04:13:25.445952",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://www.holtwork.com/",
+              "title": "HOLTWORK"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "vowel-swap",
+          "domain": "iff.org",
+          "dns_ns": [
+            "ns-1402.awsdns-47.org"
+          ],
+          "dns_a": [
+            "199.16.172.59"
+          ],
+          "dns_mx": [
+            "iff-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "2001-11-14"
+          ],
+          "whois_updated": [
+            "2024-12-29"
+          ],
+          "whois_expires": [
+            "2026-11-14"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns-1402.awsdns-47.org",
+            "ns-1939.awsdns-50.co.uk",
+            "ns-236.awsdns-29.com",
+            "ns-590.awsdns-09.net"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "iff.org",
+            "timestamp": "2025-10-22T04:13:25.445965",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://iff.org/",
+              "title": "IFF - A mission-driven lender, helping communities thrive."
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "vowel-swap",
+          "domain": "off.org",
+          "dns_ns": [
+            "dante.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "3.34.29.177"
+          ],
+          "whois_created": [
+            "1997-08-01"
+          ],
+          "whois_updated": [
+            "2025-09-23"
+          ],
+          "whois_expires": [
+            "2031-07-31"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "dante.ns.cloudflare.com",
+            "princess.ns.cloudflare.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "off.org",
+            "timestamp": "2025-10-22T04:13:47.441757",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": "https://off.org/",
+              "title": "OFF.org"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effn.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2025-05-11"
+          ],
+          "whois_updated": [
+            "2025-09-16",
+            "2025-09-16"
+          ],
+          "whois_expires": [
+            "2026-05-11"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": "Super Privacy Service LTD c/o Dynadot",
+          "whois_registrar": "DYNADOT LLC",
+          "whois_emails": [
+            "abuse@dynadot.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com",
+            "verification-ndzevshmc6qrwu5uexsxir.ns101.verify.hn"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "effn.org",
+            "timestamp": "2025-10-22T04:10:15.312809",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effo.org",
+          "dns_ns": [
+            "ns39.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.148.33"
+          ],
+          "whois_created": [
+            "2020-10-30"
+          ],
+          "whois_updated": [
+            "2024-12-14"
+          ],
+          "whois_expires": [
+            "2025-10-30"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns39.domaincontrol.com",
+            "ns40.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effo.org",
+            "timestamp": "2025-10-22T04:10:15.312853",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effw.org",
+          "dns_ns": [
+            "ns53.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.148.33"
+          ],
+          "dns_mx": [
+            "effw.org.mx1.fulcrumgroup.rcimx.net"
+          ],
+          "whois_created": [
+            "2008-03-06"
+          ],
+          "whois_updated": [
+            "2025-04-20"
+          ],
+          "whois_expires": [
+            "2028-03-06"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns53.domaincontrol.com",
+            "ns54.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effw.org",
+            "timestamp": "2025-10-22T04:10:31.464737",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effb.org",
+          "dns_ns": [
+            "ns0.cluster-team.net"
+          ],
+          "dns_a": [
+            "185.157.21.91"
+          ],
+          "dns_mx": [
+            "mail.cluster-team.com"
+          ],
+          "whois_created": [
+            "2000-07-18"
+          ],
+          "whois_updated": [
+            "2025-09-01",
+            "2025-09-07"
+          ],
+          "whois_expires": [
+            "2026-07-18"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": "Europäischer Fachverband  für Blendschutz am Bildschirmarbeitsplatz e.V.",
+          "whois_registrar": "InterNetX GmbH",
+          "whois_emails": [
+            "domain-abuse@internetx.com"
+          ],
+          "whois_name_servers": [
+            "ns0.cluster-team.net",
+            "ns1.cluster-team.net",
+            "ns2.cluster-team.net",
+            "ns3.cluster-team.net"
+          ],
+          "whois_status": [
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientTransferProhibited https://www.icann.org/epp#clientTransferProhibited"
+          ],
+          "whois_country": "DE",
+          "threat_intel": {
+            "domain": "effb.org",
+            "timestamp": "2025-10-22T04:10:31.464807",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 403,
+              "https_status": null,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "eff4.org",
+          "dns_ns": [
+            "ns.hostpoint.ch"
+          ],
+          "dns_a": [
+            "217.26.48.101"
+          ],
+          "dns_mx": [
+            "mx1.mail.hostpoint.ch"
+          ],
+          "whois_created": [
+            "2007-12-10"
+          ],
+          "whois_updated": [
+            "2025-07-24"
+          ],
+          "whois_expires": [
+            "2025-12-10"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Ascio Technologies, Inc. Danmark - Filial af Ascio technologies, Inc. USA",
+          "whois_emails": [
+            "abuse@ascio.com"
+          ],
+          "whois_name_servers": [
+            "ns.hostpoint.ch",
+            "ns2.hostpoint.ch",
+            "ns3.hostpoint.ch"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "eff4.org",
+            "timestamp": "2025-10-22T04:10:47.470903",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": null,
+              "title": "Hello, this domain has been purchased at Hostpoint"
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "enf.org",
+          "dns_ns": [
+            "ns03.domaincontrol.com"
+          ],
+          "dns_a": [
+            "104.198.104.86"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "1998-01-09"
+          ],
+          "whois_updated": [
+            "2025-02-22"
+          ],
+          "whois_expires": [
+            "2026-01-08"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns03.domaincontrol.com",
+            "ns04.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "enf.org",
+            "timestamp": "2025-10-22T04:11:03.446657",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "egf.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2001-01-25"
+          ],
+          "whois_updated": [
+            "2025-01-28"
+          ],
+          "whois_expires": [
+            "2026-01-25"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "egf.org",
+            "timestamp": "2025-10-22T04:11:03.446674",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "aff.org",
+          "dns_ns": [
+            "ns-cloud-b1.googledomains.com"
+          ],
+          "dns_a": [
+            "198.185.159.145"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "1996-12-03",
+            "1996-12-03"
+          ],
+          "whois_updated": [
+            "2025-07-17",
+            "2024-11-17"
+          ],
+          "whois_expires": [
+            "2025-12-02"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": null,
+          "whois_registrar": "Squarespace Domains II LLC",
+          "whois_emails": [
+            "abuse-complaints@squarespace.com"
+          ],
+          "whois_name_servers": [
+            "ns-cloud-b1.googledomains.com",
+            "ns-cloud-b4.googledomains.com",
+            "ns-cloud-b2.googledomains.com",
+            "ns-cloud-b3.googledomains.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "client delete prohibited http://www.icann.org/epp#client delete prohibited",
+            "client transfer prohibited http://www.icann.org/epp#client transfer prohibited"
+          ],
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "aff.org",
+            "timestamp": "2025-10-22T04:11:24.447803",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 403,
+              "https_status": null,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "uff.org",
+          "dns_ns": [
+            "ns1.bodis.com"
+          ],
+          "dns_a": [
+            "199.59.243.228"
+          ],
+          "whois_created": [
+            "2001-04-16"
+          ],
+          "whois_updated": [
+            "2025-04-08"
+          ],
+          "whois_expires": [
+            "2026-04-16"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "PDR Ltd. d/b/a PublicDomainRegistry.com",
+          "whois_emails": [
+            "abuse@publicdomainregistry.com"
+          ],
+          "whois_name_servers": [
+            "ns1.bodis.com",
+            "ns2.bodis.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "uff.org",
+            "timestamp": "2025-10-22T04:11:24.447816",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "dff.org",
+          "dns_ns": [
+            "ns7.worldnic.com"
+          ],
+          "dns_a": [
+            "208.91.197.27"
+          ],
+          "whois_created": [
+            "2001-01-26"
+          ],
+          "whois_updated": [
+            "2025-02-28",
+            "2024-01-28"
+          ],
+          "whois_expires": [
+            "2034-01-26"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "pe74p6yn9ys@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "dns1.zoneedit.com",
+            "dns2.zoneedit.com",
+            "dns3.zoneedit.com",
+            "ns7.worldnic.com",
+            "ns8.worldnic.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "dff.org",
+            "timestamp": "2025-10-22T04:11:40.454031",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "bitsquatting",
+          "domain": "efg.org",
+          "dns_ns": [
+            "ns1.dyna-ns.net"
+          ],
+          "dns_a": [
+            "69.163.178.20"
+          ],
+          "whois_created": [
+            "2003-04-25"
+          ],
+          "whois_updated": [
+            "2025-04-06",
+            "2025-04-01"
+          ],
+          "whois_expires": [
+            "2026-04-25"
+          ],
+          "whois_registrant": "Howard Lee",
+          "whois_org": null,
+          "whois_registrar": "DYNADOT LLC",
+          "whois_emails": [
+            "abuse@dynadot.com",
+            "webmaster@howardlee.com"
+          ],
+          "whois_name_servers": [
+            "ns1.dyna-ns.net",
+            "ns2.dyna-ns.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "HK",
+          "threat_intel": {
+            "domain": "efg.org",
+            "timestamp": "2025-10-22T04:11:40.454076",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": null,
+              "title": ""
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "hyphenation",
+          "domain": "e-ff.org",
+          "dns_ns": [
+            "ns1.domain.com"
+          ],
+          "dns_a": [
+            "66.96.162.149"
+          ],
+          "dns_mx": [
+            "mx.e-ff.org"
+          ],
+          "whois_created": [
+            "2021-01-07"
+          ],
+          "whois_updated": [
+            "2025-09-26",
+            "2025-09-17"
+          ],
+          "whois_expires": [
+            "2026-01-07"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Domain.com - Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "kk2e62aj788@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "ns1.domain.com",
+            "ns2.domain.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "e-ff.org",
+            "timestamp": "2025-10-22T04:11:51.687678",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "ecff.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2020-03-05"
+          ],
+          "whois_updated": [
+            "2025-04-19"
+          ],
+          "whois_expires": [
+            "2026-03-05"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "DropCatch.com 980 LLC",
+          "whois_emails": [
+            "abuse@NameBright.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "ecff.org",
+            "timestamp": "2025-10-22T04:11:51.687701",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "efcf.org",
+          "dns_ns": [
+            "ns5.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2018-02-05"
+          ],
+          "whois_updated": [
+            "2025-02-25"
+          ],
+          "whois_expires": [
+            "2027-02-05"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns5.afternic.com",
+            "ns6.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efcf.org",
+            "timestamp": "2025-10-22T04:11:51.687718",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "esff.org",
+          "dns_ns": [
+            "ns3.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2023-11-27"
+          ],
+          "whois_updated": [
+            "2025-07-06"
+          ],
+          "whois_expires": [
+            "2026-11-27"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns3.afternic.com",
+            "ns4.afternic.com",
+            "verification-dbgjncnnzmfgmpuki3e6hz.ns101.verify.hn"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "esff.org",
+            "timestamp": "2025-10-22T04:11:51.687732",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "reff.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2017-04-12"
+          ],
+          "whois_updated": [
+            "2025-03-29"
+          ],
+          "whois_expires": [
+            "2026-04-12"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Wild West Domains, LLC",
+          "whois_emails": [
+            "abuse@wildwestdomains.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com",
+            "verification-yqwlayzppiicikkzjkdghq.ns101.verify.hn"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "reff.org",
+            "timestamp": "2025-10-22T04:11:57.649589",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "weff.org",
+          "dns_ns": [
+            "ns5.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2018-10-08"
+          ],
+          "whois_updated": [
+            "2024-11-23"
+          ],
+          "whois_expires": [
+            "2026-10-08"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns5.afternic.com",
+            "ns6.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "weff.org",
+            "timestamp": "2025-10-22T04:11:57.649614",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "egff.org",
+          "dns_ns": [
+            "ns01.one.com"
+          ],
+          "dns_a": [
+            "46.30.211.38"
+          ],
+          "dns_mx": [
+            "mx1.pub.mailpod11-cph3.one.com"
+          ],
+          "whois_created": [
+            "2022-05-06"
+          ],
+          "whois_updated": [
+            "2025-07-25"
+          ],
+          "whois_expires": [
+            "2026-05-06"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Ascio Technologies, Inc. Danmark - Filial af Ascio technologies, Inc. USA",
+          "whois_emails": [
+            "abuse@ascio.com"
+          ],
+          "whois_name_servers": [
+            "ns01.one.com",
+            "ns02.one.com"
+          ],
+          "whois_status": "ok https://icann.org/epp#ok",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "egff.org",
+            "timestamp": "2025-10-22T04:12:09.445766",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "zeff.org",
+          "dns_ns": [
+            "ns0.directnic.com"
+          ],
+          "dns_a": [
+            "58.96.84.113"
+          ],
+          "dns_mx": [
+            "mail.zeff.org"
+          ],
+          "whois_created": [
+            "2003-01-08"
+          ],
+          "whois_updated": [
+            "2025-01-11"
+          ],
+          "whois_expires": [
+            "2026-01-08"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "DNC Holdings, Inc.",
+          "whois_emails": [
+            "abuse@directnic.com"
+          ],
+          "whois_name_servers": [
+            "ns0.directnic.com",
+            "ns1.directnic.com",
+            "ns2.directnic.com",
+            "ns3.directnic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "zeff.org",
+            "timestamp": "2025-10-22T04:12:09.445782",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": false,
+              "https_active": true,
+              "http_status": null,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": "Vulcan"
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "efrf.org",
+          "dns_ns": [
+            "ns1.sedoparking.com"
+          ],
+          "dns_a": [
+            "64.190.63.222"
+          ],
+          "dns_mx": [
+            "localhost"
+          ],
+          "whois_created": [
+            "2012-08-24"
+          ],
+          "whois_updated": [
+            "2025-10-08"
+          ],
+          "whois_expires": [
+            "2026-08-24"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns1.sedoparking.com",
+            "ns2.sedoparking.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "efrf.org",
+            "timestamp": "2025-10-22T04:12:25.444933",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 439,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "omission",
+          "domain": "ff.org",
+          "dns_ns": [
+            "elsa.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "104.26.14.69"
+          ],
+          "dns_aaaa": [
+            "2606:4700:20::681a:e45"
+          ],
+          "dns_mx": [
+            "ff-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1996-05-18"
+          ],
+          "whois_updated": [
+            "2024-07-05"
+          ],
+          "whois_expires": [
+            "2027-05-19"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "elsa.ns.cloudflare.com",
+            "simon.ns.cloudflare.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "ff.org",
+            "timestamp": "2025-10-22T04:12:25.445003",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "efr.org",
+          "dns_ns": [
+            "kate.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "104.26.12.189"
+          ],
+          "dns_aaaa": [
+            "2606:4700:20::681a:cbd"
+          ],
+          "dns_mx": [
+            "mail.efr.org"
+          ],
+          "whois_created": [
+            "1996-07-09"
+          ],
+          "whois_updated": [
+            "2025-07-06",
+            "2025-07-01"
+          ],
+          "whois_expires": [
+            "2034-07-08"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "sbaily@EFR.ORG",
+            "itsupport@efr.org"
+          ],
+          "whois_name_servers": [
+            "kate.ns.cloudflare.com",
+            "mark.ns.cloudflare.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "efr.org",
+            "timestamp": "2025-10-22T04:12:47.467197",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "sff.org",
+          "dns_ns": [
+            "ns55.worldnic.com"
+          ],
+          "dns_a": [
+            "141.193.213.21"
+          ],
+          "dns_mx": [
+            "sff-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1995-05-28"
+          ],
+          "whois_updated": [
+            "2024-12-19",
+            "2024-12-19"
+          ],
+          "whois_expires": [
+            "2027-05-27"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "it@sff.org"
+          ],
+          "whois_name_servers": [
+            "ns55.worldnic.com",
+            "ns56.worldnic.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "sff.org",
+            "timestamp": "2025-10-22T04:13:03.466847",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 403,
+              "https_status": 403,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "4ff.org",
+          "dns_ns": [
+            "ns1.bodis.com"
+          ],
+          "dns_a": [
+            "199.59.243.228"
+          ],
+          "whois_created": [
+            "2014-09-11"
+          ],
+          "whois_updated": [
+            "2025-09-19"
+          ],
+          "whois_expires": [
+            "2026-09-11"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Name.com, Inc.",
+          "whois_emails": [
+            "abuse@name.com"
+          ],
+          "whois_name_servers": [
+            "ns1.bodis.com",
+            "ns2.bodis.com"
+          ],
+          "whois_status": [
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "autoRenewPeriod https://icann.org/epp#autoRenewPeriod"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "4ff.org",
+            "timestamp": "2025-10-22T04:13:03.466864",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "eft.org",
+          "dns_ns": [
+            "launch1.spaceship.net"
+          ],
+          "dns_a": [
+            "44.232.173.249"
+          ],
+          "whois_created": [
+            "1998-03-14"
+          ],
+          "whois_updated": [
+            "2025-10-04"
+          ],
+          "whois_expires": [
+            "2026-03-13"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": "Super Privacy Service LTD c/o Dynadot",
+          "whois_registrar": "DYNADOT LLC",
+          "whois_emails": [
+            "abuse@dynadot.com"
+          ],
+          "whois_name_servers": [
+            "launch1.spaceship.net",
+            "launch2.spaceship.net"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "eft.org",
+            "timestamp": "2025-10-22T04:13:25.445925",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": "For Sale Page"
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effl.org",
+          "dns_ns": [
+            "!ServFail"
+          ],
+          "dns_a": [
+            "!ServFail"
+          ],
+          "dns_aaaa": [
+            "!ServFail"
+          ],
+          "whois_created": [
+            "1999-07-21"
+          ],
+          "whois_updated": [
+            "2025-07-21",
+            "2025-07-16"
+          ],
+          "whois_expires": [
+            "2027-07-21"
+          ],
+          "whois_registrant": "PERFECT PRIVACY, LLC",
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "nm6dd7cq5s8@networksolutionsprivateregistration.com"
+          ],
+          "whois_name_servers": [
+            "ns1.arabellek.com",
+            "ns2.arabellek.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "effl.org",
+            "timestamp": "2025-10-22T04:10:08.867921",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "no_certificates"
+            },
+            "http_probe": null
+          },
+          "risk_score": 10
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "ewff.org",
+          "dns_ns": [
+            "ns47.domaincontrol.com"
+          ],
+          "dns_a": [
+            "173.198.158.80"
+          ],
+          "dns_mx": [
+            "mailstore1.secureserver.net"
+          ],
+          "whois_created": [
+            "2008-08-05"
+          ],
+          "whois_updated": [
+            "2024-09-19"
+          ],
+          "whois_expires": [
+            "2026-08-05"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns47.domaincontrol.com",
+            "ns48.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "ewff.org",
+            "timestamp": "2025-10-22T04:11:57.649653",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": null
+          },
+          "risk_score": 10
+        },
+        {
+          "fuzzer": "insertion",
+          "domain": "etff.org",
+          "dns_ns": [
+            "ns1.arandomserver.com"
+          ],
+          "dns_a": [
+            "85.239.53.148"
+          ],
+          "dns_mx": [
+            "etff.org"
+          ],
+          "whois_created": [
+            "2016-12-10",
+            "2016-12-10"
+          ],
+          "whois_updated": [
+            "2024-11-15",
+            "2024-11-10"
+          ],
+          "whois_expires": [
+            "2025-12-10",
+            "2025-12-10"
+          ],
+          "whois_registrant": "Redacted for Privacy",
+          "whois_org": "Privacy service provided by Withheld for Privacy ehf",
+          "whois_registrar": "NAMECHEAP INC",
+          "whois_emails": [
+            "abuse@namecheap.com",
+            "7e19de8a791047929391120a1b81eb08.protect@withheldforprivacy.com",
+            "doms@yashar.io"
+          ],
+          "whois_name_servers": [
+            "ns1.arandomserver.com",
+            "ns2.arandomserver.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "IS",
+          "threat_intel": {
+            "domain": "etff.org",
+            "timestamp": "2025-10-22T04:12:25.444976",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": null
+          },
+          "risk_score": 10
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "wff.org",
+          "dns_ns": [
+            "deborah.ns.cloudflare.com"
+          ],
+          "dns_a": [
+            "104.21.55.229"
+          ],
+          "dns_aaaa": [
+            "2606:4700:3033::6815:37e5"
+          ],
+          "dns_mx": [
+            "wff-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1997-11-04"
+          ],
+          "whois_updated": [
+            "2024-12-18"
+          ],
+          "whois_expires": [
+            "2025-11-03"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "deborah.ns.cloudflare.com",
+            "john.ns.cloudflare.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "wff.org",
+            "timestamp": "2025-10-22T04:12:47.467169",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "timeout"
+            },
+            "http_probe": null
+          },
+          "risk_score": 10
+        },
+        {
+          "fuzzer": "replacement",
+          "domain": "erf.org",
+          "dns_ns": [
+            "ns10.worldnic.com"
+          ],
+          "dns_a": [
+            "205.186.179.16"
+          ],
+          "dns_mx": [
+            "mx1.emailsrvr.com"
+          ],
+          "whois_created": [
+            "1997-01-17"
+          ],
+          "whois_updated": [
+            "2021-11-20",
+            "2024-01-10"
+          ],
+          "whois_expires": [
+            "2027-01-18"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com",
+            "hanna.twiss-brooks@sbims.com"
+          ],
+          "whois_name_servers": [
+            "ns10.worldnic.com",
+            "ns9.worldnic.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "erf.org",
+            "timestamp": "2025-10-22T04:13:03.466878",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": null
+          },
+          "risk_score": 10
+        },
+        {
+          "fuzzer": "transposition",
+          "domain": "fef.org",
+          "dns_ns": [
+            "ns0.directnic.com"
+          ],
+          "dns_a": [
+            "198.17.44.149"
+          ],
+          "dns_mx": [
+            "fef-org.mail.protection.outlook.com"
+          ],
+          "whois_created": [
+            "1996-03-11"
+          ],
+          "whois_updated": [
+            "2025-03-01"
+          ],
+          "whois_expires": [
+            "2026-03-12"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "DNC Holdings, Inc.",
+          "whois_emails": [
+            "abuse@directnic.com"
+          ],
+          "whois_name_servers": [
+            "ns0.directnic.com",
+            "ns1.directnic.com",
+            "ns2.directnic.com",
+            "ns3.directnic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "fef.org",
+            "timestamp": "2025-10-22T04:13:25.445940",
+            "urlscan": null,
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": null
+          },
+          "risk_score": 10
+        }
+      ]
+    }
+  ]
+}

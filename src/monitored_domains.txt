@@ -1,0 +1,7 @@
+# Example domain list for Typo Sniper
+# One domain per line
+# Lines starting with # are comments
+
+google.com
+github.com
+facebook.com
