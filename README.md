@@ -48,14 +48,15 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 
 | Document | Description | When to Use |
 |----------|-------------|-------------|
-| **[QUICKSTART.md](QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
+
+| **[Quick Start Guide](docs/guides/QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
 | **[README.md](README.md)** | 📖 **You are here.** Complete overview and reference | Understanding features, basic usage |
-| **[ENHANCEMENTS.md](ENHANCEMENTS.md)** | 🔬 Deep dive into enhanced detection & threat intel | Understanding detection algorithms |
-| **[TESTING.md](TESTING.md)** | 🧪 Comprehensive testing guide with API setup | Setting up APIs, troubleshooting |
-| **[DEBUG_MODE.md](DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
-| **[Secrets Management](#secrets-management)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
-| **[docker/DOCKER.md](docker/DOCKER.md)** | 🐳 Docker deployment guide | Container deployment |
-| **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** | 📁 Project organization details | Contributing, understanding codebase |
+| **[Enhancements](docs/guides/ENHANCEMENTS.md)** | 🔬 Deep dive into enhanced detection & threat intel | Understanding detection algorithms |
+| **[Testing Guide](TESTING.md)** | 🧪 Comprehensive testing guide with API setup | Setting up APIs, troubleshooting |
+| **[Debug Mode Guide](docs/guides/DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
+| **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
+| **[Docker Guide](docker/DOCKER.md)** | 🐳 Docker deployment guide | Container deployment |
+| **[Project Structure](PROJECT_STRUCTURE.md)** | 📁 Project organization details | Contributing, understanding codebase |
 
 
 > **Note:** Some topics (like secrets management) are now consolidated into this README for easier navigation. Use the table above to jump to the right section or external document.
