@@ -152,7 +152,6 @@ xdg-open results/typo_sniper_results_*.xlsx
 
 **Setup:**
 ```bash
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_key"
 export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 ```
 
@@ -182,7 +181,6 @@ export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 **Setup:**
 ```yaml
 # config.yaml
-virustotal_api_key: "your_key_here"
 urlscan_api_key: "your_key_here"
 ```
 
@@ -227,7 +225,6 @@ doppler login
 doppler setup
 
 # Add secrets
-doppler secrets set VIRUSTOTAL_API_KEY="your_key"
 doppler secrets set URLSCAN_API_KEY="your_key"
 
 # Run application
@@ -288,7 +285,6 @@ aws configure
 aws secretsmanager create-secret \
   --name typo-sniper/prod \
   --secret-string '{
-    "virustotal_api_key": "your_key",
     "urlscan_api_key": "your_key"
   }'
 
@@ -321,7 +317,7 @@ python src/typo_sniper.py -i domains.txt
 ### Development / Testing
 **Recommended:** Environment Variables or Config Files
 ```bash
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="test_key"
+export TYPO_SNIPER_URLSCAN_API_KEY="test_key"
 python src/typo_sniper.py -i test.txt
 ```
 
@@ -344,7 +340,7 @@ python src/typo_sniper.py -i domains.txt
 ### Docker Deployments
 **Recommended:** Environment variables (injected) or Doppler
 ```bash
-docker run -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="key" ...
+docker run -e TYPO_SNIPER_URLSCAN_API_KEY="key" ...
 # OR
 docker run -e DOPPLER_TOKEN="token" ...
 ```
@@ -402,13 +398,13 @@ tests/test_data/test_config.yaml
 ### Environment Variables
 ```bash
 # ✅ DO: Use prefixed variables
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="key"
+export TYPO_SNIPER_URLSCAN_API_KEY="key"
 
 # ❌ DON'T: Echo secrets
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
+echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # ✅ DO: Unset when done
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
+unset TYPO_SNIPER_URLSCAN_API_KEY
 ```
 
 ### Config Files
@@ -431,11 +427,9 @@ mv config.yaml ~/.typo_sniper/
 ### From Config Files to Environment Variables
 ```bash
 # Extract from config
-VIRUSTOTAL_KEY=$(grep virustotal_api_key config.yaml | cut -d'"' -f2)
 URLSCAN_KEY=$(grep urlscan_api_key config.yaml | cut -d'"' -f2)
 
 # Set as env vars
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="$VIRUSTOTAL_KEY"
 export TYPO_SNIPER_URLSCAN_API_KEY="$URLSCAN_KEY"
 
 # Remove from config
@@ -445,7 +439,6 @@ sed -i '/api_key/d' config.yaml
 ### From Environment Variables to Doppler
 ```bash
 # Get current values
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
 echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # Setup Doppler
@@ -453,11 +446,9 @@ doppler login
 doppler setup
 
 # Import to Doppler
-doppler secrets set VIRUSTOTAL_API_KEY="$TYPO_SNIPER_VIRUSTOTAL_API_KEY"
 doppler secrets set URLSCAN_API_KEY="$TYPO_SNIPER_URLSCAN_API_KEY"
 
 # Unset env vars
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
 unset TYPO_SNIPER_URLSCAN_API_KEY
 
 # Run with Doppler
@@ -488,7 +479,7 @@ export AWS_SECRET_NAME="typo-sniper/prod"
 ### Secret Not Found
 ```bash
 # Check all possible sources
-env | grep -i "VIRUSTOTAL\|URLSCAN\|DOPPLER\|AWS"
+env | grep -i "URLSCAN\|DOPPLER\|AWS"
 
 # Verify Doppler
 doppler secrets
@@ -541,7 +532,7 @@ doppler configs tokens create prod-token --plain
 
 | Use Case | Recommendation | Setup Command |
 |----------|----------------|---------------|
-| Quick test | Environment Variables | `export TYPO_SNIPER_VIRUSTOTAL_API_KEY="key"` |
+| Quick test | Environment Variables | `export TYPO_SNIPER_URLSCAN_API_KEY="key"` |
 | Development | Config File + gitignore | `chmod 600 config.yaml` |
 | Production | Doppler | `doppler run -- python src/typo_sniper.py` |
 | AWS Production | AWS Secrets Manager | `export AWS_SECRET_NAME="typo-sniper/prod"` |
@@ -661,15 +652,15 @@ typo-sniper/
   - Configurable via `enable_idn_homograph` setting
 
 ### Threat Intelligence Integration (Optional)
-- **VirusTotal** - Check domains against 70+ security vendors for malicious reputation
-  - Requires API key (free tier available)
-  - Reports malicious/suspicious scores
-  - Configurable via `enable_virustotal` and `virustotal_api_key`
-
 - **URLScan.io** - Analyze live website behavior and security posture
-  - Requires API key (free tier available)
-  - Provides verdict: malicious, suspicious, clean
-  - Configurable via `enable_urlscan` and `urlscan_api_key`
+  - **Auto-enables when API key is configured** (no additional flags needed!)
+  - Requires API key (free tier available at [urlscan.io](https://urlscan.io))
+  - Smart scanning: checks for existing scans first, only submits new scan if older than `urlscan_max_age_days` (default: 7 days)
+  - Waits up to `urlscan_wait_timeout` seconds (default: 90s) for scan results
+  - Provides verdict: malicious, suspicious, clean with threat scores and categories
+  - Returns screenshot URL and report URL for further investigation
+  - Can be explicitly disabled with `ENABLE_URLSCAN=false` environment variable if needed
+  - Configurable via `urlscan_api_key`, `urlscan_max_age_days`, `urlscan_wait_timeout`, and `urlscan_visibility`
 
 - **Certificate Transparency Logs** - Monitor SSL/TLS certificate issuance
   - Tracks certificate history for domains
@@ -916,9 +907,6 @@ enable_soundalike: false           # Detect phonetically similar domains
 enable_idn_homograph: false        # Detect IDN homograph attacks (up to 50 variations/domain)
 
 # Threat Intelligence (Optional)
-enable_virustotal: false           # Check VirusTotal reputation
-virustotal_api_key: ""             # VirusTotal API key (required if enabled)
-
 enable_urlscan: false              # Check URLScan.io analysis
 urlscan_api_key: ""                # URLScan.io API key (required if enabled)
 
@@ -970,35 +958,29 @@ exаmple.com      # Cyrillic 'а' instead of 'a'
 
 ### Threat Intelligence Examples
 
-#### VirusTotal Integration
-```yaml
-# Enable VirusTotal in config.yaml
-enable_virustotal: true
-virustotal_api_key: "your_api_key_here"
-
-# Get free API key at: https://www.virustotal.com/gui/join-us
-# Free tier: 4 requests/minute, 500 requests/day
-```
-
-Results include:
-- Malicious detections (e.g., "5/70 vendors flagged")
-- Last analysis date
-- Community reputation scores
-
 #### URLScan.io Integration
 ```yaml
 # Enable URLScan in config.yaml
 enable_urlscan: true
 urlscan_api_key: "your_api_key_here"
+urlscan_max_age_days: 7  # Submit new scan if existing scan is older than 7 days
+urlscan_wait_timeout: 90  # Wait up to 90 seconds for new scan results
 
 # Get free API key at: https://urlscan.io/user/signup
 # Free tier: 5,000 scans/month
 ```
 
+**Smart Scanning Behavior:**
+- Checks for existing scans first
+- Only submits new scan if no recent scan exists (older than `urlscan_max_age_days`)
+- Waits for and retrieves results from new scans
+- Uses cached results when available to save API quota
+
 Results include:
 - Verdict: malicious, suspicious, or clean
 - Screenshot availability
 - Technology stack detected
+- Scan age (to see how fresh the data is)
 
 #### Certificate Transparency Monitoring
 ```yaml
@@ -1030,7 +1012,6 @@ enable_risk_scoring: true
 ```
 
 Risk scores (0-100) are calculated based on:
-- VirusTotal detections (+30 points)
 - URLScan malicious verdict (+25 points)
 - Recent registration (+15 points)
 - Active HTTP endpoint (+10 points)
@@ -1420,7 +1401,6 @@ When multiple secrets sources are configured, Typo Sniper checks them in this or
 
 **Setup:**
 ```bash
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_key"
 export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 ```
 
@@ -1450,7 +1430,6 @@ export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 **Setup:**
 ```yaml
 # config.yaml
-virustotal_api_key: "your_key_here"
 urlscan_api_key: "your_key_here"
 ```
 
@@ -1495,7 +1474,6 @@ doppler login
 doppler setup
 
 # Add secrets
-doppler secrets set VIRUSTOTAL_API_KEY="your_key"
 doppler secrets set URLSCAN_API_KEY="your_key"
 
 # Run application
@@ -1556,7 +1534,6 @@ aws configure
 aws secretsmanager create-secret \
   --name typo-sniper/prod \
   --secret-string '{
-    "virustotal_api_key": "your_key",
     "urlscan_api_key": "your_key"
   }'
 
@@ -1589,7 +1566,7 @@ python src/typo_sniper.py -i domains.txt
 **Development / Testing:**
 Environment Variables or Config Files
 ```bash
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="test_key"
+export TYPO_SNIPER_URLSCAN_API_KEY="test_key"
 python src/typo_sniper.py -i test.txt
 ```
 
@@ -1612,7 +1589,7 @@ Platform-native secrets (GitHub Secrets, GitLab CI/CD Variables, etc.) or Dopple
 **Docker Deployments:**
 Environment variables (injected) or Doppler
 ```bash
-docker run -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="key" ...
+docker run -e TYPO_SNIPER_URLSCAN_API_KEY="key" ...
 # OR
 docker run -e DOPPLER_TOKEN="token" ...
 ```
@@ -1669,13 +1646,13 @@ test_config.yaml
 **Environment Variables:**
 ```bash
 # ✅ DO: Use prefixed variables
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="key"
+export TYPO_SNIPER_URLSCAN_API_KEY="key"
 
 # ❌ DON'T: Echo secrets
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
+echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # ✅ DO: Unset when done
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
+unset TYPO_SNIPER_URLSCAN_API_KEY
 ```
 
 **Config Files:**
@@ -1698,11 +1675,9 @@ mv config.yaml ~/.typo_sniper/
 **From Config Files to Environment Variables:**
 ```bash
 # Extract from config
-VIRUSTOTAL_KEY=$(grep virustotal_api_key config.yaml | cut -d'"' -f2)
 URLSCAN_KEY=$(grep urlscan_api_key config.yaml | cut -d'"' -f2)
 
 # Set as env vars
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="$VIRUSTOTAL_KEY"
 export TYPO_SNIPER_URLSCAN_API_KEY="$URLSCAN_KEY"
 
 # Remove from config
@@ -1712,7 +1687,6 @@ sed -i '/api_key/d' config.yaml
 **From Environment Variables to Doppler:**
 ```bash
 # Get current values
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
 echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # Setup Doppler
@@ -1720,11 +1694,9 @@ doppler login
 doppler setup
 
 # Import to Doppler
-doppler secrets set VIRUSTOTAL_API_KEY="$TYPO_SNIPER_VIRUSTOTAL_API_KEY"
 doppler secrets set URLSCAN_API_KEY="$TYPO_SNIPER_URLSCAN_API_KEY"
 
 # Unset env vars
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
 unset TYPO_SNIPER_URLSCAN_API_KEY
 
 # Run with Doppler
@@ -1755,7 +1727,7 @@ export AWS_SECRET_NAME="typo-sniper/prod"
 **Secret Not Found:**
 ```bash
 # Check all possible sources
-env | grep -i "VIRUSTOTAL\|URLSCAN\|DOPPLER\|AWS"
+env | grep -i "URLSCAN\|DOPPLER\|AWS"
 
 # Verify Doppler
 doppler secrets
@@ -1808,7 +1780,7 @@ doppler configs tokens create prod-token --plain
 
 | Use Case | Recommendation | Setup Command |
 |----------|----------------|---------------|
-| Quick test | Environment Variables | `export TYPO_SNIPER_VIRUSTOTAL_API_KEY="key"` |
+| Quick test | Environment Variables | `export TYPO_SNIPER_URLSCAN_API_KEY="key"` |
 | Development | Config File + gitignore | `chmod 600 config.yaml` |
 | Production | Doppler | `doppler run -- python src/typo_sniper.py` |
 | AWS Production | AWS Secrets Manager | `export AWS_SECRET_NAME="typo-sniper/prod"` |

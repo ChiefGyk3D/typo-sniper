@@ -1,12 +1,11 @@
 # Testing Guide for Threat Intelligence Features
 
-This guide covers how to test Typo Sniper's threat intelligence integrations with VirusTotal, URLScan.io, and multiple secrets management options.
+This guide covers how to test Typo Sniper's threat intelligence integrations with URLScan.io and multiple secrets management options.
 
 ## Table of Contents
 
 1. [Getting API Keys](#getting-api-keys)
-2. [Testing with VirusTotal](#testing-with-virustotal)
-3. [Testing with URLScan.io](#testing-with-urlscanio)
+2. [Testing with URLScan.io](#testing-with-urlscanio)
 4. [Secrets Management Options](#secrets-management-options)
    - [Using Doppler](#using-doppler-secrets-manager)
    - [Using AWS Secrets Manager](#using-aws-secrets-manager)
@@ -17,22 +16,6 @@ This guide covers how to test Typo Sniper's threat intelligence integrations wit
 ---
 
 ## Getting API Keys
-
-### VirusTotal API Key
-
-1. **Sign up for VirusTotal:**
-   - Visit: https://www.virustotal.com/gui/join-us
-   - Create a free account
-
-2. **Get your API key:**
-   - Go to: https://www.virustotal.com/gui/my-apikey
-   - Copy your API key
-   - **Free tier limits:** 4 requests/minute, 500 requests/day
-
-3. **Example API key format:**
-   ```
-   a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2
-   ```
 
 ### URLScan.io API Key
 
@@ -49,83 +32,6 @@ This guide covers how to test Typo Sniper's threat intelligence integrations wit
 3. **Example API key format:**
    ```
    a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6
-   ```
-
----
-
-## Testing with VirusTotal
-
-### Method 1: Using Configuration File
-
-1. **Create a test config file:**
-   ```bash
-   cd "/home/chiefgyk3d/src/Typo Sniper"
-   cp docs/config.yaml.example test_config.yaml
-   ```
-
-2. **Edit `test_config.yaml`:**
-   ```yaml
-   # Enable VirusTotal
-   enable_virustotal: true
-   virustotal_api_key: "YOUR_VIRUSTOTAL_API_KEY_HERE"
-   
-   # Enable risk scoring to see combined results
-   enable_risk_scoring: true
-   
-   # Optional: Disable other features for focused testing
-   enable_combosquatting: false
-   enable_soundalike: false
-   enable_idn_homograph: false
-   enable_urlscan: false
-   enable_certificate_transparency: false
-   enable_http_probe: false
-   
-   # Limit workers to respect rate limits
-   max_workers: 4
-   rate_limit_delay: 15.0  # 15 seconds between batches (4 req/min limit)
-   ```
-
-3. **Create a small test domain list:**
-   ```bash
-   cat > test_domains_vt.txt << EOF
-   google.com
-   EOF
-   ```
-
-4. **Run the test:**
-   ```bash
-   python src/typo_sniper.py \
-     -i test_domains_vt.txt \
-     --config test_config.yaml \
-     --format excel json \
-     -v
-   ```
-
-5. **Check results:**
-   ```bash
-   # View JSON output for threat intelligence data
-   cat results/typo_sniper_results_*.json | jq '.results[0].permutations[] | select(.threat_intel.virustotal) | {domain, virustotal: .threat_intel.virustotal}'
-   
-   # Open Excel file to see risk scores and color coding
-   xdg-open results/typo_sniper_results_*.xlsx
-   ```
-
-### Method 2: Using Environment Variables
-
-1. **Set environment variable:**
-   ```bash
-   export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_api_key_here"
-   ```
-
-2. **Enable in config (without API key):**
-   ```yaml
-   enable_virustotal: true
-   # virustotal_api_key not needed - will use env var
-   ```
-
-3. **Run the test:**
-   ```bash
-   python src/typo_sniper.py -i test_domains_vt.txt --config test_config.yaml --format excel -v
    ```
 
 ---
@@ -181,15 +87,12 @@ python src/typo_sniper.py -i test_domains_vt.txt --config test_config_urlscan.ya
 
 ---
 
-## Testing Both VirusTotal and URLScan.io
+## Full Threat Intelligence Configuration
 
-### Full Test Configuration
+### Complete Test Configuration
 
 ```yaml
-# Enable all threat intelligence features
-enable_virustotal: true
-virustotal_api_key: "YOUR_VT_KEY"
-
+# Enable threat intelligence features
 enable_urlscan: true
 urlscan_api_key: "YOUR_URLSCAN_KEY"
 
@@ -206,8 +109,8 @@ enable_idn_homograph: true
 enable_risk_scoring: true
 
 # Rate limiting for API calls
-max_workers: 4
-rate_limit_delay: 15.0  # Respect VirusTotal's 4 req/min limit
+max_workers: 10
+rate_limit_delay: 2.0
 ```
 
 ### Run Full Test
@@ -261,9 +164,6 @@ doppler --version
 
 4. **Add your secrets:**
    ```bash
-   # Add VirusTotal API key
-   doppler secrets set VIRUSTOTAL_API_KEY="your_virustotal_key"
-   
    # Add URLScan.io API key
    doppler secrets set URLSCAN_API_KEY="your_urlscan_key"
    
@@ -320,9 +220,6 @@ The system checks for API keys in this order:
 
 1. **Doppler** (if `DOPPLER_TOKEN` is set)
 2. **AWS Secrets Manager** (if `AWS_SECRET_NAME` is set)
-3. **Environment variables** (`TYPO_SNIPER_VIRUSTOTAL_API_KEY`, `TYPO_SNIPER_URLSCAN_API_KEY`)
-4. **Alternate env vars** (`VIRUSTOTAL_API_KEY`, `URLSCAN_API_KEY`)
-5. **Config file** (`virustotal_api_key`, `urlscan_api_key` in YAML)
 
 ---
 
@@ -363,7 +260,6 @@ pip install boto3 botocore
      --name typo-sniper/prod \
      --description "API keys for Typo Sniper" \
      --secret-string '{
-       "virustotal_api_key": "your_virustotal_key_here",
        "urlscan_api_key": "your_urlscan_key_here"
      }'
    ```
@@ -373,7 +269,6 @@ pip install boto3 botocore
    - Click "Store a new secret"
    - Select "Other type of secret"
    - Add key-value pairs:
-     - `virustotal_api_key` = your key
      - `urlscan_api_key` = your key
    - Name it: `typo-sniper/prod`
    - Click "Store"
@@ -400,7 +295,6 @@ pip install boto3 botocore
    aws_secret_name: "typo-sniper/prod"
    
    # Enable features
-   enable_virustotal: true
    enable_urlscan: true
    enable_risk_scoring: true
    ```
@@ -480,7 +374,7 @@ For quick testing or simple deployments:
 
 ```bash
 # Set variables
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_vt_key"
+export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key"
 
 # Run
@@ -504,7 +398,7 @@ docker build -f docker/Dockerfile -t typo-sniper:threat-intel .
 
 ```bash
 docker run --rm \
-  -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_vt_key" \
+  -e TYPO_SNIPER_URLSCAN_API_KEY="your_key" \
   -e TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key" \
   -v "$(pwd)/test_domains_vt.txt:/app/data/test.txt:ro" \
   -v "$(pwd)/results:/app/results" \
@@ -533,7 +427,6 @@ docker run --rm \
          - ./results:/app/results
          - ./test_config.yaml:/app/config.yaml:ro
        environment:
-         - TYPO_SNIPER_VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
          - TYPO_SNIPER_URLSCAN_API_KEY=${URLSCAN_API_KEY}
        command: ["-i", "/app/data/test.txt", "--config", "/app/config.yaml", "--format", "excel", "json", "-v"]
    ```
@@ -541,7 +434,6 @@ docker run --rm \
 2. **Create `.env` file:**
    ```bash
    cat > .env << EOF
-   VIRUSTOTAL_API_KEY=your_virustotal_key_here
    URLSCAN_API_KEY=your_urlscan_key_here
    EOF
    
@@ -557,32 +449,6 @@ docker run --rm \
 ---
 
 ## Troubleshooting
-
-### VirusTotal Issues
-
-**Problem:** "Rate limit exceeded"
-```
-Solution:
-- Reduce max_workers to 4 or less
-- Increase rate_limit_delay to 15+ seconds
-- Check your daily quota (500 requests/day on free tier)
-```
-
-**Problem:** "Invalid API key"
-```
-Solution:
-- Verify API key at https://www.virustotal.com/gui/my-apikey
-- Check for extra spaces or quotes in config/env var
-- Ensure key is 64 characters (hex format)
-```
-
-**Problem:** "No results from VirusTotal"
-```
-Solution:
-- Check if enable_virustotal: true in config
-- Verify API key is set (check logs for "Found virustotal_api_key")
-- Try a known malicious domain for testing
-```
 
 ### URLScan.io Issues
 
@@ -670,7 +536,6 @@ cd "/home/chiefgyk3d/src/Typo Sniper"
 
 # 2. Create test configuration
 cat > test_threat_intel.yaml << EOF
-enable_virustotal: true
 enable_urlscan: true
 enable_certificate_transparency: true
 enable_http_probe: true
@@ -684,7 +549,7 @@ output_dir: results
 EOF
 
 # 3. Set environment variables (or use Doppler)
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_vt_key"
+export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key"
 
 # 4. Create test domains
@@ -711,7 +576,6 @@ xdg-open results/typo_sniper_results_*.xlsx
 
 Estimate API costs for your scans:
 
-**VirusTotal (Free Tier):**
 - Limit: 4 requests/minute, 500/day
 - For 100 domains: ~25 minutes scan time
 - For 500 domains: Max daily limit reached
@@ -766,7 +630,6 @@ Estimate API costs for your scans:
 ## Support
 
 For issues or questions:
-- **VirusTotal API:** https://support.virustotal.com/
 - **URLScan.io:** https://urlscan.io/about/
 - **Doppler:** https://docs.doppler.com/
 - **Typo Sniper:** Check README.md and ENHANCEMENTS.md

@@ -2,17 +2,21 @@
 ### Development / Testing
 **Recommended:** Environment Variables or Config Files
 ```bash
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="test_key"
+# Manual env vars require explicit enable
+export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
+export TYPO_SNIPER_ENABLE_URLSCAN=true
 python src/typo_sniper.py -i test.txt
 ```
 ### Production (General)
 **Recommended:** Doppler
 ```bash
+# URLScan auto-enables when using Doppler!
 doppler run -- python src/typo_sniper.py -i domains.txt
 ```
 ### Production (AWS)
 **Recommended:** AWS Secrets Manager
 ```bash
+# URLScan auto-enables when using AWS Secrets Manager!
 export AWS_SECRET_NAME="typo-sniper/prod"
 python src/typo_sniper.py -i domains.txt
 ```
@@ -23,8 +27,9 @@ python src/typo_sniper.py -i domains.txt
 ### Docker Deployments
 **Recommended:** Environment variables (injected) or Doppler
 ```bash
-docker run -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="key" ...
-# OR
+# Manual env vars require explicit enable
+docker run -e TYPO_SNIPER_URLSCAN_API_KEY="your_key" -e TYPO_SNIPER_ENABLE_URLSCAN=true ...
+# OR with Doppler (auto-enables URLScan!)
 docker run -e DOPPLER_TOKEN="token" ...
 ```
 
@@ -68,13 +73,12 @@ test_config.yaml
 ### Environment Variables
 ```bash
 # ✅ DO: Use prefixed variables
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="key"
+export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
+export TYPO_SNIPER_ENABLE_URLSCAN=true  # Required for manual env vars
 
 # ❌ DON'T: Echo secrets
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
 
 # ✅ DO: Unset when done
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
 ```
 
 ### Config Files
@@ -94,12 +98,11 @@ mv config.yaml ~/.typo_sniper/
 ### From Config Files to Environment Variables
 ```bash
 # Extract from config
-VIRUSTOTAL_KEY=$(grep virustotal_api_key config.yaml | cut -d'"' -f2)
 URLSCAN_KEY=$(grep urlscan_api_key config.yaml | cut -d'"' -f2)
 
-# Set as env vars
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="$VIRUSTOTAL_KEY"
+# Set as env vars (manual env vars require explicit enable)
 export TYPO_SNIPER_URLSCAN_API_KEY="$URLSCAN_KEY"
+export TYPO_SNIPER_ENABLE_URLSCAN=true
 
 # Remove from config
 sed -i '/api_key/d' config.yaml
@@ -108,20 +111,18 @@ sed -i '/api_key/d' config.yaml
 ### From Environment Variables to Doppler
 ```bash
 # Get current values
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
 echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # Setup Doppler
 doppler login
 doppler setup
 
-# Import to Doppler
-doppler secrets set VIRUSTOTAL_API_KEY="$TYPO_SNIPER_VIRUSTOTAL_API_KEY"
+# Import to Doppler (URLScan auto-enables with Doppler!)
 doppler secrets set URLSCAN_API_KEY="$TYPO_SNIPER_URLSCAN_API_KEY"
 
-# Unset env vars
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
+# Unset env vars (no longer need ENABLE_URLSCAN with Doppler)
 unset TYPO_SNIPER_URLSCAN_API_KEY
+unset TYPO_SNIPER_ENABLE_URLSCAN
 
 # Run with Doppler
 doppler run -- python src/typo_sniper.py -i domains.txt
@@ -148,7 +149,6 @@ export AWS_SECRET_NAME="typo-sniper/prod"
 ### Secret Not Found
 ```bash
 # Check all possible sources
-env | grep -i "VIRUSTOTAL\|URLSCAN\|DOPPLER\|AWS"
 
 # Verify Doppler
 doppler secrets
@@ -189,7 +189,7 @@ doppler configs tokens create prod-token --plain
 ## Summary
 | Use Case | Recommendation | Setup Command |
 |----------|----------------|---------------|
-| Quick test | Environment Variables | `export TYPO_SNIPER_VIRUSTOTAL_API_KEY="key"` |
+| Quick test | Environment Variables | `export TYPO_SNIPER_URLSCAN_API_KEY="your_key"` |
 | Development | Config File + gitignore | `chmod 600 config.yaml` |
 | Production | Doppler | `doppler run -- python src/typo_sniper.py` |
 | AWS Production | AWS Secrets Manager | `export AWS_SECRET_NAME="typo-sniper/prod"` |

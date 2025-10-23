@@ -17,7 +17,6 @@ vim .env
 Replace the placeholder values with your actual API keys:
 ```bash
 TYPO_SNIPER_URLSCAN_API_KEY=YOUR-ACTUAL-URLSCAN-KEY-HERE
-TYPO_SNIPER_VIRUSTOTAL_API_KEY=YOUR-ACTUAL-VIRUSTOTAL-KEY-HERE
 ```
 
 ### 3. Load the environment variables
@@ -36,11 +35,6 @@ export $(grep -v '^#' .env | xargs)
 2. Go to your profile: https://urlscan.io/user/profile
 3. Click the "API" tab
 4. Copy your API key (UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
-
-### VirusTotal
-1. Sign up at https://www.virustotal.com/gui/join-us (free)
-2. Go to your API key page: https://www.virustotal.com/gui/my-apikey
-3. Copy your API key (64-character hex string)
 
 ## Testing Your Keys
 
@@ -62,18 +56,17 @@ python3 test_urlscan_api.py
 
 ### Option 1: Environment Variables (Recommended)
 ```bash
-# Load .env first
+# Load .env first (ensure ENABLE_URLSCAN=true is set for manual env vars)
 set -a; source .env; set +a
 
 # Then run Typo Sniper
 python src/typo_sniper.py -i test_domains.txt --config test_config.yaml
 ```
 
-### Option 2: In your shell profile
-Add to `~/.bashrc` or `~/.zshrc`:
+### Option 2: Add to ~/.bashrc (Linux/macOS)
 ```bash
-export TYPO_SNIPER_URLSCAN_API_KEY='your-key-here'
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY='your-key-here'
+echo "export TYPO_SNIPER_URLSCAN_API_KEY='your-key-here'" >> ~/.bashrc
+echo "export TYPO_SNIPER_ENABLE_URLSCAN=true" >> ~/.bashrc
 ```
 
 Then reload:
@@ -84,7 +77,7 @@ source ~/.bashrc
 ### Option 3: Inline (not recommended for security)
 ```bash
 TYPO_SNIPER_URLSCAN_API_KEY='your-key' \
-TYPO_SNIPER_VIRUSTOTAL_API_KEY='your-key' \
+TYPO_SNIPER_ENABLE_URLSCAN=true \
 python src/typo_sniper.py -i test_domains.txt
 ```
 
@@ -93,7 +86,7 @@ python src/typo_sniper.py -i test_domains.txt
 Check if environment variables are set:
 ```bash
 echo $TYPO_SNIPER_URLSCAN_API_KEY
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
+echo $TYPO_SNIPER_ENABLE_URLSCAN
 ```
 
 ## Troubleshooting
@@ -103,11 +96,6 @@ echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
 2. Test the key: `python3 test_urlscan_api.py`
 3. Verify key at: https://urlscan.io/user/profile
 4. Check rate limits (free tier: ~50 scans/day)
-
-### "VirusTotal API error" in logs
-1. Check if key is set: `echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY`
-2. Verify key at: https://www.virustotal.com/gui/my-apikey
-3. Check rate limits (free tier: 4 requests/minute, 500/day)
 
 ### Keys not loading from .env
 Make sure to source the file:
@@ -144,9 +132,8 @@ curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh
 doppler login
 doppler setup
 
-# Add secrets
+# Add secrets (URLScan auto-enables with Doppler!)
 doppler secrets set URLSCAN_API_KEY='your-key'
-doppler secrets set VIRUSTOTAL_API_KEY='your-key'
 
 # Run with Doppler
 doppler run -- python src/typo_sniper.py -i test_domains.txt

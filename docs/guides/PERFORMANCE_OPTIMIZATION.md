@@ -132,7 +132,6 @@ max_workers: 10
 enable_combosquatting: false
 enable_soundalike: false
 enable_idn_homograph: false
-enable_virustotal: false      # Optional unless you have API key
 enable_urlscan: false          # Optional unless you have API key
 ```
 
@@ -144,7 +143,6 @@ rate_limit_delay: 2.0          # Slower but thorough
 enable_combosquatting: true    # Full detection
 enable_idn_homograph: true     # Full detection
 enable_soundalike: false       # Usually adds noise
-enable_virustotal: true        # With API key
 enable_urlscan: true           # With API key
 ```
 
@@ -155,7 +153,6 @@ max_workers: 3
 enable_combosquatting: false
 enable_soundalike: false
 enable_idn_homograph: false
-enable_virustotal: false
 enable_urlscan: false
 dnstwist_mxcheck: false        # Skip MX checks for speed
 ```

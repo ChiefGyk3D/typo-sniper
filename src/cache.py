@@ -29,7 +29,7 @@ class Cache:
     
     def _get_cache_path(self, key: str) -> Path:
         """
-        Get cache file path for a key.
+        Get cache file path for a given key.
         
         Args:
             key: Cache key
@@ -37,8 +37,10 @@ class Cache:
         Returns:
             Path to cache file
         """
-        # Create a safe filename from the key
-        key_hash = hashlib.md5(key.encode()).hexdigest()
+        # Create a safe filename from the key using SHA-256
+        # Note: This is not for cryptographic security, but for creating unique filenames
+        # SHA-256 is used instead of MD5 to satisfy security scanners
+        key_hash = hashlib.sha256(key.encode()).hexdigest()
         return self.cache_dir / f"{key_hash}.json"
     
     def get(self, key: str) -> Optional[Dict[str, Any]]:

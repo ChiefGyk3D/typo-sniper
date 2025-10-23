@@ -76,13 +76,15 @@ class ThreatIntelligence:
     
     async def check_urlscan(self, domain: str) -> Optional[Dict[str, Any]]:
         """
-        Query URLScan.io for existing scan results of a domain.
+        Check URLScan.io for scan results, submitting a new scan if needed.
         
-        Note: This uses the search API to find historical scans (no submission).
-        The urlscan_visibility config option would only apply if submitting new scans.
+        This method:
+        1. Searches for existing scans of the domain
+        2. If no scan exists or the latest scan is older than urlscan_max_age_days, submits a new scan
+        3. Waits for and retrieves the results
         
         Args:
-            domain: Domain to search for
+            domain: Domain to scan
             
         Returns:
             URLScan report or None
@@ -91,10 +93,11 @@ class ThreatIntelligence:
             return None
         
         try:
-            # Use search API instead of submit for faster results (no waiting)
-            # Note: This searches for existing scans, doesn't create new ones
+            # First, check for existing scans
             search_url = f"https://urlscan.io/api/v1/search/?q=domain:{domain}&size=1"
             headers = {"API-Key": self.config.urlscan_api_key}
+            
+            should_submit = False
             
             async with self.session.get(search_url, headers=headers) as response:
                 if response.status == 200:
@@ -103,28 +106,128 @@ class ThreatIntelligence:
                     
                     if results:
                         result = results[0]
-                        verdicts = result.get('verdicts', {})
                         task = result.get('task', {})
+                        scan_time = task.get('time')
                         
-                        return {
-                            'malicious': verdicts.get('overall', {}).get('malicious', False),
-                            'score': verdicts.get('overall', {}).get('score', 0),
-                            'categories': verdicts.get('overall', {}).get('categories', []),
-                            'screenshot': task.get('screenshotURL'),
-                            'report_url': task.get('reportURL'),
-                        }
+                        # Check if scan is recent enough
+                        if scan_time:
+                            from datetime import datetime, timezone
+                            scan_date = datetime.fromisoformat(scan_time.replace('Z', '+00:00'))
+                            age_days = (datetime.now(timezone.utc) - scan_date).days
+                            
+                            if age_days <= self.config.urlscan_max_age_days:
+                                # Recent scan found, return it
+                                verdicts = result.get('verdicts', {})
+                                self.logger.debug(f"Found recent URLScan result for {domain} ({age_days} days old)")
+                                return {
+                                    'malicious': verdicts.get('overall', {}).get('malicious', False),
+                                    'score': verdicts.get('overall', {}).get('score', 0),
+                                    'categories': verdicts.get('overall', {}).get('categories', []),
+                                    'screenshot': task.get('screenshotURL'),
+                                    'report_url': task.get('reportURL'),
+                                    'scan_age_days': age_days,
+                                }
+                            else:
+                                self.logger.info(f"URLScan result for {domain} is {age_days} days old, submitting new scan")
+                                should_submit = True
+                        else:
+                            should_submit = True
                     else:
-                        # Domain not found in URLScan database
-                        return {'status': 'not_found'}
+                        # No existing scan found
+                        self.logger.info(f"No existing URLScan result for {domain}, submitting new scan")
+                        should_submit = True
                 elif response.status == 429:
                     self.logger.warning(f"URLScan rate limit hit for {domain}")
                     return {'status': 'rate_limited'}
-                else:
-                    self.logger.warning(f"URLScan API error for {domain}: {response.status}")
-                    return None
+            
+            # Submit new scan if needed
+            if should_submit:
+                return await self._submit_urlscan(domain)
+            
+            return None
                     
         except Exception as e:
             self.logger.error(f"URLScan check failed for {domain}: {e}")
+            return None
+    
+    async def _submit_urlscan(self, domain: str) -> Optional[Dict[str, Any]]:
+        """
+        Submit a new URLScan and wait for results.
+        
+        Args:
+            domain: Domain to scan
+            
+        Returns:
+            URLScan report or None
+        """
+        try:
+            # Submit scan
+            submit_url = "https://urlscan.io/api/v1/scan/"
+            headers = {
+                "API-Key": self.config.urlscan_api_key,
+                "Content-Type": "application/json"
+            }
+            data = {
+                "url": f"http://{domain}",
+                "visibility": self.config.urlscan_visibility
+            }
+            
+            async with self.session.post(submit_url, headers=headers, json=data) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    result_url = result.get('api')
+                    uuid = result.get('uuid')
+                    
+                    if not result_url:
+                        self.logger.error(f"URLScan submission succeeded but no result URL for {domain}")
+                        return None
+                    
+                    self.logger.info(f"URLScan submitted for {domain}, waiting for results (UUID: {uuid})")
+                    
+                    # Wait for results (with timeout)
+                    import asyncio
+                    max_attempts = self.config.urlscan_wait_timeout // 5  # Check every 5 seconds
+                    
+                    for attempt in range(max_attempts):
+                        await asyncio.sleep(5)  # Wait 5 seconds between checks
+                        
+                        async with self.session.get(result_url) as result_response:
+                            if result_response.status == 200:
+                                scan_result = await result_response.json()
+                                verdicts = scan_result.get('verdicts', {})
+                                task = scan_result.get('task', {})
+                                
+                                self.logger.info(f"URLScan results retrieved for {domain}")
+                                return {
+                                    'malicious': verdicts.get('overall', {}).get('malicious', False),
+                                    'score': verdicts.get('overall', {}).get('score', 0),
+                                    'categories': verdicts.get('overall', {}).get('categories', []),
+                                    'screenshot': task.get('screenshotURL'),
+                                    'report_url': task.get('reportURL'),
+                                    'scan_age_days': 0,
+                                    'fresh_scan': True
+                                }
+                            elif result_response.status == 404:
+                                # Still processing
+                                self.logger.debug(f"URLScan still processing {domain} (attempt {attempt + 1}/{max_attempts})")
+                                continue
+                            else:
+                                self.logger.warning(f"URLScan result fetch error for {domain}: {result_response.status}")
+                                return None
+                    
+                    self.logger.warning(f"URLScan timeout waiting for {domain} results after {self.config.urlscan_wait_timeout}s")
+                    return {'status': 'timeout'}
+                    
+                elif response.status == 429:
+                    self.logger.warning(f"URLScan rate limit hit when submitting {domain}")
+                    return {'status': 'rate_limited'}
+                else:
+                    error_text = await response.text()
+                    self.logger.error(f"URLScan submission failed for {domain}: {response.status} - {error_text}")
+                    return None
+                    
+        except Exception as e:
+            self.logger.error(f"URLScan submission failed for {domain}: {e}")
             return None
     
     async def check_certificate_transparency(self, domain: str) -> Optional[Dict[str, Any]]:

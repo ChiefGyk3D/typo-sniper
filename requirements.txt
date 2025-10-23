@@ -20,7 +20,7 @@ openpyxl==3.1.5
 rich==14.2.0
 
 # Async support (Python 3.8+ has asyncio built-in)
-aiofiles==25.1.0
+aiofiles==24.1.0
 aiohttp==3.13.1
 
 # Optional: Improved WHOIS parsing

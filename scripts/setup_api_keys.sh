@@ -43,9 +43,8 @@ if [ ! -f ".env" ]; then
     echo "  or"
     echo "  vim .env"
     echo ""
-    print_warning "Get your API keys from:"
+    print_warning "Get your API key from:"
     echo "  URLScan: https://urlscan.io/user/profile"
-    echo "  VirusTotal: https://www.virustotal.com/gui/my-apikey"
     echo ""
     exit 1
 fi
@@ -71,22 +70,6 @@ else
         print_success "URLScan API key is set!"
         echo "  Testing API key..."
         python3 test_urlscan_api.py
-    fi
-fi
-
-echo ""
-
-# Check VirusTotal API key
-print_step "Checking VirusTotal API key..."
-if [ -z "$TYPO_SNIPER_VIRUSTOTAL_API_KEY" ] && [ -z "$VIRUSTOTAL_API_KEY" ]; then
-    print_warning "VirusTotal API key not set in .env"
-    echo "  Optional: Add TYPO_SNIPER_VIRUSTOTAL_API_KEY=your-api-key"
-else
-    KEY="${TYPO_SNIPER_VIRUSTOTAL_API_KEY:-$VIRUSTOTAL_API_KEY}"
-    if [ "$KEY" = "your-virustotal-api-key-here" ]; then
-        print_warning "VirusTotal API key is still the placeholder value"
-    else
-        print_success "VirusTotal API key is set!"
     fi
 fi
 
