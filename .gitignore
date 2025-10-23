@@ -129,6 +129,8 @@ results/*
 !results/sample.xlsx
 !results/sample.html
 config.yaml
+*_config.yaml
+!config.yaml.example
 .typo_sniper/
 cache/
 

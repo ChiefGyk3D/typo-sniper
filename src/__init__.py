@@ -4,7 +4,7 @@ Typo Sniper - Advanced Domain Typosquatting Detection Tool
 A powerful tool for detecting and monitoring potential typosquatting domains.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 __author__ = "chiefgyk3d"
 __license__ = "MPL-2.0"
 

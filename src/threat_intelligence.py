@@ -118,13 +118,20 @@ class ThreatIntelligence:
                             if age_days <= self.config.urlscan_max_age_days:
                                 # Recent scan found, return it
                                 verdicts = result.get('verdicts', {})
+                                uuid = task.get('uuid')
+                                
+                                # Construct report URL from UUID if not provided
+                                report_url = task.get('reportURL')
+                                if not report_url and uuid:
+                                    report_url = f"https://urlscan.io/result/{uuid}/"
+                                
                                 self.logger.debug(f"Found recent URLScan result for {domain} ({age_days} days old)")
                                 return {
                                     'malicious': verdicts.get('overall', {}).get('malicious', False),
                                     'score': verdicts.get('overall', {}).get('score', 0),
                                     'categories': verdicts.get('overall', {}).get('categories', []),
                                     'screenshot': task.get('screenshotURL'),
-                                    'report_url': task.get('reportURL'),
+                                    'report_url': report_url,
                                     'scan_age_days': age_days,
                                 }
                             else:
@@ -221,14 +228,25 @@ class ThreatIntelligence:
                 elif response.status == 429:
                     self.logger.warning(f"URLScan rate limit hit when submitting {domain}")
                     return {'status': 'rate_limited'}
+                elif response.status == 400:
+                    error_text = await response.text()
+                    self.logger.error(f"URLScan submission failed for {domain}: {response.status} - {error_text}")
+                    # Parse error message if possible
+                    try:
+                        import json
+                        error_data = json.loads(error_text)
+                        error_msg = error_data.get('message', 'Bad Request')
+                        return {'status': 'submission_failed', 'error': error_msg}
+                    except:
+                        return {'status': 'submission_failed', 'error': 'Bad Request'}
                 else:
                     error_text = await response.text()
                     self.logger.error(f"URLScan submission failed for {domain}: {response.status} - {error_text}")
-                    return None
+                    return {'status': 'submission_failed', 'error': f'HTTP {response.status}'}
                     
         except Exception as e:
             self.logger.error(f"URLScan submission failed for {domain}: {e}")
-            return None
+            return {'status': 'error', 'error': str(e)}
     
     async def check_certificate_transparency(self, domain: str) -> Optional[Dict[str, Any]]:
         """

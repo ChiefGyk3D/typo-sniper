@@ -42,7 +42,7 @@ This guide covers how to test Typo Sniper's threat intelligence integrations wit
 
 1. **Create a test config file:**
    ```bash
-   cp docs/config.yaml.example test_config_urlscan.yaml
+   cp config.yaml.example test_config_urlscan.yaml
    ```
 
 2. **Edit `test_config_urlscan.yaml`:**
