@@ -44,11 +44,11 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 
 ## 📚 Documentation Guide
 
+
 **New to Typo Sniper?** Start here:
 
 | Document | Description | When to Use |
-|----------|-------------|-------------|
-
+|:---|:---|:---|
 | **[Quick Start Guide](docs/guides/QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
 | **[README.md](README.md)** | 📖 **You are here.** Complete overview and reference | Understanding features, basic usage |
 | **[Enhancements](docs/guides/ENHANCEMENTS.md)** | 🔬 Deep dive into enhanced detection & threat intel | Understanding detection algorithms |
@@ -830,6 +830,9 @@ python src/typo_sniper.py [OPTIONS]
 | `--max-workers N` | Maximum concurrent workers | `10` |
 | `--cache-ttl SECONDS` | Cache TTL in seconds | `86400` (24h) |
 | `--no-cache` | Disable caching | False |
+| `--ml` | Enable machine learning predictions | False |
+| `--ml-model PATH` | Path to custom ML model file | None |
+| `--ml-review N` | Export N domains for manual review (active learning) | `0` |
 | `-v, --verbose` | Enable verbose output (INFO level) | False |
 | `--debug` | Enable debug output (DEBUG level with tracing) | False |
 | `--version` | Show version and exit | - |
@@ -892,6 +895,23 @@ python src/typo_sniper.py --debug
 
 > 💡 **Tip:** Use `--debug` to troubleshoot issues like "why am I getting 0 enhanced detections?" It will show you which features are enabled/disabled. See [DEBUG_MODE.md](DEBUG_MODE.md) for details.
 
+#### Machine Learning Enhancement (Optional)
+```bash
+# Enable ML predictions with default model
+python src/typo_sniper.py --ml
+
+# Use custom trained model
+python src/typo_sniper.py --ml --ml-model models/my_model.pkl
+
+# Enable ML with active learning (export 20 uncertain domains for review)
+python src/typo_sniper.py --ml --ml-review 20
+
+# Combine with other features
+python src/typo_sniper.py --ml --months 1 --format excel json
+```
+
+> 🤖 **Note:** ML features require additional dependencies. See [docs/ML_QUICKSTART.md](docs/ML_QUICKSTART.md) for setup instructions.
+
 **[⬆ Back to Top](#-table-of-contents)**
 
 ---
@@ -946,6 +966,14 @@ enable_http_probe: false           # Probe HTTP/HTTPS endpoints
 http_timeout: 10                   # HTTP probe timeout (seconds)
 
 enable_risk_scoring: false         # Calculate risk scores (0-100)
+
+# Machine Learning (Optional - Requires additional dependencies)
+enable_ml: false                   # Enable ML predictions
+ml_model_path: models/model.pkl    # Path to trained model
+ml_confidence_threshold: 0.7       # Minimum confidence for predictions
+ml_enable_active_learning: false   # Enable active learning
+ml_uncertainty_threshold: 0.3      # Uncertainty threshold for review
+ml_review_budget: 20               # Max domains to flag for review
 ```
 
 ### Enhanced Detection Examples
@@ -1053,6 +1081,42 @@ Risk scores (0-100) are calculated based on:
 - 🟠 Orange (50-69): Medium risk - monitor closely
 - 🟡 Yellow (30-49): Low-medium risk - routine review
 - ⚪ White (0-29): Low risk
+
+#### Machine Learning Enhancement
+```yaml
+# Enable ML predictions (requires additional dependencies)
+enable_ml: true
+ml_model_path: models/trained_model.pkl
+ml_confidence_threshold: 0.7  # Only show predictions with 70%+ confidence
+
+# Optional: Enable active learning
+ml_enable_active_learning: true
+ml_uncertainty_threshold: 0.3  # Flag domains where model is uncertain
+ml_review_budget: 20  # Export top 20 uncertain domains for manual review
+```
+
+**ML Features:**
+- Intelligent risk scoring using gradient boosting (LightGBM/CatBoost)
+- Active learning to improve model with manual feedback
+- Explainable AI with SHAP values
+- Outputs include: ML Risk Score, Confidence, Verdict, Review Flag
+
+**Setup:**
+```bash
+# Install ML dependencies
+pip install lightgbm catboost scikit-learn shap numpy pandas
+
+# Train initial model or use pre-trained
+# See docs/ML_QUICKSTART.md for complete guide
+```
+
+**Export Formats:**
+- Excel: Adds ML columns (Risk Score, Confidence, Verdict, Needs Review)
+- CSV: Includes all ML predictions
+- JSON: Full ML metadata
+- Review Batch: Separate CSV with uncertain domains for labeling
+
+> 🤖 **Quick Start:** See [docs/ML_QUICKSTART.md](docs/ML_QUICKSTART.md) for a 5-minute setup guide.
 
 **[⬆ Back to Top](#-table-of-contents)**
 
