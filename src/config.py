@@ -65,6 +65,14 @@ class Config:
     # Risk scoring
     enable_risk_scoring: bool = True
     
+    # Machine Learning (optional - requires ML dependencies)
+    enable_ml: bool = False
+    ml_model_path: Optional[str] = None
+    ml_confidence_threshold: float = 0.7  # High confidence threshold (0-1)
+    ml_enable_active_learning: bool = False
+    ml_uncertainty_threshold: float = 0.15  # For active learning selection
+    ml_review_budget: int = 100  # Max domains to flag for review per scan
+    
     # Secrets management
     use_doppler: bool = False
     use_aws_secrets: bool = False
@@ -98,6 +106,14 @@ class Config:
             # Logic: Managed secrets = production environment = want to use all configured services
             # Manual env vars or .env files still require explicit ENABLE_URLSCAN=true
             self.enable_urlscan = True
+        
+        # ML feature flags
+        enable_ml_env = os.getenv('ENABLE_ML') or os.getenv('TYPO_SNIPER_ENABLE_ML')
+        if enable_ml_env:
+            self.enable_ml = enable_ml_env.lower() in ('true', '1', 'yes', 'on')
+        
+        if not self.ml_model_path:
+            self.ml_model_path = os.getenv('ML_MODEL_PATH') or os.getenv('TYPO_SNIPER_ML_MODEL_PATH')
     
     @classmethod
     def from_file(cls, config_path: Path) -> 'Config':

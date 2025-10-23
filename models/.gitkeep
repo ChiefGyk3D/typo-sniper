@@ -1,0 +1,60 @@
+# Models Directory
+
+This directory stores trained machine learning models for Typo Sniper.
+
+## Contents
+
+Place your trained ML models here:
+- `*.txt` - LightGBM model files
+- `*.json` - Model metadata files
+- `*.pkl` - Serialized feature extractors or preprocessors
+
+## Getting Started
+
+Train your first model:
+
+```bash
+cd ..
+python src/ml_example.py
+```
+
+This will create `demo_typosquat_detector.txt` in this directory.
+
+## Usage
+
+Configure Typo Sniper to use your model:
+
+```yaml
+# config.yaml
+enable_ml: true
+ml_model_path: "models/your_model_name.txt"
+```
+
+Or via CLI:
+
+```bash
+python src/typo_sniper.py -i domains.txt --ml --ml-model models/your_model_name.txt
+```
+
+## Model Versioning
+
+Best practice: Version your models with timestamps or version numbers:
+
+```
+models/
+├── typosquat_detector_v1_2024-10-23.txt
+├── typosquat_detector_v2_2024-11-15.txt
+└── production_model.txt -> typosquat_detector_v2_2024-11-15.txt
+```
+
+## Security
+
+- **Do not commit models to Git** (they're in .gitignore)
+- Store production models securely
+- Track performance metrics separately
+- Test new models before deploying to production
+
+## See Also
+
+- [ML Features Documentation](../docs/ML_FEATURES.md)
+- [ML Integration Guide](../docs/ML_INTEGRATION.md)

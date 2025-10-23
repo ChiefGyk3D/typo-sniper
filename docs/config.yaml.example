@@ -53,3 +53,13 @@ http_timeout: 10                   # HTTP request timeout (seconds)
 
 # Risk scoring
 enable_risk_scoring: true          # Calculate risk scores for domains
+
+# Machine Learning (optional - requires ML dependencies)
+# Install with: pip install lightgbm scikit-learn numpy pandas shap
+# See docs/ML_FEATURES.md for complete documentation
+enable_ml: false                   # Enable ML-enhanced detection
+ml_model_path: null                # Path to trained ML model (e.g., models/typosquat_detector.txt)
+ml_confidence_threshold: 0.7       # High confidence threshold (0-1, default 0.7)
+ml_enable_active_learning: false   # Enable active learning (select uncertain domains for review)
+ml_uncertainty_threshold: 0.15     # Uncertainty threshold for active learning (default 0.15)
+ml_review_budget: 100              # Max domains to flag for review per scan

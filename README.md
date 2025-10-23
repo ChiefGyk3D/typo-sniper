@@ -9,7 +9,7 @@
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: Mozilla Public License 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
+[![Version](https://img.shields.io/badge/version-1.1-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
 
 Detect and monitor typosquatting domains targeting your brand with powerful automation, threat intelligence, and beautiful reporting.
 
@@ -52,6 +52,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 | **[Quick Start Guide](docs/guides/QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
 | **[README.md](README.md)** | 📖 **You are here.** Complete overview and reference | Understanding features, basic usage |
 | **[Enhancements](docs/guides/ENHANCEMENTS.md)** | 🔬 Deep dive into enhanced detection & threat intel | Understanding detection algorithms |
+| **[ML Features](docs/ML_FEATURES.md)** | 🤖 **NEW!** Machine learning enhancement guide | ML-powered detection, active learning |
 | **[Testing Guide](TESTING.md)** | 🧪 Comprehensive testing guide with API setup | Setting up APIs, troubleshooting |
 | **[Debug Mode Guide](docs/guides/DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
 | **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
@@ -677,6 +678,34 @@ typo-sniper/
   - Color-coded in Excel reports (Red: 70+, Orange: 50-69, Yellow: 30-49)
   - Configurable via `enable_risk_scoring`
 
+### Machine Learning Enhancement (Optional)
+> **NEW!** ML-powered typosquatting detection with active learning
+- **Intelligent Risk Scoring** - Gradient-boosted ML classifier (LightGBM) with 50+ engineered features
+  - Lexical features: Edit distances, n-gram similarity, entropy, pronounceability
+  - WHOIS features: Domain age, registrar reputation, privacy flags
+  - DNS features: Record types, MX presence, nameserver patterns
+  - Behavioral features: URLScan scores, certificate transparency, HTTP probes
+  - Visual features: Homoglyph detection, confusable character analysis
+  
+- **Active Learning** - Continuously improve detection with minimal human effort
+  - Uncertainty sampling: Automatically identifies domains needing review (40-60% confidence)
+  - Model disagreement tracking across versions
+  - Label collection and retraining workflow
+  - Batch review export/import for security analysts
+  
+- **Explainable AI** - Understand why domains are flagged
+  - SHAP values show which features contributed to each prediction
+  - Feature importance ranking
+  - Human-readable explanations: "Levenshtein Distance increases suspicion"
+  
+- **Synthetic Data Generation** - Augment training data with realistic typosquats
+  - Character insertion/deletion/substitution
+  - Homoglyph substitution (Unicode confusables)
+  - Keyboard proximity errors (QWERTY layout)
+  - TLD swaps and variations
+  
+- **See [docs/ML_FEATURES.md](docs/ML_FEATURES.md) for complete ML documentation**
+
 ### Key Features
 - Complete with modern Python async/await
 - Modular, object-oriented architecture
@@ -704,14 +733,15 @@ git clone https://github.com/chiefgyk3d/typo-sniper.git
 cd typo-sniper
 
 
+
 # Build the Docker image
-docker build -f docker/Dockerfile -t typo-sniper:1.0.3 .
+docker build -f docker/Dockerfile -t typo-sniper:1.1 .
 
 # Run a scan
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.3 \
+  typo-sniper:1.1 \
   -i /app/data/domains.txt \
   --format excel json
 ```
@@ -1312,7 +1342,7 @@ This project is licensed under the Mozilla Public License 2.0 - see the LICENSE 
 
 **Author:** chiefgyk3d
 
-**Version:** 1.0.3
+**Version:** 1.1
 
 **Repository:** https://github.com/chiefgyk3d/typo-sniper
 

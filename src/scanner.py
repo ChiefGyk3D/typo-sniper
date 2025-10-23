@@ -17,6 +17,7 @@ from config import Config
 from cache import Cache
 from enhanced_detection import generate_enhanced_permutations, SoundAlikeDetector
 from threat_intelligence import ThreatIntelligence, calculate_risk_score
+from ml_integration import get_ml_integration
 
 
 class DomainScanner:
@@ -80,6 +81,10 @@ class DomainScanner:
             
             # Sort by risk score (highest first)
             enriched.sort(key=lambda x: x.get('risk_score', 0), reverse=True)
+        
+        # Add ML predictions if enabled
+        if self.config.enable_ml:
+            enriched = await self._add_ml_predictions(enriched, domain)
         
         return {
             'original_domain': domain,
@@ -479,3 +484,62 @@ class DomainScanner:
         
         self.logger.info(f"Filtered to {len(filtered)} domains created in last {months} months")
         return filtered
+    
+    async def _add_ml_predictions(self, permutations: List[Dict[str, Any]], brand: str) -> List[Dict[str, Any]]:
+        """
+        Add ML predictions to permutations.
+        
+        Args:
+            permutations: List of permutation dictionaries
+            brand: Original brand domain
+            
+        Returns:
+            Permutations with ML predictions added
+        """
+        ml = get_ml_integration(self.config)
+        
+        if not ml or not ml.enabled:
+            self.logger.info("ML not enabled or not available")
+            # Add default ML fields
+            for perm in permutations:
+                perm.update({
+                    'ml_enabled': False,
+                    'ml_risk_score': None,
+                    'ml_confidence': None,
+                    'ml_is_typosquat': None,
+                    'ml_explanation': 'ML not enabled',
+                    'ml_needs_review': False,
+                    'ml_top_features': []
+                })
+            return permutations
+        
+        self.logger.info(f"Adding ML predictions for {len(permutations)} domains")
+        
+        # Batch predict for efficiency
+        predictions = ml.predict_batch(permutations, brand, explain=False)
+        
+        # Add predictions to permutations
+        for perm, pred in zip(permutations, predictions):
+            perm.update(pred)
+        
+        # Log stats
+        ml_enabled_count = sum(1 for p in permutations if p.get('ml_enabled'))
+        typosquat_count = sum(1 for p in permutations if p.get('ml_is_typosquat'))
+        review_count = sum(1 for p in permutations if p.get('ml_needs_review'))
+        
+        self.logger.info(
+            f"ML predictions: {ml_enabled_count} processed, "
+            f"{typosquat_count} flagged as typosquats, "
+            f"{review_count} need review"
+        )
+        
+        # Sort by ML risk score if available (secondary sort after rule-based risk score)
+        permutations.sort(
+            key=lambda x: (
+                x.get('risk_score', 0),  # Primary: rule-based risk score
+                x.get('ml_risk_score', 0) or 0  # Secondary: ML risk score
+            ),
+            reverse=True
+        )
+        
+        return permutations

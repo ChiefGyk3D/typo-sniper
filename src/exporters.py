@@ -141,6 +141,7 @@ class ExcelExporter(BaseExporter):
         headers = [
             "Scan Date", "Original Domain", "Permutation", "Fuzzer Type",
             "Risk Score", "URLScan Status", "CT Logs", "HTTP Status",
+            "ML Risk Score", "ML Confidence", "ML Verdict", "ML Needs Review",
             "Created Date", "Updated Date", "Expires Date",
             "Registrant", "Organization", "Registrar",
             "Email", "Country", "Status",
@@ -256,6 +257,20 @@ class ExcelExporter(BaseExporter):
                             else:
                                 http_status = "Inactive"
                 
+                # Get ML predictions
+                ml_risk = perm.get('ml_risk_score', '')
+                ml_conf = perm.get('ml_confidence', '')
+                if ml_conf and isinstance(ml_conf, float):
+                    ml_conf = f"{ml_conf:.2%}"
+                
+                ml_verdict = ''
+                if perm.get('ml_is_typosquat') is True:
+                    ml_verdict = '⚠ Typosquat'
+                elif perm.get('ml_is_typosquat') is False:
+                    ml_verdict = '✓ Legitimate'
+                
+                ml_review = '⚠ YES' if perm.get('ml_needs_review') else ''
+                
                 row = [
                     scan_date,
                     original,
@@ -265,6 +280,10 @@ class ExcelExporter(BaseExporter):
                     urlscan_status,
                     ct_logs,
                     http_status,
+                    ml_risk,
+                    ml_conf,
+                    ml_verdict,
+                    ml_review,
                     created,
                     updated,
                     expires,
@@ -414,6 +433,7 @@ class CSVExporter(BaseExporter):
             headers = [
                 'Scan Date', 'Original Domain', 'Permutation', 'Fuzzer Type',
                 'Risk Score', 'URLScan Status', 'CT Logs', 'HTTP Status',
+                'ML Risk Score', 'ML Confidence', 'ML Verdict', 'ML Needs Review',
                 'Created Date', 'Updated Date', 'Expires Date',
                 'Registrant', 'Organization', 'Registrar',
                 'Emails', 'Country', 'Status',
@@ -494,6 +514,20 @@ class CSVExporter(BaseExporter):
                                 else:
                                     http_status = "Inactive"
                     
+                    # Get ML predictions
+                    ml_risk = perm.get('ml_risk_score', '')
+                    ml_conf = perm.get('ml_confidence', '')
+                    if ml_conf and isinstance(ml_conf, float):
+                        ml_conf = f"{ml_conf:.2%}"
+                    
+                    ml_verdict = ''
+                    if perm.get('ml_is_typosquat') is True:
+                        ml_verdict = 'Typosquat'
+                    elif perm.get('ml_is_typosquat') is False:
+                        ml_verdict = 'Legitimate'
+                    
+                    ml_review = 'YES' if perm.get('ml_needs_review') else 'No'
+                    
                     row = [
                         scan_date,
                         original,
@@ -503,6 +537,10 @@ class CSVExporter(BaseExporter):
                         urlscan_status,
                         ct_logs,
                         http_status,
+                        ml_risk,
+                        ml_conf,
+                        ml_verdict,
+                        ml_review,
                         ', '.join(perm.get('whois_created', [])),
                         ', '.join(perm.get('whois_updated', [])),
                         ', '.join(perm.get('whois_expires', [])),
@@ -716,6 +754,8 @@ class HTMLExporter(BaseExporter):
                         <th>URLScan Status</th>
                         <th>CT Logs</th>
                         <th>HTTP Status</th>
+                        <th>ML Risk</th>
+                        <th>ML Verdict</th>
                         <th>Created</th>
                         <th>Registrant</th>
                         <th>IP</th>
@@ -797,6 +837,26 @@ class HTMLExporter(BaseExporter):
                                 else:
                                     http_status = "Inactive"
                     
+                    # Get ML predictions
+                    ml_risk = perm.get('ml_risk_score', '')
+                    ml_conf = perm.get('ml_confidence', '')
+                    ml_verdict = ''
+                    ml_display = ''
+                    
+                    if ml_risk:
+                        ml_display = f"{ml_risk}"
+                        if ml_conf and isinstance(ml_conf, float):
+                            ml_display += f" <small>({ml_conf:.0%})</small>"
+                    
+                    if perm.get('ml_is_typosquat') is True:
+                        ml_verdict = '⚠️ <span style="color: #d73a49;">Typosquat</span>'
+                        if perm.get('ml_needs_review'):
+                            ml_verdict += ' <small>(review)</small>'
+                    elif perm.get('ml_is_typosquat') is False:
+                        ml_verdict = '✓ <span style="color: #28a745;">Legitimate</span>'
+                    elif perm.get('ml_needs_review'):
+                        ml_verdict = '⚠️ <small>Needs review</small>'
+                    
                     html += f"""
                     <tr class="{row_class}">
                         <td><code>{perm['domain']}</code></td>
@@ -805,6 +865,8 @@ class HTMLExporter(BaseExporter):
                         <td>{urlscan_status}</td>
                         <td>{ct_logs}</td>
                         <td>{http_status}</td>
+                        <td>{ml_display}</td>
+                        <td>{ml_verdict}</td>
                         <td>{created}</td>
                         <td>{registrant}</td>
                         <td>{ip}</td>

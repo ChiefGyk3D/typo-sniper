@@ -38,3 +38,22 @@ python-dotenv==1.1.1
 # AWS Secrets Manager (https://aws.amazon.com/secrets-manager/)
 # boto3==1.40.56
 # botocore==1.40.56
+
+# Machine Learning dependencies (for ML-enhanced detection)
+# Install with: pip install -r requirements.txt -e .[ml]
+# Or manually: pip install lightgbm catboost shap scikit-learn pandas numpy
+
+# Gradient boosting frameworks
+lightgbm==4.6.0
+catboost==1.2.8
+
+# Model explainability
+shap==0.49.1
+
+# ML utilities
+scikit-learn==1.7.2
+pandas==2.3.3
+numpy==2.3.4
+
+# Unicode handling for homoglyph detection
+unicodedata2==16.0.0

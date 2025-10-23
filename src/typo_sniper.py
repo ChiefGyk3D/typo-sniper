@@ -299,11 +299,30 @@ Examples:
         action='store_true',
         help='Enable debug output (DEBUG level with enhanced tracing)'
     )
+    
+    # Machine Learning options
+    ml_group = parser.add_argument_group('Machine Learning', 'Optional ML-enhanced detection')
+    ml_group.add_argument(
+        '--ml',
+        action='store_true',
+        help='Enable ML-enhanced detection (requires trained model)'
+    )
+    ml_group.add_argument(
+        '--ml-model',
+        type=str,
+        metavar='PATH',
+        help='Path to trained ML model file'
+    )
+    ml_group.add_argument(
+        '--ml-review',
+        action='store_true',
+        help='Enable active learning and export domains for review'
+    )
 
     parser.add_argument(
         '--version',
         action='version',
-    version='Typo Sniper v1.0.3'
+    version='Typo Sniper v1.1'
     )
 
     return parser.parse_args()
@@ -335,6 +354,14 @@ async def main():
     config.cache_ttl = args.cache_ttl
     config.use_cache = not args.no_cache
     config.months_filter = args.months
+    
+    # ML options
+    if args.ml:
+        config.enable_ml = True
+    if args.ml_model:
+        config.ml_model_path = args.ml_model
+    if args.ml_review:
+        config.ml_enable_active_learning = True
     
     # Store debug mode in config for access by other modules
     config.debug_mode = debug_mode
@@ -379,6 +406,20 @@ async def main():
         # Export results
         console.print(f"\n[bold]Exporting results...[/bold]")
         sniper.export_results(args.format, args.output)
+        
+        # Export ML review batch if enabled
+        if config.enable_ml and config.ml_enable_active_learning:
+            from ml_integration import get_ml_integration
+            ml = get_ml_integration(config)
+            if ml and ml.enabled and ml.active_learner:
+                review_file = args.output / 'ml_review_batch.csv'
+                # Flatten all permutations for review
+                all_perms = []
+                for result in sniper.results:
+                    all_perms.extend(result['permutations'])
+                
+                if ml.export_review_batch(str(review_file), all_perms):
+                    console.print(f"[bold cyan]📋 ML review batch exported:[/bold cyan] {review_file}")
 
         console.print("\n[bold green]✓ Scan completed successfully![/bold green]\n")
 

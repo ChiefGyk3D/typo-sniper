@@ -4,7 +4,7 @@
 FROM python:3.14-slim
 
 LABEL maintainer="chiefgyk3d"
-LABEL version="1.0.3"
+LABEL version="1.1"
 LABEL description="Typo Sniper - Advanced Domain Typosquatting Detection Tool"
 
 # Set working directory

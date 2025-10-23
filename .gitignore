@@ -49,6 +49,24 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
+# Machine Learning models (large binary files)
+models/*.txt
+models/*.json
+models/*.pkl
+models/*.model
+models/*.bin
+!models/.gitkeep
+
+# ML training data
+models/training_data/
+models/evaluation/
+
+# Active learning state
+models/active_learning_state.json
+
+# ML review batches
+results/ml_review_batch*.csv
+
 # Translations
 *.mo
 *.pot
