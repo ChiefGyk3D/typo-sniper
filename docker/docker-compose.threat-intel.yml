@@ -33,7 +33,6 @@ services:
     # Option 3: Use Doppler (BEST for production)
     environment:
       # API Keys (will be loaded from .env file)
-      - TYPO_SNIPER_VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
       - TYPO_SNIPER_URLSCAN_API_KEY=${URLSCAN_API_KEY}
       
       # Optional: Enable Doppler if DOPPLER_TOKEN is set

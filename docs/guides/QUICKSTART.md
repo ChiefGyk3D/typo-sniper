@@ -1,14 +1,8 @@
-# Quick Start: Testing with VirusTotal and URLScan.io
+# Quick Start: Testing with URLScan.io
 
 This is a condensed guide to get you up and running quickly with the threat intelligence features.
 
-## 1. Get Your API Keys (5 minutes)
-
-### VirusTotal
-1. Go to https://www.virustotal.com/gui/join-us
-2. Sign up (free)
-3. Visit https://www.virustotal.com/gui/my-apikey
-4. Copy your API key (64-character hex string)
+## 1. Get Your API Key (2 minutes)
 
 ### URLScan.io
 1. Go to https://urlscan.io/user/signup
@@ -24,9 +18,9 @@ This is a condensed guide to get you up and running quickly with the threat inte
 ```bash
 cd "/home/chiefgyk3d/src/Typo Sniper"
 
-# Set API keys
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_virustotal_key_here"
+# Set API key and explicitly enable (manual env vars require explicit enable)
 export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key_here"
+export TYPO_SNIPER_ENABLE_URLSCAN=true
 ```
 
 ### Option B: Using Config File
@@ -35,11 +29,10 @@ export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key_here"
 # Create test config
 cat > test_config.yaml << 'EOF'
 # Enable threat intelligence
-enable_virustotal: true
-virustotal_api_key: "YOUR_VT_KEY_HERE"
-
 enable_urlscan: true
 urlscan_api_key: "YOUR_URLSCAN_KEY_HERE"
+urlscan_max_age_days: 7    # Submit new scan if older than 7 days
+urlscan_wait_timeout: 90    # Wait up to 90 seconds for scan results
 
 # Enable other features
 enable_certificate_transparency: true
@@ -72,8 +65,7 @@ doppler login
 # Setup project
 doppler setup
 
-# Add secrets
-doppler secrets set VIRUSTOTAL_API_KEY="your_vt_key"
+# Add secrets (URLScan auto-enables with Doppler!)
 doppler secrets set URLSCAN_API_KEY="your_urlscan_key"
 
 # Verify
@@ -89,11 +81,10 @@ doppler secrets
 # Configure AWS credentials
 aws configure
 
-# Create secret
+# Create secret (URLScan auto-enables with AWS Secrets Manager!)
 aws secretsmanager create-secret \
   --name typo-sniper/prod \
   --secret-string '{
-    "virustotal_api_key": "your_vt_key",
     "urlscan_api_key": "your_urlscan_key"
   }'
 
@@ -166,7 +157,6 @@ docker build -f docker/Dockerfile -t typo-sniper:threat-intel .
 
 ```bash
 docker run --rm \
-  -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_vt_key" \
   -e TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key" \
   -v "$(pwd)/test_small.txt:/app/data/test.txt:ro" \
   -v "$(pwd)/results:/app/results" \
@@ -181,7 +171,6 @@ docker run --rm \
 ```bash
 # Create .env file
 cat > docker/.env << EOF
-VIRUSTOTAL_API_KEY=your_vt_key_here
 URLSCAN_API_KEY=your_urlscan_key_here
 EOF
 
@@ -223,7 +212,7 @@ docker run --rm \
 
 Look for these new columns in the Details sheet:
 - **Risk Score**: 0-100 (higher = more suspicious)
-- **VirusTotal Score**: "X/70" (detections out of 70 vendors)
+- **URLScan
 - **URLScan Status**: malicious, suspicious, or clean
 - **CT Logs**: Number of SSL certificates issued
 - **HTTP Status**: HTTP status code (200, 301, 404, etc.)
@@ -243,12 +232,6 @@ Look for these new columns in the Details sheet:
   "fuzzer": "homograph",
   "risk_score": 75,
   "threat_intel": {
-    "virustotal": {
-      "malicious": 5,
-      "suspicious": 2,
-      "total": 70,
-      "last_analysis": "2025-10-21"
-    },
     "urlscan": {
       "verdict": "malicious",
       "url": "https://urlscan.io/result/..."
@@ -265,12 +248,6 @@ Look for these new columns in the Details sheet:
 ```
 
 ## 7. Rate Limit Considerations
-
-### VirusTotal (Free Tier)
-- **4 requests/minute**
-- **500 requests/day**
-- For 100 domains: ~25 minutes scan time
-- Use `max_workers: 4` and `rate_limit_delay: 15.0`
 
 ### URLScan.io (Free Tier)
 - **5,000 scans/month**
@@ -295,8 +272,7 @@ Look for these new columns in the Details sheet:
 
 ### "Invalid API key"
 ```bash
-# Verify keys are set correctly
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
+# Verify key is set correctly
 echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # Check config file
@@ -306,7 +282,7 @@ cat test_config.yaml | grep api_key
 ### "No threat intelligence in results"
 ```bash
 # Run with verbose to see what's happening
-python src/typo_sniper.py -i test_small.txt -v 2>&1 | grep -i "threat\|virus\|urlscan"
+python src/typo_sniper.py -i test_small.txt -v 2>&1 | grep -i "threat\|urlscan"
 ```
 
 ### "Doppler not working"
@@ -318,7 +294,7 @@ doppler --version
 doppler secrets
 
 # Test injection
-doppler run -- env | grep -i "VIRUSTOTAL\|URLSCAN"
+doppler run -- env | grep -i "URLSCAN"
 ```
 
 ## 9. Security Best Practices
@@ -364,7 +340,6 @@ doppler run -- python src/typo_sniper.py -i test.txt --format excel -v
 
 # Docker test
 docker run --rm \
-  -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="key" \
   -e TYPO_SNIPER_URLSCAN_API_KEY="key" \
   -v "$(pwd)/test.txt:/app/data/test.txt:ro" \
   -v "$(pwd)/results:/app/results" \

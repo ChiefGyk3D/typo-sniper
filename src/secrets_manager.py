@@ -101,7 +101,7 @@ class SecretsManager:
         4. Default value
         
         Args:
-            key: Secret key name (e.g., 'virustotal_api_key')
+            key: Secret key name (e.g., 'urlscan_api_key')
             default: Default value if secret not found
             
         Returns:
@@ -152,7 +152,7 @@ class SecretsManager:
         Get API key for a service.
         
         Args:
-            service: Service name (e.g., 'virustotal', 'urlscan')
+            service: Service name (e.g., 'urlscan')
             config_value: Value from config file (fallback)
             
         Returns:

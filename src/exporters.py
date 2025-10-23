@@ -140,7 +140,7 @@ class ExcelExporter(BaseExporter):
         # Headers
         headers = [
             "Scan Date", "Original Domain", "Permutation", "Fuzzer Type",
-            "Risk Score", "VirusTotal Score", "URLScan Status", "CT Logs", "HTTP Status",
+            "Risk Score", "URLScan Status", "CT Logs", "HTTP Status",
             "Created Date", "Updated Date", "Expires Date",
             "Registrant", "Organization", "Registrar",
             "Email", "Country", "Status",
@@ -189,7 +189,6 @@ class ExcelExporter(BaseExporter):
                 # Get threat intelligence data
                 threat_intel = perm.get('threat_intel', {})
                 risk_score = perm.get('risk_score', '')
-                vt_score = ''
                 urlscan_status = ''
                 ct_logs = ''
                 http_status = ''
@@ -216,7 +215,6 @@ class ExcelExporter(BaseExporter):
                     perm['domain'],
                     perm.get('fuzzer', ''),
                     risk_score,
-                    vt_score,
                     urlscan_status,
                     ct_logs,
                     http_status,

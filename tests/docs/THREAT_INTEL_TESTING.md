@@ -1,11 +1,9 @@
 # Threat Intelligence Testing Guide
 
-Complete walkthrough for testing VirusTotal, URLScan.io, and Doppler secrets management with Typo Sniper.
 
 ## 📋 Prerequisites
 
 1. **API Keys Required:**
-   - VirusTotal API key (free): https://www.virustotal.com/gui/join-us
    - URLScan.io API key (free): https://urlscan.io/user/signup
 
 2. **Tools Required:**
@@ -40,8 +38,6 @@ If you prefer to test manually or understand each step:
 
 ### Step 1: Get Your API Keys
 
-**VirusTotal:**
-1. Go to https://www.virustotal.com/gui/join-us
 2. Create account → Profile → API Key
 3. Copy your API key
 
@@ -58,7 +54,6 @@ This tests the simplest configuration method.
 
 ```bash
 # Set your API keys as environment variables
-export TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_virustotal_key_here"
 export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key_here"
 
 # Run a test scan
@@ -74,7 +69,6 @@ python src/typo_sniper.py \
 - ✅ Results directory contains Excel and JSON files
 - ✅ Excel file has threat intelligence columns
 - ✅ Risk scores are calculated
-- ✅ VirusTotal and URLScan data appears in results
 
 **View results:**
 ```bash
@@ -114,8 +108,6 @@ doppler setup --project typo-sniper --config dev
 #### Add Your Secrets
 
 ```bash
-# Add VirusTotal API key
-doppler secrets set VIRUSTOTAL_API_KEY="your_virustotal_key_here"
 
 # Add URLScan.io API key
 doppler secrets set URLSCAN_API_KEY="your_urlscan_key_here"
@@ -128,7 +120,6 @@ doppler secrets
 
 ```bash
 # Unset local environment variables to test Doppler
-unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
 unset TYPO_SNIPER_URLSCAN_API_KEY
 
 # Run scan with Doppler
@@ -159,7 +150,6 @@ docker build -f docker/Dockerfile -t typo-sniper:test .
 docker run --rm \
   -v "$(pwd)/test_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  -e TYPO_SNIPER_VIRUSTOTAL_API_KEY="your_virustotal_key" \
   -e TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key" \
   typo-sniper:test \
   -i /app/data/domains.txt \
@@ -214,8 +204,6 @@ Open the Excel file in `results/` directory:
 **Expected Sheets:**
 1. **Summary** - Overview of all domains scanned
 2. **Details** - Full results with threat intel columns:
-   - `virustotal_malicious` - Number of vendors flagging domain
-   - `virustotal_score` - Total detections
    - `urlscan_verdict` - malicious/suspicious/clean
    - `cert_transparency_count` - Number of certificates
    - `http_status` - Active/inactive status
@@ -242,7 +230,6 @@ cat results/typo_sniper_results_*.json | jq '.results[0].threat_intel'
 ```json
 {
   "threat_intel": {
-    "virustotal": {
       "malicious": 0,
       "suspicious": 0,
       "harmless": 70,
@@ -276,7 +263,6 @@ echo "malicious-site.com" > malicious_test.txt
 python src/typo_sniper.py -i malicious_test.txt --config test_config.yaml -v
 ```
 
-**Expected:** High risk scores, VirusTotal detections
 
 ### Test 2: Newly Registered Domain
 
@@ -305,11 +291,9 @@ python src/typo_sniper.py -i src/monitored_domains.txt --config test_config.yaml
 **Solution:**
 ```bash
 # Verify your API keys are set
-echo $TYPO_SNIPER_VIRUSTOTAL_API_KEY
 echo $TYPO_SNIPER_URLSCAN_API_KEY
 
 # Test keys directly
-curl -H "x-apikey: YOUR_VT_KEY" https://www.virustotal.com/api/v3/domains/google.com
 curl -H "API-Key: YOUR_URLSCAN_KEY" https://urlscan.io/api/v1/search/?q=domain:google.com
 ```
 
@@ -363,7 +347,6 @@ python src/typo_sniper.py --max-workers 2 --rate-limit-delay 2 -i test_domains.t
 | 50      | 5       | ~15 minutes       | ~5 minutes          |
 
 **Rate Limits (Free Tier):**
-- VirusTotal: 4 requests/minute, 500/day
 - URLScan.io: 5,000 scans/month
 
 ---
@@ -379,7 +362,6 @@ python src/typo_sniper.py --max-workers 2 --rate-limit-delay 2 -i test_domains.t
 
 2. **Clear cached API keys:**
    ```bash
-   unset TYPO_SNIPER_VIRUSTOTAL_API_KEY
    unset TYPO_SNIPER_URLSCAN_API_KEY
    ```
 
@@ -403,7 +385,6 @@ Use this checklist to verify all features:
 - [ ] Doppler secrets management works (local Python)
 - [ ] Docker with env vars works
 - [ ] Docker with Doppler works
-- [ ] VirusTotal data appears in results
 - [ ] URLScan.io data appears in results
 - [ ] Certificate Transparency data present
 - [ ] HTTP probing shows active/inactive status

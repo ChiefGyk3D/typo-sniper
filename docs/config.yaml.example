@@ -36,10 +36,14 @@ enable_soundalike: false           # Detect phonetically similar domains
 enable_idn_homograph: false        # Detect IDN/Unicode homograph attacks (SLOW)
 
 # Threat intelligence integrations (optional - require API keys)
+# NOTE: URLScan auto-enables with Doppler/AWS Secrets Manager
+# Manual env vars or config files need explicit enable_urlscan: true
 enable_urlscan: false              # Enable URLScan.io integration
 urlscan_api_key: null              # URLScan.io API key (required if enabled)
 urlscan_free_tier: true            # true = 30 search req/min (free), false = unlimited (paid)
-urlscan_visibility: public         # public, unlisted, or private (for future scan submissions)
+urlscan_visibility: public         # public, unlisted, or private
+urlscan_max_age_days: 7            # Submit new scan if existing scan is older than this (days)
+urlscan_wait_timeout: 90           # Max seconds to wait for new scan results
 
 enable_certificate_transparency: true  # Enable CT log monitoring (no API key needed)
 

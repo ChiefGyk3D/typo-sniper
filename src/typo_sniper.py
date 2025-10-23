@@ -62,9 +62,31 @@ class TypoSniper:
 
         Raises:
             FileNotFoundError: If the file doesn't exist
+            ValueError: If path validation fails
         """
+        # Resolve to absolute path to prevent path traversal
         try:
-            with open(file_path, 'r') as f:
+            resolved_path = file_path.resolve()
+        except (OSError, RuntimeError) as e:
+            self.logger.error(f"Invalid input file path: {e}")
+            raise ValueError(f"Invalid input file path: {e}")
+        
+        # Validate file extension (allow .txt files for domain lists)
+        if resolved_path.suffix.lower() not in ['.txt', '']:
+            self.logger.error(f"Input file must be a text file (.txt), got: {resolved_path.suffix}")
+            raise ValueError(f"Input file must be a text file (.txt), got: {resolved_path.suffix}")
+        
+        # Check if file exists and is a regular file
+        if not resolved_path.exists():
+            self.logger.error(f"Domain list file not found: {resolved_path}")
+            raise FileNotFoundError(f"Domain list file not found: {resolved_path}")
+        
+        if not resolved_path.is_file():
+            self.logger.error(f"Input path must be a regular file: {resolved_path}")
+            raise ValueError(f"Input path must be a regular file: {resolved_path}")
+        
+        try:
+            with open(resolved_path, 'r') as f:
                 domains = [line.strip() for line in f if line.strip() and not line.startswith('#')]
             
             # Validate domains
@@ -75,12 +97,12 @@ class TypoSniper:
                 else:
                     self.logger.warning(f"Invalid domain format: {domain}")
             
-            self.logger.info(f"Loaded {len(valid_domains)} valid domains from {file_path}")
+            self.logger.info(f"Loaded {len(valid_domains)} valid domains from {resolved_path}")
             return valid_domains
 
-        except FileNotFoundError:
-            self.logger.error(f"Domain list file not found: {file_path}")
-            raise
+        except PermissionError:
+            self.logger.error(f"Permission denied reading input file: {resolved_path}")
+            raise ValueError(f"Permission denied reading input file: {resolved_path}")
 
     async def scan_domains(self, domains: List[str], progress: Optional[Progress] = None) -> None:
         """
@@ -120,8 +142,22 @@ class TypoSniper:
         Args:
             output_formats: List of output format names (excel, json, csv, html)
             output_dir: Directory to save output files
+            
+        Raises:
+            ValueError: If output directory path is invalid
         """
-        output_dir.mkdir(parents=True, exist_ok=True)
+        # Resolve to absolute path to prevent path traversal
+        try:
+            resolved_dir = output_dir.resolve()
+        except (OSError, RuntimeError) as e:
+            self.logger.error(f"Invalid output directory path: {e}")
+            raise ValueError(f"Invalid output directory path: {e}")
+        
+        # Create directory with validated path
+        resolved_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Use resolved path for exports
+        output_dir = resolved_dir
         
         exporters = {
             'excel': ExcelExporter(self.config),
