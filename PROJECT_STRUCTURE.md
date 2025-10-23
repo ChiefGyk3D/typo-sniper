@@ -62,7 +62,7 @@ Typo Sniper/
 
 ### Configuration
 - **`.env`** - Your API keys (create from `.env.example`, gitignored)
-- **`docs/config.yaml.example`** - Full configuration template
+- **`config.yaml.example`** - Full configuration template
 
 ### Entry Points
 - **`src/typo_sniper.py`** - Main CLI application

@@ -197,17 +197,59 @@ class ExcelExporter(BaseExporter):
                     if 'urlscan' in threat_intel:
                         us_data = threat_intel['urlscan']
                         if us_data:
-                            urlscan_status = us_data.get('verdict', '')
+                            # Check for error/status conditions first
+                            if 'status' in us_data:
+                                status = us_data['status']
+                                if status == 'rate_limited':
+                                    urlscan_status = "Rate Limited"
+                                elif status == 'timeout':
+                                    urlscan_status = "Scan Timeout"
+                                else:
+                                    urlscan_status = f"Error: {status}"
+                            else:
+                                # URLScan status: Malicious (score) or Clean with link
+                                malicious = us_data.get('malicious', False)
+                                score = us_data.get('score', 0)
+                                report_url = us_data.get('report_url')
+                                
+                                if malicious or score > 0:
+                                    if report_url:
+                                        urlscan_status = f"⚠ Malicious ({score}) - {report_url}"
+                                    else:
+                                        urlscan_status = f"⚠ Malicious ({score})"
+                                elif report_url:
+                                    urlscan_status = f"✓ Clean ({score}) - {report_url}"
+                                else:
+                                    # No report_url means scan failed or never existed
+                                    urlscan_status = "No Scan Available"
                     
                     if 'certificate_transparency' in threat_intel:
                         ct_data = threat_intel['certificate_transparency']
                         if ct_data:
-                            ct_logs = str(ct_data.get('certificate_count', ''))
+                            cert_count = ct_data.get('certificates_found', 0)
+                            status = ct_data.get('status', '')
+                            if cert_count > 0:
+                                ct_logs = f"{cert_count} cert(s)"
+                            elif status:
+                                ct_logs = status
+                            else:
+                                ct_logs = "0"
                     
                     if 'http_probe' in threat_intel:
                         http_data = threat_intel['http_probe']
                         if http_data:
-                            http_status = str(http_data.get('status_code', ''))
+                            # Get HTTP/HTTPS status
+                            http_active = http_data.get('http_active', False)
+                            https_active = http_data.get('https_active', False)
+                            http_code = http_data.get('http_status', '')
+                            https_code = http_data.get('https_status', '')
+                            
+                            if https_active and https_code:
+                                http_status = f"HTTPS: {https_code}"
+                            elif http_active and http_code:
+                                http_status = f"HTTP: {http_code}"
+                            else:
+                                http_status = "Inactive"
                 
                 row = [
                     scan_date,
@@ -366,6 +408,7 @@ class CSVExporter(BaseExporter):
             # Write headers
             headers = [
                 'Scan Date', 'Original Domain', 'Permutation', 'Fuzzer Type',
+                'Risk Score', 'URLScan Status', 'CT Logs', 'HTTP Status',
                 'Created Date', 'Updated Date', 'Expires Date',
                 'Registrant', 'Organization', 'Registrar',
                 'Emails', 'Country', 'Status',
@@ -379,11 +422,77 @@ class CSVExporter(BaseExporter):
                 original = result['original_domain']
                 
                 for perm in result['permutations']:
+                    # Get threat intelligence data
+                    threat_intel = perm.get('threat_intel', {})
+                    risk_score = perm.get('risk_score', '')
+                    urlscan_status = ''
+                    ct_logs = ''
+                    http_status = ''
+                    
+                    if threat_intel:
+                        if 'urlscan' in threat_intel:
+                            us_data = threat_intel['urlscan']
+                            if us_data:
+                                # Check for error/status conditions first
+                                if 'status' in us_data:
+                                    status = us_data['status']
+                                    if status == 'rate_limited':
+                                        urlscan_status = "Rate Limited"
+                                    elif status == 'timeout':
+                                        urlscan_status = "Scan Timeout"
+                                    else:
+                                        urlscan_status = f"Error: {status}"
+                                else:
+                                    malicious = us_data.get('malicious', False)
+                                    score = us_data.get('score', 0)
+                                    report_url = us_data.get('report_url')
+                                    
+                                    if malicious or score > 0:
+                                        if report_url:
+                                            urlscan_status = f"Malicious ({score}) - {report_url}"
+                                        else:
+                                            urlscan_status = f"Malicious ({score})"
+                                    elif report_url:
+                                        urlscan_status = f"Clean ({score}) - {report_url}"
+                                    else:
+                                        urlscan_status = "No Scan Available"
+                        
+                        if 'certificate_transparency' in threat_intel:
+                            ct_data = threat_intel['certificate_transparency']
+                            if ct_data:
+                                cert_count = ct_data.get('certificates_found', 0)
+                                status = ct_data.get('status', '')
+                                if cert_count > 0:
+                                    ct_logs = f"{cert_count} cert(s)"
+                                elif status:
+                                    ct_logs = status
+                                else:
+                                    ct_logs = "0"
+                        
+                        if 'http_probe' in threat_intel:
+                            http_data = threat_intel['http_probe']
+                            if http_data:
+                                http_active = http_data.get('http_active', False)
+                                https_active = http_data.get('https_active', False)
+                                http_code = http_data.get('http_status', '')
+                                https_code = http_data.get('https_status', '')
+                                
+                                if https_active and https_code:
+                                    http_status = f"HTTPS: {https_code}"
+                                elif http_active and http_code:
+                                    http_status = f"HTTP: {http_code}"
+                                else:
+                                    http_status = "Inactive"
+                    
                     row = [
                         scan_date,
                         original,
                         perm['domain'],
                         perm.get('fuzzer', ''),
+                        risk_score,
+                        urlscan_status,
+                        ct_logs,
+                        http_status,
                         ', '.join(perm.get('whois_created', [])),
                         ', '.join(perm.get('whois_updated', [])),
                         ', '.join(perm.get('whois_expires', [])),
@@ -593,6 +702,10 @@ class HTMLExporter(BaseExporter):
                     <tr>
                         <th>Domain</th>
                         <th>Fuzzer</th>
+                        <th>Risk</th>
+                        <th>URLScan Status</th>
+                        <th>CT Logs</th>
+                        <th>HTTP Status</th>
                         <th>Created</th>
                         <th>Registrant</th>
                         <th>IP</th>
@@ -607,10 +720,76 @@ class HTMLExporter(BaseExporter):
                     registrant = perm.get('whois_registrant', '')
                     ip = perm.get('dns_a', [''])[0] if perm.get('dns_a') else ''
                     
+                    # Get threat intelligence data
+                    threat_intel = perm.get('threat_intel', {})
+                    risk_score = perm.get('risk_score', '')
+                    urlscan_status = ''
+                    ct_logs = ''
+                    http_status = ''
+                    
+                    if threat_intel:
+                        if 'urlscan' in threat_intel:
+                            us_data = threat_intel['urlscan']
+                            if us_data:
+                                # Check for error/status conditions first
+                                if 'status' in us_data:
+                                    status = us_data['status']
+                                    if status == 'rate_limited':
+                                        urlscan_status = "⏱️ Rate Limited"
+                                    elif status == 'timeout':
+                                        urlscan_status = "⏱️ Scan Timeout"
+                                    else:
+                                        urlscan_status = f"❌ Error: {status}"
+                                else:
+                                    malicious = us_data.get('malicious', False)
+                                    score = us_data.get('score', 0)
+                                    report_url = us_data.get('report_url')
+                                    
+                                    if malicious or score > 0:
+                                        if report_url:
+                                            urlscan_status = f"⚠️ <a href='{report_url}' target='_blank'>Malicious ({score})</a>"
+                                        else:
+                                            urlscan_status = f"⚠️ Malicious ({score})"
+                                    elif report_url:
+                                        urlscan_status = f"✓ <a href='{report_url}' target='_blank'>Clean ({score})</a>"
+                                    else:
+                                        urlscan_status = "⚪ No Scan Available"
+                        
+                        if 'certificate_transparency' in threat_intel:
+                            ct_data = threat_intel['certificate_transparency']
+                            if ct_data:
+                                cert_count = ct_data.get('certificates_found', 0)
+                                status = ct_data.get('status', '')
+                                if cert_count > 0:
+                                    ct_logs = f"✓ {cert_count} cert(s)"
+                                elif status:
+                                    ct_logs = status
+                                else:
+                                    ct_logs = "0"
+                        
+                        if 'http_probe' in threat_intel:
+                            http_data = threat_intel['http_probe']
+                            if http_data:
+                                http_active = http_data.get('http_active', False)
+                                https_active = http_data.get('https_active', False)
+                                http_code = http_data.get('http_status', '')
+                                https_code = http_data.get('https_status', '')
+                                
+                                if https_active and https_code:
+                                    http_status = f"🔒 HTTPS: {https_code}"
+                                elif http_active and http_code:
+                                    http_status = f"HTTP: {http_code}"
+                                else:
+                                    http_status = "Inactive"
+                    
                     html += f"""
                     <tr class="{row_class}">
                         <td><code>{perm['domain']}</code></td>
                         <td><span class="fuzzer-badge">{perm.get('fuzzer', '')}</span></td>
+                        <td>{risk_score}</td>
+                        <td>{urlscan_status}</td>
+                        <td>{ct_logs}</td>
+                        <td>{http_status}</td>
                         <td>{created}</td>
                         <td>{registrant}</td>
                         <td>{ip}</td>

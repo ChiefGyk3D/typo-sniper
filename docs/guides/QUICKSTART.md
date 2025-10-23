@@ -178,7 +178,7 @@ EOF
 chmod 600 docker/.env
 
 # Copy config
-cp docs/config.yaml.example docker/config.yaml
+cp config.yaml.example docker/config.yaml
 
 # Edit docker/config.yaml to enable features (or use env vars only)
 

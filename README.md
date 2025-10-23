@@ -9,7 +9,7 @@
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: Mozilla Public License 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
+[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
 
 Detect and monitor typosquatting domains targeting your brand with powerful automation, threat intelligence, and beautiful reporting.
 
@@ -703,14 +703,15 @@ The easiest way to run Typo Sniper is using Docker:
 git clone https://github.com/chiefgyk3d/typo-sniper.git
 cd typo-sniper
 
+
 # Build the Docker image
-docker build -f docker/Dockerfile -t typo-sniper:1.0.0 .
+docker build -f docker/Dockerfile -t typo-sniper:1.0.3 .
 
 # Run a scan
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.0.3 \
   -i /app/data/domains.txt \
   --format excel json
 ```
@@ -870,7 +871,7 @@ python src/typo_sniper.py --debug
 Typo Sniper can be configured using a YAML file. Copy the example configuration:
 
 ```bash
-cp docs/config.yaml.example config.yaml
+cp config.yaml.example config.yaml
 ```
 
 ### Configuration Options
@@ -1311,7 +1312,7 @@ This project is licensed under the Mozilla Public License 2.0 - see the LICENSE 
 
 **Author:** chiefgyk3d
 
-**Version:** 1.0.0
+**Version:** 1.0.3
 
 **Repository:** https://github.com/chiefgyk3d/typo-sniper
 

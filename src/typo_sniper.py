@@ -303,7 +303,7 @@ Examples:
     parser.add_argument(
         '--version',
         action='version',
-        version='Typo Sniper v1.0.0'
+    version='Typo Sniper v1.0.3'
     )
 
     return parser.parse_args()
