@@ -200,10 +200,15 @@ class ExcelExporter(BaseExporter):
                             # Check for error/status conditions first
                             if 'status' in us_data:
                                 status = us_data['status']
+                                error = us_data.get('error', '')
                                 if status == 'rate_limited':
                                     urlscan_status = "Rate Limited"
                                 elif status == 'timeout':
                                     urlscan_status = "Scan Timeout"
+                                elif status == 'submission_failed':
+                                    urlscan_status = f"Scan Failed: {error}"
+                                elif status == 'error':
+                                    urlscan_status = f"Error: {error}"
                                 else:
                                     urlscan_status = f"Error: {status}"
                             else:
@@ -436,10 +441,15 @@ class CSVExporter(BaseExporter):
                                 # Check for error/status conditions first
                                 if 'status' in us_data:
                                     status = us_data['status']
+                                    error = us_data.get('error', '')
                                     if status == 'rate_limited':
                                         urlscan_status = "Rate Limited"
                                     elif status == 'timeout':
                                         urlscan_status = "Scan Timeout"
+                                    elif status == 'submission_failed':
+                                        urlscan_status = f"Scan Failed: {error}"
+                                    elif status == 'error':
+                                        urlscan_status = f"Error: {error}"
                                     else:
                                         urlscan_status = f"Error: {status}"
                                 else:
@@ -734,10 +744,15 @@ class HTMLExporter(BaseExporter):
                                 # Check for error/status conditions first
                                 if 'status' in us_data:
                                     status = us_data['status']
+                                    error = us_data.get('error', '')
                                     if status == 'rate_limited':
                                         urlscan_status = "⏱️ Rate Limited"
                                     elif status == 'timeout':
                                         urlscan_status = "⏱️ Scan Timeout"
+                                    elif status == 'submission_failed':
+                                        urlscan_status = f"❌ Scan Failed: {error}"
+                                    elif status == 'error':
+                                        urlscan_status = f"❌ Error: {error}"
                                     else:
                                         urlscan_status = f"❌ Error: {status}"
                                 else:

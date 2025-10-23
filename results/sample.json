@@ -1,5 +1,5 @@
 {
-  "export_date": "2025-10-22T23:31:18.901993",
+  "export_date": "2025-10-22T23:47:34.024366",
   "version": "1.0",
   "total_domains": 1,
   "results": [
@@ -7,8 +7,8 @@
       "original_domain": "eff.org",
       "scan_date": "2025-10-22",
       "total_permutations": 77,
-      "registered_count": 72,
-      "filtered_count": 71,
+      "registered_count": 71,
+      "filtered_count": 70,
       "permutations": [
         {
           "fuzzer": "addition",
@@ -48,18 +48,35 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "effh.org",
-            "timestamp": "2025-10-23T03:29:20.844836",
+            "timestamp": "2025-10-23T03:45:29.411668",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0f29-8626-7138-93a6-61d09cb2cc66/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "timeout"
+              "certificates_found": 64,
+              "most_recent": {
+                "issuer": "C=US, O=Let's Encrypt, CN=R13",
+                "not_before": "2025-09-22T04:59:23",
+                "not_after": "2025-12-21T04:59:22",
+                "common_name": "effh.org"
+              },
+              "all_names": [
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org",
+                "effh.org"
+              ]
             },
             "http_probe": {
               "http_active": true,
@@ -70,7 +87,546 @@
               "title": "Eagles Foundation For Humanity - Official Website"
             }
           },
-          "risk_score": 30
+          "risk_score": 40
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effu.org",
+          "dns_ns": [
+            "ns1.messagingengine.com"
+          ],
+          "dns_a": [
+            "103.168.172.37"
+          ],
+          "dns_mx": [
+            "in1-smtp.messagingengine.com"
+          ],
+          "whois_created": [
+            "2019-01-17",
+            "2019-01-17"
+          ],
+          "whois_updated": [
+            "2024-01-13",
+            "2024-01-08"
+          ],
+          "whois_expires": [
+            "2026-01-17",
+            "2026-01-17"
+          ],
+          "whois_registrant": "Redacted for Privacy",
+          "whois_org": "Privacy service provided by Withheld for Privacy ehf",
+          "whois_registrar": "NAMECHEAP INC",
+          "whois_emails": [
+            "abuse@namecheap.com",
+            "7f079307da8f44a78cb2147aeb3bb0a3.protect@withheldforprivacy.com"
+          ],
+          "whois_name_servers": [
+            "ns1.messagingengine.com",
+            "ns2.messagingengine.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": "IS",
+          "threat_intel": {
+            "domain": "effu.org",
+            "timestamp": "2025-10-23T03:45:29.411578",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-7524-769c-b198-106c377144f9/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 4,
+              "most_recent": {
+                "issuer": "C=US, O=Let's Encrypt, CN=Let's Encrypt Authority X3",
+                "not_before": "2018-10-14T11:54:22",
+                "not_after": "2019-01-12T11:54:22",
+                "common_name": "effu.org"
+              },
+              "all_names": [
+                "effu.org",
+                "effu.org",
+                "effu.org",
+                "effu.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 404,
+              "https_status": null,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effa.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "1997-12-31"
+          ],
+          "whois_updated": [
+            "2025-02-13"
+          ],
+          "whois_expires": [
+            "2025-12-30"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Network Solutions, LLC",
+          "whois_emails": [
+            "domain.operations@web.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effa.org",
+            "timestamp": "2025-10-23T03:45:29.411605",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-7281-757e-9066-b5a9cbc84569/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 9,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-08-01T16:59:03",
+                "not_after": "2026-08-01T16:59:03",
+                "common_name": "www.effa.org"
+              },
+              "all_names": [
+                "www.effa.org",
+                "www.effa.org",
+                "effa.org",
+                "effa.org",
+                "www.efai.org",
+                "www.efai.org",
+                "effa.org",
+                "www.effa.org",
+                "effa.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": false,
+              "https_active": true,
+              "http_status": null,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effe.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2003-08-02"
+          ],
+          "whois_updated": [
+            "2025-09-16"
+          ],
+          "whois_expires": [
+            "2026-08-02"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy Online Services Cayman Islands Ltd.",
+          "whois_emails": [
+            "abuse@uniregistry.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effe.org",
+            "timestamp": "2025-10-23T03:45:29.411619",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-726a-729f-bff7-22f0f044129d/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 8,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-07-25T02:24:33",
+                "not_after": "2026-07-25T02:24:33",
+                "common_name": "www.effe.org"
+              },
+              "all_names": [
+                "www.effe.org",
+                "effe.org",
+                "effe.org",
+                "effe.org",
+                "www.effe.org",
+                "www.effe.org",
+                "effe.org",
+                "www.effe.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effn.org",
+          "dns_ns": [
+            "ns1.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2025-05-11"
+          ],
+          "whois_updated": [
+            "2025-09-16"
+          ],
+          "whois_expires": [
+            "2026-05-11"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Dynadot Inc",
+          "whois_emails": [
+            "abuse@dynadot.com"
+          ],
+          "whois_name_servers": [
+            "ns1.afternic.com",
+            "ns2.afternic.com",
+            "verification-ndzevshmc6qrwu5uexsxir.ns101.verify.hn"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effn.org",
+            "timestamp": "2025-10-23T03:45:29.411644",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-71b8-75cb-b8c4-a2ee44add7c0/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 51,
+              "most_recent": {
+                "issuer": "C=US, O=Let's Encrypt, CN=R13",
+                "not_before": "2025-09-14T12:24:49",
+                "not_after": "2025-12-13T12:24:48",
+                "common_name": "www.effn.org"
+              },
+              "all_names": [
+                "www.effn.org",
+                "www.effn.org",
+                "effn.org",
+                "effn.org",
+                "effn.org",
+                "effn.org",
+                "effn.org",
+                "effn.org",
+                "www.effn.org",
+                "www.effn.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effx.org",
+          "dns_ns": [
+            "ns5.afternic.com"
+          ],
+          "dns_a": [
+            "13.248.169.48"
+          ],
+          "dns_mx": [
+            ""
+          ],
+          "whois_created": [
+            "2018-03-19"
+          ],
+          "whois_updated": [
+            "2025-04-19"
+          ],
+          "whois_expires": [
+            "2027-03-19"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns5.afternic.com",
+            "ns6.afternic.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effx.org",
+            "timestamp": "2025-10-23T03:45:29.411656",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-7049-727e-bb75-d35c5baf1b63/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 15,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-07-16T20:34:53",
+                "not_after": "2026-07-16T20:34:52",
+                "common_name": "effx.org"
+              },
+              "all_names": [
+                "effx.org",
+                "effx.org",
+                "www.effx.org",
+                "www.effx.org",
+                "effx.org",
+                "www.provenamarillo.com",
+                "effx.org",
+                "www.effx.org",
+                "effx.org",
+                "effx.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effo.org",
+          "dns_ns": [
+            "ns39.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.148.33"
+          ],
+          "whois_created": [
+            "2020-10-30"
+          ],
+          "whois_updated": [
+            "2024-12-14"
+          ],
+          "whois_expires": [
+            "2025-10-30"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns39.domaincontrol.com",
+            "ns40.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effo.org",
+            "timestamp": "2025-10-23T03:45:29.411683",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-7004-70cf-bfa0-5e7112302cb0/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 8,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-04-20T23:38:23",
+                "not_after": "2026-04-20T23:38:23",
+                "common_name": "www.effo.org"
+              },
+              "all_names": [
+                "www.effo.org",
+                "effo.org",
+                "effo.org",
+                "www.effo.org",
+                "www.effo.org",
+                "www.effo.org",
+                "effo.org",
+                "effo.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effw.org",
+          "dns_ns": [
+            "ns53.domaincontrol.com"
+          ],
+          "dns_a": [
+            "15.197.148.33"
+          ],
+          "dns_mx": [
+            "effw.org.mx1.fulcrumgroup.rcimx.net"
+          ],
+          "whois_created": [
+            "2008-03-06"
+          ],
+          "whois_updated": [
+            "2025-04-20"
+          ],
+          "whois_expires": [
+            "2028-03-06"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "GoDaddy.com, LLC",
+          "whois_emails": [
+            "abuse@godaddy.com"
+          ],
+          "whois_name_servers": [
+            "ns53.domaincontrol.com",
+            "ns54.domaincontrol.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
+          ],
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effw.org",
+            "timestamp": "2025-10-23T03:45:29.411697",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e401-7158-a00e-0fe304ba0dbe/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 6,
+              "most_recent": {
+                "issuer": "C=US, ST=Arizona, L=Scottsdale, O=\"GoDaddy.com, Inc.\", OU=http://certs.godaddy.com/repository/, CN=Go Daddy Secure Certificate Authority - G2",
+                "not_before": "2025-07-08T03:13:53",
+                "not_after": "2026-07-08T03:13:53",
+                "common_name": "www.effw.org"
+              },
+              "all_names": [
+                "www.effw.org",
+                "www.effw.org",
+                "dallasloftsforsale.com",
+                "dallasloftsforsale.com",
+                "www.effw.org",
+                "effw.org"
+              ]
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": null
+            }
+          },
+          "risk_score": 35
         },
         {
           "fuzzer": "addition",
@@ -84,7 +640,6 @@
           "dns_mx": [
             "mx1.dreamhost.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2015-02-04"
           ],
@@ -109,13 +664,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "effg.org",
-            "timestamp": "2025-10-23T03:29:37.994002",
+            "timestamp": "2025-10-23T03:45:29.411712",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e3eb-75f6-9721-2fc3c4dbbfdd/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -145,9 +700,6 @@
           "dns_aaaa": [
             "2a0b:5c81:4:800::228"
           ],
-          "dns_mx": [
-            "kiiski.tarvainen.info"
-          ],
           "whois_created": [
             "2001-09-06"
           ],
@@ -172,18 +724,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "effi.org",
-            "timestamp": "2025-10-23T03:29:37.994040",
+            "timestamp": "2025-10-23T03:45:46.981408",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e401-7158-a00e-096c7396b10d/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "http_429"
+              "status": "timeout"
             },
             "http_probe": {
               "http_active": true,
@@ -236,13 +788,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "effd.org",
-            "timestamp": "2025-10-23T03:29:37.994055",
+            "timestamp": "2025-10-23T03:45:46.981428",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e757-708f-beff-3d9db795509f/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -272,7 +824,6 @@
           "dns_mx": [
             "mail.protonmail.ch"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2021-07-08",
             "2021-07-08"
@@ -300,13 +851,13 @@
           "whois_country": "IS",
           "threat_intel": {
             "domain": "effp.org",
-            "timestamp": "2025-10-23T03:29:37.994071",
+            "timestamp": "2025-10-23T03:45:46.981445",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e22f-72a9-ae63-f3d67c8b6b11/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -364,13 +915,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efft.org",
-            "timestamp": "2025-10-23T03:29:37.994113",
+            "timestamp": "2025-10-23T03:45:46.981480",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e41e-7254-91fb-c9f53280e0ac/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -400,7 +951,6 @@
           "dns_mx": [
             "effc-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1998-08-13"
           ],
@@ -426,18 +976,18 @@
           "whois_country": "GB",
           "threat_intel": {
             "domain": "effc.org",
-            "timestamp": "2025-10-23T03:29:37.994131",
+            "timestamp": "2025-10-23T03:45:46.981496",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e3eb-75f6-9721-296611a66a39/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_429"
             },
             "http_probe": {
               "http_active": true,
@@ -465,7 +1015,6 @@
           "dns_mx": [
             "mx.mymagenta.business"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2000-04-17"
           ],
@@ -489,13 +1038,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "effs.org",
-            "timestamp": "2025-10-23T03:29:37.994146",
+            "timestamp": "2025-10-23T03:45:46.981512",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e313-768b-9dca-8d47edc552d9/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -548,13 +1097,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efn.org",
-            "timestamp": "2025-10-23T03:29:55.980883",
+            "timestamp": "2025-10-23T03:46:05.108342",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7f0d-71cb-9415-fb1b2dbec4f7/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -609,13 +1158,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efb.org",
-            "timestamp": "2025-10-23T03:29:55.980956",
+            "timestamp": "2025-10-23T03:46:05.108445",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7de8-7303-ab52-b42aa5c59eb8/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -670,13 +1219,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efv.org",
-            "timestamp": "2025-10-23T03:29:55.980973",
+            "timestamp": "2025-10-23T03:46:05.108482",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7dcf-70c5-b569-1ee87747ed32/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -731,13 +1280,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "evf.org",
-            "timestamp": "2025-10-23T03:29:55.980989",
+            "timestamp": "2025-10-23T03:46:05.108510",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7e17-7768-8bf4-5920ed3eff5b/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -767,7 +1316,6 @@
           "dns_mx": [
             "edf-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1991-08-27"
           ],
@@ -793,13 +1341,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "edf.org",
-            "timestamp": "2025-10-23T03:29:55.981004",
+            "timestamp": "2025-10-23T03:46:05.108530",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7c69-73e3-b8fe-2f7e98269e72/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -854,13 +1402,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "ebf.org",
-            "timestamp": "2025-10-23T03:29:55.981020",
+            "timestamp": "2025-10-23T03:46:05.108547",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7ec8-7669-a964-986c4e7acf9f/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -880,6 +1428,74 @@
         },
         {
           "fuzzer": "bitsquatting",
+          "domain": "aff.org",
+          "dns_ns": [
+            "ns-cloud-b1.googledomains.com"
+          ],
+          "dns_a": [
+            "198.185.159.145"
+          ],
+          "dns_mx": [
+            "alt1.aspmx.l.google.com"
+          ],
+          "whois_created": [
+            "1996-12-03",
+            "1996-12-03"
+          ],
+          "whois_updated": [
+            "2025-07-17",
+            "2024-11-17"
+          ],
+          "whois_expires": [
+            "2025-12-02"
+          ],
+          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_org": null,
+          "whois_registrar": "Squarespace Domains II LLC",
+          "whois_emails": [
+            "abuse-complaints@squarespace.com"
+          ],
+          "whois_name_servers": [
+            "ns-cloud-b1.googledomains.com",
+            "ns-cloud-b4.googledomains.com",
+            "ns-cloud-b2.googledomains.com",
+            "ns-cloud-b3.googledomains.com"
+          ],
+          "whois_status": [
+            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
+            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+            "client delete prohibited http://www.icann.org/epp#client delete prohibited",
+            "client transfer prohibited http://www.icann.org/epp#client transfer prohibited"
+          ],
+          "whois_country": "US",
+          "threat_intel": {
+            "domain": "aff.org",
+            "timestamp": "2025-10-23T03:46:05.108566",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7df0-75c7-b77a-eea04c429cbc/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": false,
+              "http_status": 200,
+              "https_status": null,
+              "redirects_to": "https://www.americasfrontier.com/",
+              "title": "America&#x27;s Frontier Fund"
+            }
+          },
+          "risk_score": 30
+        },
+        {
+          "fuzzer": "bitsquatting",
           "domain": "mff.org",
           "dns_ns": [
             "ns-1503.awsdns-59.org"
@@ -890,7 +1506,6 @@
           "dns_mx": [
             "mxa-001b2501.gslb.pphosted.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1996-03-06"
           ],
@@ -918,13 +1533,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "mff.org",
-            "timestamp": "2025-10-23T03:30:01.747352",
+            "timestamp": "2025-10-23T03:46:16.135657",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-04ff-77f8-868e-a897070df9d6/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -954,7 +1569,6 @@
           "dns_mx": [
             "mx1.hc2314-6.iphmx.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2003-04-23"
           ],
@@ -980,13 +1594,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "gff.org",
-            "timestamp": "2025-10-23T03:30:01.747392",
+            "timestamp": "2025-10-23T03:46:16.135695",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-055b-768d-800e-5ba9486c052e/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1040,13 +1654,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efd.org",
-            "timestamp": "2025-10-23T03:30:01.747409",
+            "timestamp": "2025-10-23T03:46:16.135712",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-0cb0-71e9-b257-17dd559356a3/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1072,9 +1686,6 @@
           ],
           "dns_a": [
             "151.101.1.193"
-          ],
-          "dns_mx": [
-            "esa1.hc2873-2.iphmx.com"
           ],
           "whois_created": [
             "1996-08-13"
@@ -1103,13 +1714,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "cff.org",
-            "timestamp": "2025-10-23T03:30:01.747427",
+            "timestamp": "2025-10-23T03:46:16.135729",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/0199e955-f420-768a-b119-8ac0c20f0c85/",
               "scan_age_days": 7
             },
             "certificate_transparency": {
@@ -1167,13 +1778,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efgf.org",
-            "timestamp": "2025-10-23T03:30:11.150232",
+            "timestamp": "2025-10-23T03:46:30.625439",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-ba86-760b-9837-26852093f1ea/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1206,7 +1817,6 @@
           "dns_mx": [
             "mail2-in.beebyte.se"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1999-12-23"
           ],
@@ -1236,18 +1846,18 @@
           "whois_country": "SE",
           "threat_intel": {
             "domain": "seff.org",
-            "timestamp": "2025-10-23T03:30:11.150267",
+            "timestamp": "2025-10-23T03:46:30.625474",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0f08-3a47-74da-b815-79bd2c6a53fa/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_429"
             },
             "http_probe": {
               "http_active": true,
@@ -1300,18 +1910,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "edff.org",
-            "timestamp": "2025-10-23T03:30:11.150284",
+            "timestamp": "2025-10-23T03:46:30.625492",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-bb49-73d9-8f98-ce29b960db8f/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "http_429"
+              "status": "timeout"
             },
             "http_probe": {
               "http_active": true,
@@ -1361,13 +1971,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "eftf.org",
-            "timestamp": "2025-10-23T03:30:11.150300",
+            "timestamp": "2025-10-23T03:46:30.625508",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-b9d9-77de-83a4-b91ba67b7175/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1421,13 +2031,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "deff.org",
-            "timestamp": "2025-10-23T03:30:11.150317",
+            "timestamp": "2025-10-23T03:46:30.625524",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-bca6-7444-883c-6b62c6c6ded9/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1485,13 +2095,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efrf.org",
-            "timestamp": "2025-10-23T03:30:28.974236",
+            "timestamp": "2025-10-23T03:46:47.990943",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8a79-7700-b87e-dbc038635bfc/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1503,7 +2113,7 @@
               "https_active": true,
               "http_status": 200,
               "https_status": 200,
-              "redirects_to": "https://sedo.com/search/details/?partnerid=324561&language=us&domain=efrf.org&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage",
+              "redirects_to": "https://sedo.com/search/details/?partnerid=324561&language=pl&domain=efrf.org&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage",
               "title": "Domain Details Page"
             }
           },
@@ -1521,7 +2131,6 @@
           "dns_mx": [
             "w0066a93.kasserver.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2000-09-04"
           ],
@@ -1545,13 +2154,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efdf.org",
-            "timestamp": "2025-10-23T03:30:28.974267",
+            "timestamp": "2025-10-23T03:46:47.990980",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8849-706c-922f-17855f30ae54/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1581,7 +2190,6 @@
           "dns_mx": [
             "d161249a.ess.barracudanetworks.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1994-08-16"
           ],
@@ -1612,13 +2220,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "ef.org",
-            "timestamp": "2025-10-23T03:30:28.974303",
+            "timestamp": "2025-10-23T03:46:47.991020",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8b07-752c-820d-d21eee477605/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1672,13 +2280,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "eeff.org",
-            "timestamp": "2025-10-23T03:30:28.974334",
+            "timestamp": "2025-10-23T03:46:47.991056",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8a43-7335-bd8c-4d9c120e53df/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1711,7 +2319,6 @@
           "dns_mx": [
             "ecf-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2001-10-24"
           ],
@@ -1740,13 +2347,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "ecf.org",
-            "timestamp": "2025-10-23T03:30:28.974350",
+            "timestamp": "2025-10-23T03:46:47.991075",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8b0e-7355-9530-542b8cb0bd30/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1779,7 +2386,6 @@
           "dns_mx": [
             "rff-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1994-04-22"
           ],
@@ -1805,13 +2411,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "rff.org",
-            "timestamp": "2025-10-23T03:30:28.974379",
+            "timestamp": "2025-10-23T03:46:47.991111",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8bcc-727c-ad7f-605ab4b43728/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1841,7 +2447,6 @@
           "dns_mx": [
             "efc-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1996-02-11"
           ],
@@ -1867,18 +2472,18 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "efc.org",
-            "timestamp": "2025-10-23T03:30:52.969367",
+            "timestamp": "2025-10-23T03:47:11.994898",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-53c0-715e-b25c-e6b3d473bb6b/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "http_429"
+              "status": "timeout"
             },
             "http_probe": {
               "http_active": true,
@@ -1903,7 +2508,6 @@
           "dns_mx": [
             "etf-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1995-10-03"
           ],
@@ -1929,13 +2533,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "etf.org",
-            "timestamp": "2025-10-23T03:30:52.969453",
+            "timestamp": "2025-10-23T03:47:11.994983",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-5649-716b-8698-c463be478254/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -1965,7 +2569,6 @@
           "dns_mx": [
             "zff-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1998-05-11"
           ],
@@ -1992,13 +2595,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "zff.org",
-            "timestamp": "2025-10-23T03:30:52.969469",
+            "timestamp": "2025-10-23T03:47:11.995000",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-5328-767c-954b-2d2892991ffe/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -2060,18 +2663,18 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "efforg.com",
-            "timestamp": "2025-10-23T03:30:52.969522",
+            "timestamp": "2025-10-23T03:47:11.995049",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-5675-7457-baaa-c8c283b60a07/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_429"
             },
             "http_probe": {
               "http_active": true,
@@ -2096,7 +2699,6 @@
           "dns_mx": [
             "iff-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2001-11-14"
           ],
@@ -2127,13 +2729,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "iff.org",
-            "timestamp": "2025-10-23T03:30:52.969536",
+            "timestamp": "2025-10-23T03:47:11.995064",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-555d-73bf-adc2-84e521945f1a/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -2150,317 +2752,6 @@
             }
           },
           "risk_score": 30
-        },
-        {
-          "fuzzer": "vowel-swap",
-          "domain": "off.org",
-          "dns_ns": [
-            "dante.ns.cloudflare.com"
-          ],
-          "dns_a": [
-            "3.34.29.177"
-          ],
-          "whois_created": [
-            "1997-08-01"
-          ],
-          "whois_updated": [
-            "2025-09-23"
-          ],
-          "whois_expires": [
-            "2031-07-31"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "GoDaddy.com, LLC",
-          "whois_emails": [
-            "abuse@godaddy.com"
-          ],
-          "whois_name_servers": [
-            "dante.ns.cloudflare.com",
-            "princess.ns.cloudflare.com"
-          ],
-          "whois_status": [
-            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
-            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
-            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
-          ],
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "off.org",
-            "timestamp": "2025-10-23T03:31:16.989319",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "http_429"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": "https://off.org/",
-              "title": "OFF.org"
-            }
-          },
-          "risk_score": 30
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effu.org",
-          "dns_ns": [
-            "ns1.messagingengine.com"
-          ],
-          "dns_a": [
-            "103.168.172.37"
-          ],
-          "dns_mx": [
-            "in1-smtp.messagingengine.com"
-          ],
-          "mx_spy": true,
-          "whois_created": [
-            "2019-01-17",
-            "2019-01-17"
-          ],
-          "whois_updated": [
-            "2024-01-13",
-            "2024-01-08"
-          ],
-          "whois_expires": [
-            "2026-01-17",
-            "2026-01-17"
-          ],
-          "whois_registrant": "Redacted for Privacy",
-          "whois_org": "Privacy service provided by Withheld for Privacy ehf",
-          "whois_registrar": "NAMECHEAP INC",
-          "whois_emails": [
-            "abuse@namecheap.com",
-            "7f079307da8f44a78cb2147aeb3bb0a3.protect@withheldforprivacy.com"
-          ],
-          "whois_name_servers": [
-            "ns1.messagingengine.com",
-            "ns2.messagingengine.com"
-          ],
-          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-          "whois_country": "IS",
-          "threat_intel": {
-            "domain": "effu.org",
-            "timestamp": "2025-10-23T03:29:20.844719",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "timeout"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": false,
-              "http_status": 404,
-              "https_status": null,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effv.org",
-          "dns_ns": [
-            "desi.ns.cloudflare.com"
-          ],
-          "dns_a": [
-            "104.21.81.33"
-          ],
-          "dns_aaaa": [
-            "2606:4700:3031::6815:5121"
-          ],
-          "dns_mx": [
-            "mx01.mail.icloud.com"
-          ],
-          "mx_spy": true,
-          "whois_created": [
-            "2025-07-11"
-          ],
-          "whois_updated": [
-            "2025-07-16"
-          ],
-          "whois_expires": [
-            "2026-07-11"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "Cloudflare, Inc.",
-          "whois_emails": [
-            "registrar-abuse@cloudflare.com"
-          ],
-          "whois_name_servers": [
-            "desi.ns.cloudflare.com",
-            "merlin.ns.cloudflare.com"
-          ],
-          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effv.org",
-            "timestamp": "2025-10-23T03:29:20.844740",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "http_404"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": "Cloudflare"
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effa.org",
-          "dns_ns": [
-            "ns1.afternic.com"
-          ],
-          "dns_a": [
-            "13.248.169.48"
-          ],
-          "dns_mx": [
-            ""
-          ],
-          "whois_created": [
-            "1997-12-31"
-          ],
-          "whois_updated": [
-            "2025-02-13"
-          ],
-          "whois_expires": [
-            "2025-12-30"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "Network Solutions, LLC",
-          "whois_emails": [
-            "domain.operations@web.com"
-          ],
-          "whois_name_servers": [
-            "ns1.afternic.com",
-            "ns2.afternic.com"
-          ],
-          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effa.org",
-            "timestamp": "2025-10-23T03:29:20.844755",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "http_404"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effe.org",
-          "dns_ns": [
-            "ns1.afternic.com"
-          ],
-          "dns_a": [
-            "13.248.169.48"
-          ],
-          "dns_mx": [
-            ""
-          ],
-          "whois_created": [
-            "2003-08-02"
-          ],
-          "whois_updated": [
-            "2025-09-16"
-          ],
-          "whois_expires": [
-            "2026-08-02"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "GoDaddy Online Services Cayman Islands Ltd.",
-          "whois_emails": [
-            "abuse@uniregistry.com"
-          ],
-          "whois_name_servers": [
-            "ns1.afternic.com",
-            "ns2.afternic.com"
-          ],
-          "whois_status": [
-            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
-            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
-            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
-          ],
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effe.org",
-            "timestamp": "2025-10-23T03:29:20.844770",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "http_429"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
         },
         {
           "fuzzer": "addition",
@@ -2502,268 +2793,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efff.org",
-            "timestamp": "2025-10-23T03:29:20.844784",
+            "timestamp": "2025-10-23T03:45:29.411632",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-74f9-732f-8c14-3d675ca64ff9/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effn.org",
-          "dns_ns": [
-            "ns1.afternic.com"
-          ],
-          "dns_a": [
-            "13.248.169.48"
-          ],
-          "dns_mx": [
-            ""
-          ],
-          "whois_created": [
-            "2025-05-11"
-          ],
-          "whois_updated": [
-            "2025-09-16"
-          ],
-          "whois_expires": [
-            "2026-05-11"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "Dynadot Inc",
-          "whois_emails": [
-            "abuse@dynadot.com"
-          ],
-          "whois_name_servers": [
-            "ns1.afternic.com",
-            "ns2.afternic.com",
-            "verification-ndzevshmc6qrwu5uexsxir.ns101.verify.hn"
-          ],
-          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effn.org",
-            "timestamp": "2025-10-23T03:29:20.844799",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "timeout"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effx.org",
-          "dns_ns": [
-            "ns5.afternic.com"
-          ],
-          "dns_a": [
-            "13.248.169.48"
-          ],
-          "dns_mx": [
-            ""
-          ],
-          "whois_created": [
-            "2018-03-19"
-          ],
-          "whois_updated": [
-            "2025-04-19"
-          ],
-          "whois_expires": [
-            "2027-03-19"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "GoDaddy.com, LLC",
-          "whois_emails": [
-            "abuse@godaddy.com"
-          ],
-          "whois_name_servers": [
-            "ns5.afternic.com",
-            "ns6.afternic.com"
-          ],
-          "whois_status": [
-            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
-            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
-            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
-          ],
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effx.org",
-            "timestamp": "2025-10-23T03:29:20.844817",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "timeout"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effo.org",
-          "dns_ns": [
-            "ns39.domaincontrol.com"
-          ],
-          "dns_a": [
-            "15.197.148.33"
-          ],
-          "whois_created": [
-            "2020-10-30"
-          ],
-          "whois_updated": [
-            "2024-12-14"
-          ],
-          "whois_expires": [
-            "2025-10-30"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "GoDaddy.com, LLC",
-          "whois_emails": [
-            "abuse@godaddy.com"
-          ],
-          "whois_name_servers": [
-            "ns39.domaincontrol.com",
-            "ns40.domaincontrol.com"
-          ],
-          "whois_status": [
-            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
-            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
-            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
-          ],
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effo.org",
-            "timestamp": "2025-10-23T03:29:20.844851",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "timeout"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": true,
-              "http_status": 200,
-              "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "addition",
-          "domain": "effw.org",
-          "dns_ns": [
-            "ns53.domaincontrol.com"
-          ],
-          "dns_a": [
-            "15.197.148.33"
-          ],
-          "dns_mx": [
-            "effw.org.mx1.fulcrumgroup.rcimx.net"
-          ],
-          "mx_spy": true,
-          "whois_created": [
-            "2008-03-06"
-          ],
-          "whois_updated": [
-            "2025-04-20"
-          ],
-          "whois_expires": [
-            "2028-03-06"
-          ],
-          "whois_registrant": null,
-          "whois_org": null,
-          "whois_registrar": "GoDaddy.com, LLC",
-          "whois_emails": [
-            "abuse@godaddy.com"
-          ],
-          "whois_name_servers": [
-            "ns53.domaincontrol.com",
-            "ns54.domaincontrol.com"
-          ],
-          "whois_status": [
-            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
-            "clientRenewProhibited https://icann.org/epp#clientRenewProhibited",
-            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-            "clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited"
-          ],
-          "whois_country": null,
-          "threat_intel": {
-            "domain": "effw.org",
-            "timestamp": "2025-10-23T03:29:37.993969",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_502"
             },
             "http_probe": {
               "http_active": true,
@@ -2788,7 +2829,6 @@
           "dns_mx": [
             "mail.cluster-team.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "2000-07-18"
           ],
@@ -2818,13 +2858,13 @@
           "whois_country": "DE",
           "threat_intel": {
             "domain": "effb.org",
-            "timestamp": "2025-10-23T03:29:37.994022",
+            "timestamp": "2025-10-23T03:45:46.981377",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e912-74cc-a534-2e3227278d77/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -2878,13 +2918,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "eff4.org",
-            "timestamp": "2025-10-23T03:29:37.994096",
+            "timestamp": "2025-10-23T03:45:46.981462",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ede-e289-7346-a3b1-39c43c723c04/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -2898,6 +2938,65 @@
               "https_status": null,
               "redirects_to": null,
               "title": "Hello, this domain has been purchased at Hostpoint"
+            }
+          },
+          "risk_score": 25
+        },
+        {
+          "fuzzer": "addition",
+          "domain": "effv.org",
+          "dns_ns": [
+            "desi.ns.cloudflare.com"
+          ],
+          "dns_aaaa": [
+            "2606:4700:3031::6815:5121"
+          ],
+          "dns_mx": [
+            "mx01.mail.icloud.com"
+          ],
+          "whois_created": [
+            "2025-07-11"
+          ],
+          "whois_updated": [
+            "2025-07-16"
+          ],
+          "whois_expires": [
+            "2026-07-11"
+          ],
+          "whois_registrant": null,
+          "whois_org": null,
+          "whois_registrar": "Cloudflare, Inc.",
+          "whois_emails": [
+            "registrar-abuse@cloudflare.com"
+          ],
+          "whois_name_servers": [
+            "desi.ns.cloudflare.com",
+            "merlin.ns.cloudflare.com"
+          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+          "whois_country": null,
+          "threat_intel": {
+            "domain": "effv.org",
+            "timestamp": "2025-10-23T03:45:46.981544",
+            "urlscan": {
+              "malicious": false,
+              "score": 0,
+              "categories": [],
+              "screenshot": null,
+              "report_url": "https://urlscan.io/result/019a0ede-715d-74bd-ae07-e05b821fa523/",
+              "scan_age_days": 0
+            },
+            "certificate_transparency": {
+              "certificates_found": 0,
+              "status": "http_429"
+            },
+            "http_probe": {
+              "http_active": true,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
+              "redirects_to": null,
+              "title": "Cloudflare"
             }
           },
           "risk_score": 25
@@ -2942,13 +3041,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "enf.org",
-            "timestamp": "2025-10-23T03:29:55.980916",
+            "timestamp": "2025-10-23T03:46:05.108374",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7dcf-70c5-b569-1a6f16ca4707/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3006,13 +3105,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "egf.org",
-            "timestamp": "2025-10-23T03:29:55.980937",
+            "timestamp": "2025-10-23T03:46:05.108400",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7d30-7781-945b-4d2fcf0d128b/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3032,55 +3131,45 @@
         },
         {
           "fuzzer": "bitsquatting",
-          "domain": "aff.org",
-          "dns_ns": [
-            "ns-cloud-b1.googledomains.com"
-          ],
+          "domain": "dff.org",
           "dns_a": [
-            "198.185.159.145"
-          ],
-          "dns_mx": [
-            "alt1.aspmx.l.google.com"
+            "199.59.243.228"
           ],
           "whois_created": [
-            "1996-12-03",
-            "1996-12-03"
+            "2001-01-26"
           ],
           "whois_updated": [
-            "2025-07-17",
-            "2024-11-17"
+            "2025-02-28",
+            "2024-01-28"
           ],
           "whois_expires": [
-            "2025-12-02"
+            "2034-01-26"
           ],
-          "whois_registrant": "REDACTED FOR PRIVACY",
+          "whois_registrant": "PERFECT PRIVACY, LLC",
           "whois_org": null,
-          "whois_registrar": "Squarespace Domains II LLC",
+          "whois_registrar": "Network Solutions, LLC",
           "whois_emails": [
-            "abuse-complaints@squarespace.com"
+            "domain.operations@web.com",
+            "pe74p6yn9ys@networksolutionsprivateregistration.com"
           ],
           "whois_name_servers": [
-            "ns-cloud-b1.googledomains.com",
-            "ns-cloud-b4.googledomains.com",
-            "ns-cloud-b2.googledomains.com",
-            "ns-cloud-b3.googledomains.com"
+            "dns1.zoneedit.com",
+            "dns2.zoneedit.com",
+            "dns3.zoneedit.com",
+            "ns7.worldnic.com",
+            "ns8.worldnic.com"
           ],
-          "whois_status": [
-            "clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited",
-            "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-            "client delete prohibited http://www.icann.org/epp#client delete prohibited",
-            "client transfer prohibited http://www.icann.org/epp#client transfer prohibited"
-          ],
+          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
           "whois_country": "US",
           "threat_intel": {
-            "domain": "aff.org",
-            "timestamp": "2025-10-23T03:29:55.981036",
+            "domain": "dff.org",
+            "timestamp": "2025-10-23T03:46:05.108582",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-07a6-748c-a314-42eb1abebd19/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3089,9 +3178,9 @@
             },
             "http_probe": {
               "http_active": true,
-              "https_active": false,
-              "http_status": 403,
-              "https_status": null,
+              "https_active": true,
+              "http_status": 200,
+              "https_status": 200,
               "redirects_to": null,
               "title": null
             }
@@ -3130,13 +3219,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "uff.org",
-            "timestamp": "2025-10-23T03:29:55.981051",
+            "timestamp": "2025-10-23T03:46:16.135625",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0edf-7e68-743f-8af4-5fc44d66fa39/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3148,67 +3237,6 @@
               "https_active": true,
               "http_status": 200,
               "https_status": 200,
-              "redirects_to": null,
-              "title": null
-            }
-          },
-          "risk_score": 25
-        },
-        {
-          "fuzzer": "bitsquatting",
-          "domain": "dff.org",
-          "dns_ns": [
-            "ns7.worldnic.com"
-          ],
-          "dns_a": [
-            "208.91.197.27"
-          ],
-          "whois_created": [
-            "2001-01-26"
-          ],
-          "whois_updated": [
-            "2025-02-28",
-            "2024-01-28"
-          ],
-          "whois_expires": [
-            "2034-01-26"
-          ],
-          "whois_registrant": "PERFECT PRIVACY, LLC",
-          "whois_org": null,
-          "whois_registrar": "Network Solutions, LLC",
-          "whois_emails": [
-            "domain.operations@web.com",
-            "pe74p6yn9ys@networksolutionsprivateregistration.com"
-          ],
-          "whois_name_servers": [
-            "dns1.zoneedit.com",
-            "dns2.zoneedit.com",
-            "dns3.zoneedit.com",
-            "ns7.worldnic.com",
-            "ns8.worldnic.com"
-          ],
-          "whois_status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
-          "whois_country": "US",
-          "threat_intel": {
-            "domain": "dff.org",
-            "timestamp": "2025-10-23T03:30:01.747318",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
-            "certificate_transparency": {
-              "certificates_found": 0,
-              "status": "http_429"
-            },
-            "http_probe": {
-              "http_active": true,
-              "https_active": false,
-              "http_status": 200,
-              "https_status": null,
               "redirects_to": null,
               "title": null
             }
@@ -3247,13 +3275,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efg.org",
-            "timestamp": "2025-10-23T03:30:01.747373",
+            "timestamp": "2025-10-23T03:46:16.135678",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-087b-76fe-add5-09949df058c2/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3306,13 +3334,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "e-ff.org",
-            "timestamp": "2025-10-23T03:30:01.747443",
+            "timestamp": "2025-10-23T03:46:16.135745",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-0872-7693-82b1-2691d64303b2/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3365,13 +3393,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "ecff.org",
-            "timestamp": "2025-10-23T03:30:01.747460",
+            "timestamp": "2025-10-23T03:46:16.135761",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-050e-768f-a9e6-7e90989160cf/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3429,15 +3457,8 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "efcf.org",
-            "timestamp": "2025-10-23T03:30:01.747475",
-            "urlscan": {
-              "malicious": false,
-              "score": 0,
-              "categories": [],
-              "screenshot": null,
-              "report_url": null,
-              "scan_age_days": 0
-            },
+            "timestamp": "2025-10-23T03:46:16.135777",
+            "urlscan": null,
             "certificate_transparency": {
               "certificates_found": 0,
               "status": "http_429"
@@ -3494,13 +3515,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "esff.org",
-            "timestamp": "2025-10-23T03:30:01.747492",
+            "timestamp": "2025-10-23T03:46:16.135792",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-078e-72aa-9eae-f88de8b6b91c/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3559,18 +3580,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "reff.org",
-            "timestamp": "2025-10-23T03:30:11.150171",
+            "timestamp": "2025-10-23T03:46:30.625389",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-c719-76ca-9f5f-edcb09e26d42/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "http_429"
+              "status": "timeout"
             },
             "http_probe": {
               "http_active": true,
@@ -3623,18 +3644,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "weff.org",
-            "timestamp": "2025-10-23T03:30:11.150203",
+            "timestamp": "2025-10-23T03:46:30.625421",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-c749-7344-8f60-44d8db00bbdf/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "http_429"
+              "status": "timeout"
             },
             "http_probe": {
               "http_active": true,
@@ -3682,13 +3703,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "egff.org",
-            "timestamp": "2025-10-23T03:30:11.150333",
+            "timestamp": "2025-10-23T03:46:30.625540",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-c59c-7212-b9bb-e07ce2b0a339/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3747,13 +3768,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "zeff.org",
-            "timestamp": "2025-10-23T03:30:11.150358",
+            "timestamp": "2025-10-23T03:46:30.625556",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-c7d8-7484-8bfe-65f83ffbb4bc/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3786,7 +3807,6 @@
           "dns_mx": [
             "ff-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1996-05-18"
           ],
@@ -3815,13 +3835,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "ff.org",
-            "timestamp": "2025-10-23T03:30:28.974318",
+            "timestamp": "2025-10-23T03:46:47.991038",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8bc7-76fe-b799-9740f362b525/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3880,13 +3900,13 @@
           "whois_country": "US",
           "threat_intel": {
             "domain": "efr.org",
-            "timestamp": "2025-10-23T03:30:28.974396",
+            "timestamp": "2025-10-23T03:46:47.991128",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-8b07-752c-820d-cc090aeea7d8/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -3916,7 +3936,6 @@
           "dns_mx": [
             "sff-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1995-05-28"
           ],
@@ -3940,18 +3959,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "sff.org",
-            "timestamp": "2025-10-23T03:30:52.969400",
+            "timestamp": "2025-10-23T03:47:11.994930",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-58f8-71dd-9af3-116c6355624d/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_429"
             },
             "http_probe": {
               "http_active": true,
@@ -3999,18 +4018,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "4ff.org",
-            "timestamp": "2025-10-23T03:30:52.969419",
+            "timestamp": "2025-10-23T03:47:11.994949",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-531c-731c-8d0f-e06dee9801c1/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "http_429"
+              "status": "timeout"
             },
             "http_probe": {
               "http_active": true,
@@ -4055,18 +4074,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "eft.org",
-            "timestamp": "2025-10-23T03:30:52.969486",
+            "timestamp": "2025-10-23T03:47:11.995016",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-574c-72d3-8f84-e42617a2c802/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_429"
             },
             "http_probe": {
               "http_active": true,
@@ -4083,9 +4102,6 @@
           "fuzzer": "addition",
           "domain": "effl.org",
           "dns_ns": [
-            "!ServFail"
-          ],
-          "dns_a": [
             "!ServFail"
           ],
           "dns_aaaa": [
@@ -4114,8 +4130,11 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "effl.org",
-            "timestamp": "2025-10-23T03:29:20.844692",
-            "urlscan": null,
+            "timestamp": "2025-10-23T03:45:46.981528",
+            "urlscan": {
+              "status": "submission_failed",
+              "error": "DNS Error - Could not resolve domain"
+            },
             "certificate_transparency": {
               "certificates_found": 0,
               "status": "http_429"
@@ -4164,13 +4183,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "ewff.org",
-            "timestamp": "2025-10-23T03:30:11.150250",
+            "timestamp": "2025-10-23T03:46:30.625457",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee0-bc88-7190-a2de-46a70a29419d/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -4221,13 +4240,13 @@
           "whois_country": "IS",
           "threat_intel": {
             "domain": "etff.org",
-            "timestamp": "2025-10-23T03:30:28.974286",
+            "timestamp": "2025-10-23T03:46:47.991002",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-904a-762e-a3f6-1b568ece4bff/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -4250,10 +4269,6 @@
           "dns_aaaa": [
             "2606:4700:3033::6815:37e5"
           ],
-          "dns_mx": [
-            "wff-org.mail.protection.outlook.com"
-          ],
-          "mx_spy": true,
           "whois_created": [
             "1997-11-04"
           ],
@@ -4282,13 +4297,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "wff.org",
-            "timestamp": "2025-10-23T03:30:28.974364",
+            "timestamp": "2025-10-23T03:46:47.991093",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee1-909b-76fa-8ed5-1ae1fcb55995/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
@@ -4334,18 +4349,18 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "erf.org",
-            "timestamp": "2025-10-23T03:30:52.969437",
+            "timestamp": "2025-10-23T03:47:11.994966",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-56ec-73f1-9f3d-c6e197f8fae1/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
               "certificates_found": 0,
-              "status": "timeout"
+              "status": "http_429"
             },
             "http_probe": null
           },
@@ -4363,7 +4378,6 @@
           "dns_mx": [
             "fef-org.mail.protection.outlook.com"
           ],
-          "mx_spy": true,
           "whois_created": [
             "1996-03-11"
           ],
@@ -4393,13 +4407,13 @@
           "whois_country": null,
           "threat_intel": {
             "domain": "fef.org",
-            "timestamp": "2025-10-23T03:30:52.969501",
+            "timestamp": "2025-10-23T03:47:11.995032",
             "urlscan": {
               "malicious": false,
               "score": 0,
               "categories": [],
               "screenshot": null,
-              "report_url": null,
+              "report_url": "https://urlscan.io/result/019a0ee2-56ec-73f1-9f3d-cbf77186ccda/",
               "scan_age_days": 0
             },
             "certificate_transparency": {
