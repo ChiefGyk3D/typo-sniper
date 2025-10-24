@@ -8,8 +8,19 @@
 **Advanced Domain Typosquatting Detection Tool**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: Mozilla Public License 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+[![License: MPL 2.0 & Commercial](https://img.shields.io/badge/License-MPL%202.0%20%7C%20Commercial-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 [![Version](https://img.shields.io/badge/version-1.1-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
+
+
+---
+
+## License
+
+Typo Sniper is available under a dual-license model:
+
+- **Open Source License:** Mozilla Public License 2.0 (MPL 2.0)
+- **Commercial License:** Available for organizations that cannot comply with MPL 2.0 terms.
+  For commercial licensing inquiries, please contact: licensing@yourdomain.com
 
 Detect and monitor typosquatting domains targeting your brand with powerful automation, threat intelligence, and beautiful reporting.
 
