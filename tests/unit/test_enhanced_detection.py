@@ -26,9 +26,11 @@ class TestSplitDomain:
 class TestComboSquats:
     def test_generates_both_orderings(self):
         variants = ComboSquattingDetector.generate_combosquats('example.com', ['login'])
-        assert 'example-login.com' in variants
-        assert 'login-example.com' in variants
-        assert 'examplelogin.com' in variants
+        assert {
+            'example-login.com',
+            'login-example.com',
+            'examplelogin.com',
+        } <= variants
 
     def test_never_emits_underscores(self):
         """Underscores are invalid in hostnames and can never resolve."""

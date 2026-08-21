@@ -103,7 +103,8 @@ class TestPrintSummary:
     def test_runs_with_results(self, sniper, sample_results, capsys):
         sniper.results = sample_results
         sniper.print_summary()
-        assert 'example.com' in capsys.readouterr().out
+        rendered = capsys.readouterr().out.split()
+        assert 'example.com' in rendered
 
     def test_runs_with_no_results(self, sniper, capsys):
         sniper.print_summary()

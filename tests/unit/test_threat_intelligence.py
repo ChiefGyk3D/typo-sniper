@@ -131,3 +131,64 @@ class TestAnalyzeDomain:
         assert report['urlscan'] is None
         # Timestamp must be timezone-aware (utcnow() was deprecated)
         assert datetime.fromisoformat(report['timestamp']).tzinfo is not None
+
+
+class TestTlsProbeFallback:
+    """The probe validates certificates first and records the outcome."""
+
+    @pytest.mark.asyncio
+    async def test_verified_https_is_marked_verified(self, intel, monkeypatch):
+        calls = []
+
+        async def fake_fetch(url, verify_tls):
+            calls.append(verify_tls)
+            return {'status': 200, 'redirects_to': None, 'title': None}
+
+        monkeypatch.setattr(intel, '_fetch', fake_fetch)
+        result = await intel._probe_scheme('https://evil.com')
+
+        assert result['tls_verified'] is True
+        assert calls == [True]  # no unverified retry when the first attempt works
+
+    @pytest.mark.asyncio
+    async def test_falls_back_unverified_and_flags_it(self, intel, monkeypatch):
+        calls = []
+
+        async def fake_fetch(url, verify_tls):
+            calls.append(verify_tls)
+            if verify_tls:
+                return None
+            return {'status': 200, 'redirects_to': None, 'title': None}
+
+        monkeypatch.setattr(intel, '_fetch', fake_fetch)
+        result = await intel._probe_scheme('https://evil.com')
+
+        assert result['tls_verified'] is False
+        assert calls == [True, False]
+
+    @pytest.mark.asyncio
+    async def test_fallback_can_be_disabled(self, intel, monkeypatch):
+        intel.config.http_allow_invalid_certs = False
+        calls = []
+
+        async def fake_fetch(url, verify_tls):
+            calls.append(verify_tls)
+            return None
+
+        monkeypatch.setattr(intel, '_fetch', fake_fetch)
+
+        assert await intel._probe_scheme('https://evil.com') is None
+        assert calls == [True]  # never retried without verification
+
+    @pytest.mark.asyncio
+    async def test_plain_http_is_not_retried(self, intel, monkeypatch):
+        calls = []
+
+        async def fake_fetch(url, verify_tls):
+            calls.append(verify_tls)
+            return None
+
+        monkeypatch.setattr(intel, '_fetch', fake_fetch)
+
+        assert await intel._probe_scheme('http://evil.com') is None
+        assert calls == [True]

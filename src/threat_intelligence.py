@@ -385,6 +385,7 @@ class ThreatIntelligence:
             'https_status': None,
             'redirects_to': None,
             'title': None,
+            'tls_verified': None,
         }
 
         # HTTPS first: a typosquat with a valid certificate is the higher signal
@@ -395,6 +396,9 @@ class ThreatIntelligence:
 
             results[f'{scheme}_active'] = True
             results[f'{scheme}_status'] = probe['status']
+
+            if scheme == 'https':
+                results['tls_verified'] = probe.get('tls_verified')
 
             if probe['redirects_to'] and not results['redirects_to']:
                 results['redirects_to'] = probe['redirects_to']
@@ -418,7 +422,49 @@ class ThreatIntelligence:
         Returns:
             Dictionary with status/redirects_to/title, or None if unreachable
         """
+        # Probe with TLS verification enabled first. Whether a lookalike domain
+        # presents a valid certificate is itself useful intelligence, so the
+        # outcome is recorded rather than discarded.
+        result = await self._fetch(url, verify_tls=True)
+        if result is not None:
+            result['tls_verified'] = url.startswith('https://')
+            return result
+
+        if not url.startswith('https://'):
+            return None
+
+        # HTTPS failed. Retry without verification only if allowed, so that a
+        # live phishing site with a self-signed or expired certificate is still
+        # detected -- flagged as unverified so nothing downstream trusts it.
+        if not self.config.http_allow_invalid_certs:
+            self.logger.debug(f"Skipping unverified retry for {url}")
+            return None
+
+        result = await self._fetch(url, verify_tls=False)
+        if result is not None:
+            result['tls_verified'] = False
+            self.logger.debug(f"{url} responded only without certificate validation")
+
+        return result
+
+    async def _fetch(self, url: str, verify_tls: bool) -> dict[str, Any] | None:
+        """
+        Perform a single HTTP request.
+
+        Args:
+            url: Absolute http(s) URL to probe
+            verify_tls: Whether to validate the server certificate
+
+        Returns:
+            Dictionary with status/redirects_to/title, or None if unreachable
+        """
         timeout = aiohttp.ClientTimeout(total=self.config.http_timeout)
+
+        # Verification is disabled only on the deliberate fallback path above,
+        # for read-only reconnaissance of hosts already presumed hostile. The
+        # response is never trusted: it is marked tls_verified=False, and only
+        # the status code and page title are retained.
+        ssl_option = None if verify_tls else False  # lgtm[py/request-without-cert-validation]
 
         try:
             async with self.session.get(
@@ -426,7 +472,7 @@ class ThreatIntelligence:
                 timeout=timeout,
                 allow_redirects=True,
                 max_redirects=self.config.http_max_redirects,
-                ssl=False,  # Typosquats routinely have invalid certificates
+                ssl=ssl_option,
             ) as response:
                 result = {
                     'status': response.status,
@@ -442,7 +488,7 @@ class ThreatIntelligence:
         except asyncio.TimeoutError:
             self.logger.debug(f"Timeout probing {url}")
         except Exception as e:
-            self.logger.debug(f"Probe failed for {url}: {e}")
+            self.logger.debug(f"Probe failed for {url} (verify_tls={verify_tls}): {e}")
 
         return None
 
@@ -586,6 +632,10 @@ def calculate_risk_score(domain_data: dict[str, Any], threat_intel: dict[str, An
             score += 8
 
         if http.get('redirects_to'):
+            score += 5
+
+        # A valid certificate on a lookalike domain means someone did the work
+        if http.get('tls_verified') is True:
             score += 5
 
     # --- Certificate Transparency -----------------------------------------

@@ -42,5 +42,12 @@ jobs:
         with:
           languages: python
           queries: security-extended
+          # The test suite deliberately contains attack payloads as fixtures
+          # (script tags, javascript: URLs, spreadsheet formulas) so that the
+          # exporters can be proven to neutralise them. Scanning them as if
+          # they were production code produces only false positives.
+          config: |
+            paths-ignore:
+              - tests/
 
       - uses: github/codeql-action/analyze@v3

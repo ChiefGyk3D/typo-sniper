@@ -36,7 +36,7 @@ def format_threat_intel(perm: dict[str, Any]) -> dict[str, Any]:
     Returns:
         Dictionary with 'urlscan', 'urlscan_url', 'ct', and 'http' keys
     """
-    summary = {'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': ''}
+    summary = {'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': '', 'tls': ''}
 
     threat_intel = perm.get('threat_intel') or {}
     if not threat_intel:
@@ -84,6 +84,12 @@ def format_threat_intel(perm: dict[str, Any]) -> dict[str, Any]:
             summary['http'] = f'HTTP: {http_code}'
         else:
             summary['http'] = 'Inactive'
+
+        tls_verified = http_data.get('tls_verified')
+        if tls_verified is True:
+            summary['tls'] = 'Valid'
+        elif tls_verified is False:
+            summary['tls'] = 'Invalid/self-signed'
 
     return summary
 
@@ -219,7 +225,7 @@ class ExcelExporter(BaseExporter):
         # Headers
         headers = [
             "Scan Date", "Original Domain", "Permutation", "Fuzzer Type",
-            "Risk Score", "Age (days)", "URLScan Status", "CT Logs", "HTTP Status",
+            "Risk Score", "Age (days)", "URLScan Status", "CT Logs", "HTTP Status", "TLS",
             "Created Date", "Updated Date", "Expires Date",
             "Registrant", "Organization", "Registrar",
             "Email", "Country", "Status",
@@ -271,6 +277,7 @@ class ExcelExporter(BaseExporter):
                     urlscan_status,
                     intel['ct'],
                     intel['http'],
+                    intel['tls'],
                     join_values(perm.get('whois_created')),
                     join_values(perm.get('whois_updated')),
                     join_values(perm.get('whois_expires')),
@@ -423,7 +430,7 @@ class CSVExporter(BaseExporter):
             headers = [
                 'Scan Date', 'Original Domain', 'Permutation', 'Fuzzer Type',
                 'Risk Score', 'Age (days)', 'URLScan Status', 'URLScan Report',
-                'CT Logs', 'HTTP Status',
+                'CT Logs', 'HTTP Status', 'TLS',
                 'Created Date', 'Updated Date', 'Expires Date',
                 'Registrant', 'Organization', 'Registrar',
                 'Emails', 'Country', 'Status',
@@ -450,6 +457,7 @@ class CSVExporter(BaseExporter):
                         intel['urlscan_url'] or '',
                         intel['ct'],
                         intel['http'],
+                        intel['tls'],
                         join_values(perm.get('whois_created')),
                         join_values(perm.get('whois_updated')),
                         join_values(perm.get('whois_expires')),
@@ -666,6 +674,7 @@ class HTMLExporter(BaseExporter):
                         <th>URLScan Status</th>
                         <th>CT Logs</th>
                         <th>HTTP Status</th>
+                        <th>TLS</th>
                         <th>Created</th>
                         <th>Registrant</th>
                         <th>Organization</th>
@@ -713,6 +722,7 @@ class HTMLExporter(BaseExporter):
                         <td>{urlscan_cell}</td>
                         <td>{html.escape(intel['ct'])}</td>
                         <td>{html.escape(intel['http'])}</td>
+                        <td>{html.escape(intel['tls'])}</td>
                         <td>{html.escape(created)}</td>
                         <td>{html.escape(str(perm.get('whois_registrant') or ''))}</td>
                         <td>{html.escape(str(perm.get('whois_org') or ''))}</td>
