@@ -46,7 +46,7 @@ async def main():
             print("\n✓ Test 3: URLScan Functionality")
             result = await ti.check_urlscan('google.com')
             if result:
-                print(f"  Successfully retrieved URLScan data")
+                print("  Successfully retrieved URLScan data")
                 print(f"  Malicious: {result.get('malicious', 'N/A')}")
                 print(f"  Score: {result.get('score', 'N/A')}")
                 if 'scan_age_days' in result:

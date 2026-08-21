@@ -4,7 +4,7 @@ Utility functions for Typo Sniper.
 
 import logging
 import re
-from typing import Optional
+from typing import Any
 
 from rich.logging import RichHandler
 
@@ -38,14 +38,36 @@ def validate_domain(domain: str) -> bool:
     Returns:
         True if valid, False otherwise
     """
-    # Basic domain validation regex
-    # Matches: example.com, sub.example.com, example.co.uk, etc.
-    pattern = r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
-    
-    if not domain or len(domain) > 253:
+    if not domain or not isinstance(domain, str):
         return False
-    
-    return bool(re.match(pattern, domain))
+
+    domain = domain.strip().rstrip('.')
+
+    # Unicode domains are valid input; compare against their ASCII (punycode)
+    # form so that e.g. "bücher.de" is accepted rather than silently dropped.
+    try:
+        ascii_domain = domain.encode('idna').decode('ascii')
+    except (UnicodeError, UnicodeDecodeError):
+        return False
+
+    if len(ascii_domain) > 253:
+        return False
+
+    labels = ascii_domain.split('.')
+    if len(labels) < 2:
+        return False
+
+    # Every label: 1-63 chars, alphanumeric plus inner hyphens
+    label_pattern = re.compile(r'^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$')
+    if not all(label_pattern.match(label) for label in labels):
+        return False
+
+    # The TLD must be alphabetic (or a punycode IDN TLD), never all digits
+    tld = labels[-1]
+    if not (tld.isalpha() or tld.lower().startswith('xn--')) or len(tld) < 2:
+        return False
+
+    return True
 
 
 def sanitize_filename(filename: str) -> str:
@@ -134,3 +156,110 @@ def parse_fuzzer_name(fuzzer_code: str) -> str:
     }
     
     return fuzzer_names.get(fuzzer_code, fuzzer_code.title())
+
+
+# ---------------------------------------------------------------------------
+# DNS result helpers
+# ---------------------------------------------------------------------------
+
+# dnstwist reports resolver errors as sentinel strings in the dns_* lists
+# (e.g. "!ServFail", "!NXDOMAIN", "!Timeout"). They are not addresses, and
+# treating them as such makes unregistered domains look registered.
+DNS_ERROR_PREFIX = '!'
+
+
+def clean_dns_records(values: Any) -> list[str]:
+    """
+    Strip dnstwist error sentinels from a DNS record list.
+
+    Args:
+        values: Raw dns_a / dns_aaaa / dns_mx / dns_ns value from dnstwist
+
+    Returns:
+        List of real record values (sentinels such as "!ServFail" removed)
+    """
+    if not values:
+        return []
+
+    if isinstance(values, str):
+        values = [values]
+
+    cleaned = []
+    for value in values:
+        text = str(value).strip()
+        if text and not text.startswith(DNS_ERROR_PREFIX):
+            cleaned.append(text)
+
+    return cleaned
+
+
+def is_registered(permutation: dict[str, Any]) -> bool:
+    """
+    Determine whether a dnstwist permutation actually resolves.
+
+    A domain counts as registered only when it has at least one genuine A or
+    AAAA record. Entries whose only "record" is a resolver error sentinel are
+    rejected, which is what keeps unregistered domains out of the report.
+
+    Args:
+        permutation: Permutation dictionary from dnstwist
+
+    Returns:
+        True if the domain resolves to at least one address
+    """
+    return bool(
+        clean_dns_records(permutation.get('dns_a'))
+        or clean_dns_records(permutation.get('dns_aaaa'))
+    )
+
+
+# ---------------------------------------------------------------------------
+# Output sanitisation
+# ---------------------------------------------------------------------------
+
+# Leading characters that spreadsheet applications interpret as the start of a
+# formula. WHOIS registrant/org fields and HTML page titles are attacker
+# controlled, so they are neutralised before they reach a .csv or .xlsx cell.
+_FORMULA_PREFIXES = ('=', '+', '-', '@', '\t', '\r')
+
+
+def sanitize_spreadsheet_value(value: Any) -> Any:
+    """
+    Neutralise spreadsheet formula injection in an exported cell value.
+
+    Args:
+        value: Cell value of any type
+
+    Returns:
+        The value unchanged if it cannot start a formula, otherwise the string
+        prefixed with a single quote so Excel/LibreOffice treat it as text.
+    """
+    if not isinstance(value, str) or not value:
+        return value
+
+    if value.startswith(_FORMULA_PREFIXES):
+        return "'" + value
+
+    return value
+
+
+def safe_url(url: Any) -> str | None:
+    """
+    Return a URL only if it uses a scheme that is safe to put in an href.
+
+    Blocks javascript:, data: and similar schemes that would otherwise turn a
+    third-party supplied URL into script execution inside the HTML report.
+
+    Args:
+        url: Candidate URL
+
+    Returns:
+        The URL if it is http(s), otherwise None
+    """
+    if not url or not isinstance(url, str):
+        return None
+
+    if url.lower().startswith(('http://', 'https://')):
+        return url
+
+    return None

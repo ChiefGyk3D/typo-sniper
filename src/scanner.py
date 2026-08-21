@@ -6,21 +6,27 @@ Handles domain permutation generation, WHOIS lookups, and DNS queries.
 
 import asyncio
 import logging
-from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional, Any
+import socket
+import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import date, datetime
+from typing import Any
 
 import dnstwist
 import whois
 
-from config import Config
 from cache import Cache
-from enhanced_detection import generate_enhanced_permutations, SoundAlikeDetector
+from config import Config
+from enhanced_detection import SoundAlikeDetector, generate_enhanced_permutations
 from threat_intelligence import ThreatIntelligence, calculate_risk_score
+from utils import clean_dns_records, is_registered
 
 
 class DomainScanner:
     """Scans domains for typosquatting variants with WHOIS enrichment."""
+
+    # Consecutive WHOIS failures after which retries are abandoned
+    WHOIS_FAILURE_THRESHOLD = 10
 
     def __init__(self, config: Config, cache: Cache):
         """
@@ -34,8 +40,28 @@ class DomainScanner:
         self.cache = cache
         self.logger = logging.getLogger(__name__)
         self.executor = ThreadPoolExecutor(max_workers=config.max_workers)
+        # Per-run WHOIS outcome counters, surfaced in the scan result so a
+        # totally failed WHOIS stage cannot be mistaken for "no data found".
+        self.whois_succeeded = 0
+        self.whois_failed = 0
+        # When WHOIS is systemically unavailable (egress to TCP/43 blocked, or
+        # the resolver is hard rate-limiting), retrying every domain three
+        # times turns a fast failure into a many-minute stall. After this many
+        # consecutive failures, fall back to a single attempt per domain.
+        self._whois_consecutive_failures = 0
+        self._whois_circuit_open = False
 
-    async def scan_domain(self, domain: str) -> Dict[str, Any]:
+    def close(self) -> None:
+        """Shut down the worker thread pool."""
+        self.executor.shutdown(wait=False)
+
+    def __enter__(self) -> 'DomainScanner':
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    async def scan_domain(self, domain: str) -> dict[str, Any]:
         """
         Scan a domain for typosquatting variants.
 
@@ -55,42 +81,166 @@ class DomainScanner:
             self.logger.debug(f"Calling enhanced detection for {domain}...")
         enhanced_perms = await self._get_enhanced_permutations(domain)
         
-        # Merge permutations
-        all_permutations = permutations + enhanced_perms
-        
-        # Filter for registered domains only
-        registered = [p for p in all_permutations if p.get('dns_a') or p.get('dns_aaaa')]
-        
-        self.logger.info(f"Found {len(registered)} registered permutations for {domain} ({len(permutations)} from dnstwist, {len(enhanced_perms)} from enhanced detection)")
-        
+        # Merge permutations, dropping the original domain and any duplicate
+        # that enhanced detection also produced
+        all_permutations = self._merge_permutations(domain, permutations, enhanced_perms)
+
+        # Keep only permutations that genuinely resolve. dnstwist reports
+        # resolver failures as sentinel strings ("!ServFail", "!NXDOMAIN"),
+        # which would otherwise be counted as registrations.
+        registered = [p for p in all_permutations if is_registered(p)]
+
+        # Normalise the DNS lists so downstream consumers never see sentinels
+        for perm in registered:
+            for key in ('dns_a', 'dns_aaaa', 'dns_mx', 'dns_ns'):
+                if key in perm:
+                    perm[key] = clean_dns_records(perm[key])
+
+        self.logger.info(
+            f"Found {len(registered)} registered permutations for {domain} "
+            f"({len(permutations)} from dnstwist, {len(enhanced_perms)} from enhanced detection)"
+        )
+
+        whois_before = self.whois_succeeded
+
         # Enrich with WHOIS data
         enriched = await self._enrich_with_whois(registered)
-        
+
+        # Derive registration age from the WHOIS data. This must happen before
+        # risk scoring, which weights recently registered domains most heavily.
+        for perm in enriched:
+            self._annotate_registration_age(perm)
+
+        # Flag permutations that are phonetically confusable with the original.
+        # The detector existed but was never called, so enable_soundalike had
+        # no effect on the output.
+        if self.config.enable_soundalike:
+            for perm in enriched:
+                try:
+                    perm['sounds_alike'] = SoundAlikeDetector.are_similar(
+                        domain, perm['domain']
+                    )
+                except Exception:  # pragma: no cover - defensive
+                    perm['sounds_alike'] = False
+
         # Add threat intelligence
         enriched = await self._add_threat_intelligence(enriched)
-        
+
         # Apply date filters if configured
         if self.config.months_filter > 0:
             enriched = self._filter_by_date(enriched, self.config.months_filter)
-        
+
         # Calculate risk scores if enabled
         if self.config.enable_risk_scoring:
             for perm in enriched:
                 perm['risk_score'] = calculate_risk_score(perm, perm.get('threat_intel', {}))
-            
+
             # Sort by risk score (highest first)
             enriched.sort(key=lambda x: x.get('risk_score', 0), reverse=True)
-        
+
+        whois_ok = self.whois_succeeded - whois_before
+        if registered and whois_ok == 0:
+            self.logger.warning(
+                f"No WHOIS data could be retrieved for any of the {len(registered)} "
+                f"registered permutations of {domain}. Registration dates and "
+                f"recency scoring will be missing from this report. Check outbound "
+                f"access to WHOIS servers on TCP port 43."
+            )
+
         return {
             'original_domain': domain,
             'scan_date': date.today().isoformat(),
             'total_permutations': len(all_permutations),
             'registered_count': len(registered),
             'filtered_count': len(enriched),
+            'whois_succeeded': whois_ok,
+            'whois_failed': len(registered) - whois_ok,
             'permutations': enriched
         }
 
-    async def _get_permutations(self, domain: str) -> List[Dict[str, Any]]:
+    def _merge_permutations(
+        self,
+        domain: str,
+        dnstwist_perms: list[dict[str, Any]],
+        enhanced_perms: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """
+        Combine dnstwist and enhanced results into one deduplicated list.
+
+        The original domain is dropped: it is the asset being protected, not a
+        typosquat, and counting it inflated every registered_count by one.
+
+        Args:
+            domain: The original domain being scanned
+            dnstwist_perms: Permutations from dnstwist
+            enhanced_perms: Permutations from enhanced detection
+
+        Returns:
+            Deduplicated permutation list, dnstwist entries taking precedence
+        """
+        merged: dict[str, dict[str, Any]] = {}
+
+        for perm in list(dnstwist_perms) + list(enhanced_perms):
+            name = str(perm.get('domain', '')).lower().rstrip('.')
+            if not name or name == domain.lower():
+                continue
+            if perm.get('fuzzer') == '*original':
+                continue
+            # dnstwist entries come first and carry richer DNS data, so an
+            # enhanced duplicate must not overwrite them
+            merged.setdefault(name, perm)
+
+        return list(merged.values())
+
+    def _annotate_registration_age(self, perm: dict[str, Any]) -> None:
+        """
+        Add ``created_days_ago`` and ``is_recent`` from WHOIS creation dates.
+
+        Previously ``created_days_ago`` was never populated, so the recency
+        component of the risk score never contributed, and ``is_recent`` was
+        only set when --months was passed.
+
+        Args:
+            perm: Permutation dictionary, modified in place
+        """
+        earliest = None
+        for date_str in perm.get('whois_created', []):
+            parsed = self._parse_iso_date(date_str)
+            if parsed and (earliest is None or parsed < earliest):
+                earliest = parsed
+
+        if earliest is None:
+            return
+
+        days_ago = (date.today() - earliest).days
+        perm['created_days_ago'] = days_ago
+        perm['is_recent'] = 0 <= days_ago <= self.config.recent_days
+
+    @staticmethod
+    def _parse_iso_date(value: Any) -> Any:
+        """Parse a WHOIS date string into a ``date``, or None if unparseable."""
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        if not isinstance(value, str):
+            return None
+
+        text = value.strip()
+        try:
+            return date.fromisoformat(text[:10])
+        except ValueError:
+            pass
+
+        for fmt in ('%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%d-%b-%Y', '%Y.%m.%d'):
+            try:
+                return datetime.strptime(text, fmt).date()
+            except ValueError:
+                continue
+
+        return None
+
+    async def _get_permutations(self, domain: str) -> list[dict[str, Any]]:
         """
         Generate domain permutations using dnstwist.
 
@@ -114,7 +264,7 @@ class DomainScanner:
             self.logger.error(f"Error generating permutations for {domain}: {e}")
             return []
 
-    def _run_dnstwist(self, domain: str) -> List[Dict[str, Any]]:
+    def _run_dnstwist(self, domain: str) -> list[dict[str, Any]]:
         """
         Run dnstwist synchronously (called from executor).
 
@@ -129,14 +279,29 @@ class DomainScanner:
                 domain=domain,
                 registered=True,
                 format='null',
-                mxcheck=True,
-                threads=self.config.max_workers
+                mxcheck=self.config.dnstwist_mxcheck,
+                phash=self.config.dnstwist_phash,
+                threads=self.config.dnstwist_threads,
             )
+        except TypeError:
+            # Older dnstwist releases do not accept every keyword; retry with
+            # the options guaranteed to exist rather than losing the scan.
+            self.logger.debug("dnstwist rejected an option, retrying with defaults")
+            try:
+                return dnstwist.run(
+                    domain=domain,
+                    registered=True,
+                    format='null',
+                    threads=self.config.dnstwist_threads,
+                )
+            except Exception as e:
+                self.logger.error(f"dnstwist error for {domain}: {e}")
+                return []
         except Exception as e:
             self.logger.error(f"dnstwist error for {domain}: {e}")
             return []
     
-    async def _get_enhanced_permutations(self, domain: str) -> List[Dict[str, Any]]:
+    async def _get_enhanced_permutations(self, domain: str) -> list[dict[str, Any]]:
         """
         Generate enhanced permutations (combo-squatting, IDN homographs, etc).
         
@@ -164,6 +329,8 @@ class DomainScanner:
                 self.config
             )
             
+            enhanced_domains = sorted(enhanced_domains)
+
             if not enhanced_domains:
                 if self.config.debug_mode:
                     self.logger.debug(f"No enhanced permutations generated for {domain}")
@@ -181,12 +348,12 @@ class DomainScanner:
             
             # Filter for registered domains
             permutations = []
-            for enhanced_domain, result in zip(enhanced_domains, results):
-                if result is True:
+            for enhanced_domain, result in zip(enhanced_domains, results, strict=False):
+                if isinstance(result, str) and result:
                     perm = {
                         'domain': enhanced_domain,
                         'fuzzer': 'enhanced',  # Mark as enhanced detection
-                        'dns_a': ['resolved'],  # Placeholder
+                        'dns_a': [result],
                     }
                     permutations.append(perm)
             
@@ -197,29 +364,27 @@ class DomainScanner:
             self.logger.error(f"Error in enhanced detection for {domain}: {e}")
             return []
     
-    async def _check_dns_async(self, domain: str) -> bool:
+    async def _check_dns_async(self, domain: str):
         """
         Async DNS check for a domain.
-        
+
         Args:
             domain: Domain to check
-            
+
         Returns:
-            True if domain resolves, False otherwise
+            The resolved IPv4 address, or None if the domain does not resolve
         """
         loop = asyncio.get_event_loop()
         try:
-            import socket
-            await loop.run_in_executor(
+            return await loop.run_in_executor(
                 self.executor,
                 socket.gethostbyname,
                 domain
             )
-            return True
-        except (socket.gaierror, Exception):
-            return False
+        except (TimeoutError, socket.gaierror, UnicodeError, OSError):
+            return None
     
-    async def _add_threat_intelligence(self, permutations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def _add_threat_intelligence(self, permutations: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Add threat intelligence to permutations.
         
@@ -270,7 +435,7 @@ class DomainScanner:
                     await asyncio.sleep(batch_delay)
             
             # Add threat intelligence to permutations
-            for perm, threat_data in zip(permutations, threat_results):
+            for perm, threat_data in zip(permutations, threat_results, strict=False):
                 if isinstance(threat_data, Exception):
                     self.logger.error(f"Threat intel error for {perm['domain']}: {threat_data}")
                 else:
@@ -278,7 +443,7 @@ class DomainScanner:
         
         return permutations
 
-    async def _enrich_with_whois(self, permutations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def _enrich_with_whois(self, permutations: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Enrich permutations with WHOIS data.
 
@@ -304,9 +469,9 @@ class DomainScanner:
             batch_results = await asyncio.gather(*batch, return_exceptions=True)
             whois_results.extend(batch_results)
             
-            # Minimal rate limiting between batches
+            # Rate limiting between batches
             if i + self.config.max_workers < len(tasks):
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(self.config.rate_limit_delay)
         
         # Merge WHOIS data with permutations
         enriched = []
@@ -324,7 +489,7 @@ class DomainScanner:
         
         return enriched
 
-    async def _get_whois_data(self, domain: str) -> Dict[str, Any]:
+    async def _get_whois_data(self, domain: str) -> dict[str, Any]:
         """
         Get WHOIS data for a domain with caching.
 
@@ -339,6 +504,7 @@ class DomainScanner:
             cached = self.cache.get(f"whois:{domain}")
             if cached:
                 self.logger.debug(f"Cache hit for {domain}")
+                self.whois_succeeded += 1
                 return cached
         
         # Perform WHOIS lookup
@@ -353,14 +519,20 @@ class DomainScanner:
             # Cache the result
             if self.config.use_cache and whois_data:
                 self.cache.set(f"whois:{domain}", whois_data, ttl=self.config.cache_ttl)
-            
+
+            if whois_data:
+                self.whois_succeeded += 1
+            else:
+                self.whois_failed += 1
+
             return whois_data
-        
+
         except Exception as e:
+            self.whois_failed += 1
             self.logger.warning(f"WHOIS lookup failed for {domain}: {e}")
             return {}
 
-    def _whois_lookup(self, domain: str) -> Dict[str, Any]:
+    def _whois_lookup(self, domain: str) -> dict[str, Any]:
         """
         Perform synchronous WHOIS lookup.
 
@@ -370,9 +542,60 @@ class DomainScanner:
         Returns:
             Dictionary containing WHOIS data
         """
+        attempts = 1 if self._whois_circuit_open else max(1, self.config.whois_retry_count)
+        last_error = None
+
+        for attempt in range(attempts):
+            try:
+                data = self._whois_query(domain)
+                self._whois_consecutive_failures = 0
+                self._whois_circuit_open = False
+                return data
+            except Exception as e:
+                last_error = e
+                if attempt + 1 < attempts:
+                    self.logger.debug(
+                        f"WHOIS attempt {attempt + 1} failed for {domain}: {e}; retrying"
+                    )
+                    time.sleep(self.config.whois_retry_delay)
+
+        self._whois_consecutive_failures += 1
+        if (
+            not self._whois_circuit_open
+            and self._whois_consecutive_failures >= self.WHOIS_FAILURE_THRESHOLD
+        ):
+            self._whois_circuit_open = True
+            self.logger.warning(
+                f"{self._whois_consecutive_failures} consecutive WHOIS lookups failed "
+                f"(last error: {last_error}). Falling back to a single attempt per "
+                f"domain for the rest of this run. Check outbound access to TCP port 43."
+            )
+
+        self.logger.debug(f"WHOIS error for {domain}: {last_error}")
+        return {}
+
+    def _whois_query(self, domain: str) -> dict[str, Any]:
+        """
+        Run a single WHOIS query, bounded by ``whois_timeout``.
+
+        The underlying python-whois library exposes no timeout parameter, so
+        the socket default is set for the duration of the call. Without this a
+        silent WHOIS server can hang a worker thread indefinitely.
+
+        Args:
+            domain: Domain to lookup
+
+        Returns:
+            Dictionary containing WHOIS data
+
+        Raises:
+            Exception: Whatever the WHOIS lookup raised
+        """
+        previous_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(self.config.whois_timeout)
         try:
             w = whois.whois(domain)
-            
+
             # Parse creation dates
             creation_dates = self._parse_dates(w.creation_date)
             updated_dates = self._parse_dates(w.updated_date)
@@ -406,12 +629,10 @@ class DomainScanner:
                 'whois_status': w.status if w.status else None,
                 'whois_country': w.country if hasattr(w, 'country') and w.country else None,
             }
-        
-        except Exception as e:
-            self.logger.debug(f"WHOIS error for {domain}: {e}")
-            return {}
+        finally:
+            socket.setdefaulttimeout(previous_timeout)
 
-    def _parse_dates(self, date_value: Any) -> List[str]:
+    def _parse_dates(self, date_value: Any) -> list[str]:
         """
         Parse date values from WHOIS data.
 
@@ -442,7 +663,7 @@ class DomainScanner:
         
         return dates
 
-    def _filter_by_date(self, permutations: List[Dict[str, Any]], months: int) -> List[Dict[str, Any]]:
+    def _filter_by_date(self, permutations: list[dict[str, Any]], months: int) -> list[dict[str, Any]]:
         """
         Filter permutations by creation date.
 
@@ -453,29 +674,26 @@ class DomainScanner:
         Returns:
             Filtered list of permutations
         """
-        cutoff_date = date.today() - timedelta(days=months * 30)
+        cutoff_days = int(months * 30.44)  # average month length
         filtered = []
-        
+        skipped_unknown = 0
+
         for perm in permutations:
-            created_dates = perm.get('whois_created', [])
-            
-            if not created_dates:
+            days_ago = perm.get('created_days_ago')
+
+            if days_ago is None:
+                # No usable WHOIS creation date: cannot prove it is recent
+                skipped_unknown += 1
                 continue
-            
-            # Check if any creation date is after cutoff
-            is_recent = False
-            for date_str in created_dates:
-                try:
-                    creation_date = date.fromisoformat(date_str)
-                    if creation_date > cutoff_date:
-                        is_recent = True
-                        perm['is_recent'] = True
-                        break
-                except (ValueError, TypeError):
-                    continue
-            
-            if is_recent:
+
+            if days_ago <= cutoff_days:
                 filtered.append(perm)
-        
+
+        if skipped_unknown:
+            self.logger.warning(
+                f"{skipped_unknown} registered domains were excluded by the "
+                f"--months filter because no WHOIS creation date was available"
+            )
+
         self.logger.info(f"Filtered to {len(filtered)} domains created in last {months} months")
         return filtered

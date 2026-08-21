@@ -12,24 +12,22 @@ import argparse
 import asyncio
 import logging
 import sys
-from datetime import date, timedelta
 from pathlib import Path
-from typing import List, Optional
 
 from dotenv import load_dotenv
 from rich.console import Console
-from rich.logging import RichHandler
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 
-# Load environment variables from .env file
+# Load environment variables from .env before importing the modules that read
+# the environment at import time (Config resolves API keys in its defaults).
 load_dotenv()
 
-from scanner import DomainScanner
-from exporters import ExcelExporter, JSONExporter, CSVExporter, HTMLExporter
-from config import Config
-from cache import Cache
-from utils import setup_logging, validate_domain
-
+from cache import Cache  # noqa: E402
+from config import Config  # noqa: E402
+from exporters import CSVExporter, ExcelExporter, HTMLExporter, JSONExporter  # noqa: E402
+from scanner import DomainScanner  # noqa: E402
+from utils import setup_logging, validate_domain  # noqa: E402
+from version import __version__  # noqa: E402
 
 console = Console()
 
@@ -50,7 +48,11 @@ class TypoSniper:
         self.scanner = DomainScanner(config, self.cache)
         self.results = []
 
-    def load_domains(self, file_path: Path) -> List[str]:
+    def close(self) -> None:
+        """Release the scanner's worker threads."""
+        self.scanner.close()
+
+    def load_domains(self, file_path: Path) -> list[str]:
         """
         Load domains from a text file.
 
@@ -69,7 +71,7 @@ class TypoSniper:
             resolved_path = file_path.resolve()
         except (OSError, RuntimeError) as e:
             self.logger.error(f"Invalid input file path: {e}")
-            raise ValueError(f"Invalid input file path: {e}")
+            raise ValueError(f"Invalid input file path: {e}") from e
         
         # Validate file extension (allow .txt files for domain lists)
         if resolved_path.suffix.lower() not in ['.txt', '']:
@@ -86,7 +88,7 @@ class TypoSniper:
             raise ValueError(f"Input path must be a regular file: {resolved_path}")
         
         try:
-            with open(resolved_path, 'r') as f:
+            with open(resolved_path) as f:
                 domains = [line.strip() for line in f if line.strip() and not line.startswith('#')]
             
             # Validate domains
@@ -102,9 +104,9 @@ class TypoSniper:
 
         except PermissionError:
             self.logger.error(f"Permission denied reading input file: {resolved_path}")
-            raise ValueError(f"Permission denied reading input file: {resolved_path}")
+            raise ValueError(f"Permission denied reading input file: {resolved_path}") from None
 
-    async def scan_domains(self, domains: List[str], progress: Optional[Progress] = None) -> None:
+    async def scan_domains(self, domains: list[str], progress: Progress | None = None) -> None:
         """
         Scan multiple domains for typosquatting variants.
 
@@ -126,7 +128,7 @@ class TypoSniper:
                 if result['permutations']:
                     console.print(f"[green]✓[/green] Found {len(result['permutations'])} registered permutations")
                 else:
-                    console.print(f"[yellow]○[/yellow] No registered permutations found")
+                    console.print("[yellow]○[/yellow] No registered permutations found")
                 
             except Exception as e:
                 self.logger.error(f"Error scanning {domain}: {e}", exc_info=True)
@@ -135,7 +137,7 @@ class TypoSniper:
             if progress and task_id is not None:
                 progress.update(task_id, advance=1)
 
-    def export_results(self, output_formats: List[str], output_dir: Path) -> None:
+    def export_results(self, output_formats: list[str], output_dir: Path) -> None:
         """
         Export results to specified formats.
 
@@ -151,7 +153,7 @@ class TypoSniper:
             resolved_dir = output_dir.resolve()
         except (OSError, RuntimeError) as e:
             self.logger.error(f"Invalid output directory path: {e}")
-            raise ValueError(f"Invalid output directory path: {e}")
+            raise ValueError(f"Invalid output directory path: {e}") from e
         
         # Create directory with validated path
         resolved_dir.mkdir(parents=True, exist_ok=True)
@@ -184,29 +186,52 @@ class TypoSniper:
         from rich.table import Table
 
         table = Table(title="Scan Summary", show_header=True, header_style="bold magenta")
-        table.add_column("Domain", style="cyan", width=30)
-        table.add_column("Permutations Found", justify="right", style="green")
-        table.add_column("Recent Registrations", justify="right", style="yellow")
+        table.add_column("Domain", style="cyan", width=28)
+        table.add_column("Registered", justify="right", style="green")
+        table.add_column("Recent", justify="right", style="yellow")
+        table.add_column("High Risk", justify="right", style="red")
+        table.add_column("WHOIS", justify="right", style="blue")
 
         total_perms = 0
         total_recent = 0
+        total_high_risk = 0
+        total_whois_failed = 0
 
         for result in self.results:
-            perms = len(result['permutations'])
-            recent = len([p for p in result['permutations'] if p.get('is_recent', False)])
-            total_perms += perms
+            perms = result['permutations']
+            recent = len([p for p in perms if p.get('is_recent', False)])
+            high_risk = len([p for p in perms if (p.get('risk_score') or 0) >= 70])
+            whois_ok = result.get('whois_succeeded', 0)
+            whois_failed = result.get('whois_failed', 0)
+
+            total_perms += len(perms)
             total_recent += recent
-            
+            total_high_risk += high_risk
+            total_whois_failed += whois_failed
+
             table.add_row(
                 result['original_domain'],
-                str(perms),
-                str(recent) if recent > 0 else "-"
+                str(len(perms)),
+                str(recent) if recent else "-",
+                str(high_risk) if high_risk else "-",
+                f"{whois_ok}/{whois_ok + whois_failed}",
             )
 
         console.print("\n")
         console.print(table)
-        console.print(f"\n[bold]Total Permutations:[/bold] {total_perms}")
-        console.print(f"[bold]Recent Registrations:[/bold] {total_recent}")
+        console.print(f"\n[bold]Total Registered Permutations:[/bold] {total_perms}")
+        console.print(
+            f"[bold]Recently Registered (<= {self.config.recent_days} days):[/bold] {total_recent}"
+        )
+        console.print(f"[bold]High Risk (score >= 70):[/bold] {total_high_risk}")
+
+        # A wholly failed WHOIS stage previously looked identical to a clean
+        # scan with no recent registrations. Say so explicitly.
+        if total_whois_failed:
+            console.print(
+                f"[yellow]⚠ WHOIS data unavailable for {total_whois_failed} domain(s). "
+                f"Registration dates and recency scoring are incomplete.[/yellow]"
+            )
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -303,7 +328,7 @@ Examples:
     parser.add_argument(
         '--version',
         action='version',
-    version='Typo Sniper v1.0.3'
+        version=f'Typo Sniper v{__version__}'
     )
 
     return parser.parse_args()
@@ -341,12 +366,15 @@ async def main():
 
     # Display banner
     console.print("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
-    console.print("[bold cyan]         🎯 Typo Sniper 1.0 - Typosquatting Detector[/bold cyan]")
+    console.print(
+        f"[bold cyan]      🎯 Typo Sniper v{__version__} - Typosquatting Detector[/bold cyan]"
+    )
     console.print("[bold cyan]" + "=" * 60 + "[/bold cyan]\n")
 
     # Initialize Typo Sniper
     sniper = TypoSniper(config)
 
+    exit_code = 0
     try:
         # Load domains
         domains = sniper.load_domains(args.input)
@@ -377,18 +405,23 @@ async def main():
         sniper.print_summary()
 
         # Export results
-        console.print(f"\n[bold]Exporting results...[/bold]")
+        console.print("\n[bold]Exporting results...[/bold]")
         sniper.export_results(args.format, args.output)
 
         console.print("\n[bold green]✓ Scan completed successfully![/bold green]\n")
 
     except KeyboardInterrupt:
         console.print("\n[yellow]Scan interrupted by user[/yellow]")
-        sys.exit(130)
+        exit_code = 130
     except Exception as e:
         logger.error(f"Fatal error: {e}", exc_info=True)
         console.print(f"\n[bold red]✗ Fatal error: {e}[/bold red]\n")
-        sys.exit(1)
+        exit_code = 1
+    finally:
+        sniper.close()
+
+    if exit_code:
+        sys.exit(exit_code)
 
 
 if __name__ == '__main__':

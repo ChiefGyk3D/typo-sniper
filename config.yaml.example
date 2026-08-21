@@ -12,6 +12,7 @@ cache_ttl: 86400                   # Cache time-to-live (24 hours)
 
 # Filter settings
 months_filter: 0                   # Filter domains by registration date (0 = no filter)
+recent_days: 90                    # Registrations newer than this are flagged "recent"
 
 # dnstwist settings
 dnstwist_threads: 20               # Number of threads for dnstwist
@@ -22,13 +23,15 @@ dnstwist_phash: false              # Enable perceptual hashing (requires ssdeep)
 output_dir: results                # Default output directory
 
 # WHOIS settings
-whois_timeout: 30                  # WHOIS query timeout (seconds)
-whois_retry_count: 3               # Number of retry attempts
-whois_retry_delay: 5               # Delay between retries (seconds)
+# After 10 consecutive failures the scanner stops retrying for the rest of the
+# run, so a blocked port 43 fails fast instead of multiplying the timeout.
+whois_timeout: 15                  # WHOIS query timeout (seconds)
+whois_retry_count: 2               # Attempts per domain
+whois_retry_delay: 2               # Delay between retries (seconds)
 
 # Enhanced detection features (WARNING: These can significantly slow down scans!)
 # These features generate many additional domain variations and DNS lookups
-# Combo-squatting: ~360+ variations per domain (brand+keyword combinations)
+# Combo-squatting: ~220+ variations per domain (brand+keyword combinations)
 # IDN Homograph: up to 50 variations per domain (Unicode confusables)
 # Sound-alike: phonetic matching (less impact on performance)
 enable_combosquatting: false       # Detect brand+keyword combinations (SLOW)
@@ -50,6 +53,8 @@ enable_certificate_transparency: true  # Enable CT log monitoring (no API key ne
 # HTTP probing
 enable_http_probe: true            # Probe domains with HTTP/HTTPS
 http_timeout: 10                   # HTTP request timeout (seconds)
+http_max_bytes: 1048576            # Cap on probed response bodies (1 MiB)
+http_max_redirects: 5              # Maximum redirects to follow
 
 # Risk scoring
 enable_risk_scoring: true          # Calculate risk scores for domains

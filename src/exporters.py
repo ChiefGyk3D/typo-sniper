@@ -5,18 +5,98 @@ Supports multiple output formats: Excel, JSON, CSV, and HTML.
 """
 
 import csv
+import html
 import json
 import logging
 from abc import ABC, abstractmethod
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from config import Config
+from utils import safe_url, sanitize_spreadsheet_value
+from version import __version__
+
+
+def format_threat_intel(perm: dict[str, Any]) -> dict[str, Any]:
+    """
+    Render a permutation's threat intelligence into display-ready strings.
+
+    Every exporter needs the same URLScan/CT/HTTP summaries. They used to be
+    built by three near-identical inline blocks, which is how the formats
+    drifted apart. This is the single source of truth for all of them.
+
+    Args:
+        perm: Permutation dictionary
+
+    Returns:
+        Dictionary with 'urlscan', 'urlscan_url', 'ct', and 'http' keys
+    """
+    summary = {'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': ''}
+
+    threat_intel = perm.get('threat_intel') or {}
+    if not threat_intel:
+        return summary
+
+    # --- URLScan ---
+    us_data = threat_intel.get('urlscan')
+    if us_data:
+        status = us_data.get('status')
+        if status:
+            error = us_data.get('error', '')
+            labels = {
+                'rate_limited': 'Rate Limited',
+                'timeout': 'Scan Timeout',
+                'submission_failed': f'Scan Failed: {error}' if error else 'Scan Failed',
+                'error': f'Error: {error}' if error else 'Error',
+            }
+            summary['urlscan'] = labels.get(status, f'Error: {status}')
+        else:
+            malicious = us_data.get('malicious', False)
+            score = us_data.get('score', 0)
+            summary['urlscan_url'] = safe_url(us_data.get('report_url'))
+            verdict = 'Malicious' if (malicious or score > 0) else 'Clean'
+            summary['urlscan'] = f'{verdict} ({score})'
+            if not summary['urlscan_url'] and verdict == 'Clean':
+                summary['urlscan'] = 'No Scan Available'
+
+    # --- Certificate Transparency ---
+    ct_data = threat_intel.get('certificate_transparency')
+    if ct_data:
+        cert_count = ct_data.get('certificates_found', 0)
+        if cert_count > 0:
+            summary['ct'] = f'{cert_count} cert(s)'
+        else:
+            summary['ct'] = ct_data.get('status', '') or '0'
+
+    # --- HTTP probe ---
+    http_data = threat_intel.get('http_probe')
+    if http_data:
+        https_code = http_data.get('https_status')
+        http_code = http_data.get('http_status')
+        if http_data.get('https_active') and https_code:
+            summary['http'] = f'HTTPS: {https_code}'
+        elif http_data.get('http_active') and http_code:
+            summary['http'] = f'HTTP: {http_code}'
+        else:
+            summary['http'] = 'Inactive'
+
+    return summary
+
+
+def join_values(values: Any) -> str:
+    """Join a WHOIS/DNS list field into a single comma-separated string."""
+    if not values:
+        return ''
+    if isinstance(values, str):
+        return values
+    if isinstance(values, (list, tuple, set)):
+        return ', '.join(str(v) for v in values if v)
+    return str(values)
 
 
 class BaseExporter(ABC):
@@ -33,7 +113,7 @@ class BaseExporter(ABC):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
-    def export(self, results: List[Dict[str, Any]], output_dir: Path) -> Path:
+    def export(self, results: list[dict[str, Any]], output_dir: Path) -> Path:
         """
         Export results to file.
 
@@ -64,7 +144,7 @@ class BaseExporter(ABC):
 class ExcelExporter(BaseExporter):
     """Export results to Excel format with rich formatting."""
 
-    def export(self, results: List[Dict[str, Any]], output_dir: Path) -> Path:
+    def export(self, results: list[dict[str, Any]], output_dir: Path) -> Path:
         """Export results to Excel file."""
         output_file = self._generate_filename(output_dir, 'xlsx')
         
@@ -87,7 +167,7 @@ class ExcelExporter(BaseExporter):
         self.logger.info(f"Exported Excel file: {output_file}")
         return output_file
 
-    def _create_summary_sheet(self, wb: Workbook, results: List[Dict[str, Any]]) -> None:
+    def _create_summary_sheet(self, wb: Workbook, results: list[dict[str, Any]]) -> None:
         """Create summary sheet."""
         ws = wb.active
         ws.title = "Summary"
@@ -95,7 +175,7 @@ class ExcelExporter(BaseExporter):
         # Headers
         headers = [
             "Scan Date", "Original Domain", "Total Permutations",
-            "Registered", "Filtered", "Recent"
+            "Registered", "Filtered", "Recent", "WHOIS OK", "WHOIS Failed"
         ]
         ws.append(headers)
         
@@ -117,7 +197,9 @@ class ExcelExporter(BaseExporter):
                 result['total_permutations'],
                 result['registered_count'],
                 result['filtered_count'],
-                recent_count if recent_count > 0 else ''
+                recent_count if recent_count > 0 else '',
+                result.get('whois_succeeded', ''),
+                result.get('whois_failed', ''),
             ])
         
         # Auto-adjust column widths
@@ -125,22 +207,19 @@ class ExcelExporter(BaseExporter):
             max_length = 0
             column_letter = get_column_letter(column[0].column)
             for cell in column:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(cell.value)
-                except:
-                    pass
+                if cell.value is not None:
+                    max_length = max(max_length, len(str(cell.value)))
             adjusted_width = min(max_length + 2, 50)
             ws.column_dimensions[column_letter].width = adjusted_width
 
-    def _create_details_sheet(self, wb: Workbook, results: List[Dict[str, Any]]) -> None:
+    def _create_details_sheet(self, wb: Workbook, results: list[dict[str, Any]]) -> None:
         """Create detailed results sheet."""
         ws = wb.create_sheet("Details")
         
         # Headers
         headers = [
             "Scan Date", "Original Domain", "Permutation", "Fuzzer Type",
-            "Risk Score", "URLScan Status", "CT Logs", "HTTP Status",
+            "Risk Score", "Age (days)", "URLScan Status", "CT Logs", "HTTP Status",
             "Created Date", "Updated Date", "Expires Date",
             "Registrant", "Organization", "Registrar",
             "Email", "Country", "Status",
@@ -175,109 +254,42 @@ class ExcelExporter(BaseExporter):
             
             # Add permutations
             for perm in result['permutations']:
-                # Get WHOIS data
-                created = ', '.join(perm.get('whois_created', []))
-                updated = ', '.join(perm.get('whois_updated', []))
-                expires = ', '.join(perm.get('whois_expires', []))
-                emails = ', '.join(perm.get('whois_emails', []))
-                name_servers = ', '.join(perm.get('whois_name_servers', []))
-                
-                # Get DNS data
-                ip = ', '.join(perm.get('dns_a', []))
-                mx = ', '.join(perm.get('dns_mx', []))
-                
-                # Get threat intelligence data
-                threat_intel = perm.get('threat_intel', {})
+                intel = format_threat_intel(perm)
                 risk_score = perm.get('risk_score', '')
-                urlscan_status = ''
-                ct_logs = ''
-                http_status = ''
-                # Threat intelligence
-                if threat_intel:
-                    if 'urlscan' in threat_intel:
-                        us_data = threat_intel['urlscan']
-                        if us_data:
-                            # Check for error/status conditions first
-                            if 'status' in us_data:
-                                status = us_data['status']
-                                error = us_data.get('error', '')
-                                if status == 'rate_limited':
-                                    urlscan_status = "Rate Limited"
-                                elif status == 'timeout':
-                                    urlscan_status = "Scan Timeout"
-                                elif status == 'submission_failed':
-                                    urlscan_status = f"Scan Failed: {error}"
-                                elif status == 'error':
-                                    urlscan_status = f"Error: {error}"
-                                else:
-                                    urlscan_status = f"Error: {status}"
-                            else:
-                                # URLScan status: Malicious (score) or Clean with link
-                                malicious = us_data.get('malicious', False)
-                                score = us_data.get('score', 0)
-                                report_url = us_data.get('report_url')
-                                
-                                if malicious or score > 0:
-                                    if report_url:
-                                        urlscan_status = f"⚠ Malicious ({score}) - {report_url}"
-                                    else:
-                                        urlscan_status = f"⚠ Malicious ({score})"
-                                elif report_url:
-                                    urlscan_status = f"✓ Clean ({score}) - {report_url}"
-                                else:
-                                    # No report_url means scan failed or never existed
-                                    urlscan_status = "No Scan Available"
-                    
-                    if 'certificate_transparency' in threat_intel:
-                        ct_data = threat_intel['certificate_transparency']
-                        if ct_data:
-                            cert_count = ct_data.get('certificates_found', 0)
-                            status = ct_data.get('status', '')
-                            if cert_count > 0:
-                                ct_logs = f"{cert_count} cert(s)"
-                            elif status:
-                                ct_logs = status
-                            else:
-                                ct_logs = "0"
-                    
-                    if 'http_probe' in threat_intel:
-                        http_data = threat_intel['http_probe']
-                        if http_data:
-                            # Get HTTP/HTTPS status
-                            http_active = http_data.get('http_active', False)
-                            https_active = http_data.get('https_active', False)
-                            http_code = http_data.get('http_status', '')
-                            https_code = http_data.get('https_status', '')
-                            
-                            if https_active and https_code:
-                                http_status = f"HTTPS: {https_code}"
-                            elif http_active and http_code:
-                                http_status = f"HTTP: {http_code}"
-                            else:
-                                http_status = "Inactive"
-                
+
+                urlscan_status = intel['urlscan']
+                if intel['urlscan_url']:
+                    urlscan_status = f"{urlscan_status} - {intel['urlscan_url']}"
+
                 row = [
                     scan_date,
                     original,
                     perm['domain'],
                     perm.get('fuzzer', ''),
                     risk_score,
+                    perm.get('created_days_ago', ''),
                     urlscan_status,
-                    ct_logs,
-                    http_status,
-                    created,
-                    updated,
-                    expires,
+                    intel['ct'],
+                    intel['http'],
+                    join_values(perm.get('whois_created')),
+                    join_values(perm.get('whois_updated')),
+                    join_values(perm.get('whois_expires')),
                     perm.get('whois_registrant', ''),
                     perm.get('whois_org', ''),
                     perm.get('whois_registrar', ''),
-                    emails,
+                    join_values(perm.get('whois_emails')),
                     perm.get('whois_country', ''),
-                    ', '.join(perm.get('whois_status', [])) if isinstance(perm.get('whois_status'), list) else perm.get('whois_status', ''),
-                    name_servers,
-                    ip,
-                    mx
+                    join_values(perm.get('whois_status')),
+                    join_values(perm.get('whois_name_servers')),
+                    join_values(perm.get('dns_a')),
+                    join_values(perm.get('dns_mx')),
                 ]
+
+                # WHOIS registrant/org fields are controlled by the very people
+                # this tool investigates. Neutralise anything Excel would
+                # execute as a formula before it reaches a cell.
+                row = [sanitize_spreadsheet_value(value) for value in row]
+
                 ws.append(row)
                 
                 # Highlight based on risk score
@@ -315,18 +327,15 @@ class ExcelExporter(BaseExporter):
             max_length = 0
             column_letter = get_column_letter(column[0].column)
             for cell in column:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(cell.value)
-                except:
-                    pass
+                if cell.value is not None:
+                    max_length = max(max_length, len(str(cell.value)))
             adjusted_width = min(max_length + 2, 60)
             ws.column_dimensions[column_letter].width = adjusted_width
         
         # Freeze panes
         ws.freeze_panes = 'A2'
 
-    def _create_statistics_sheet(self, wb: Workbook, results: List[Dict[str, Any]]) -> None:
+    def _create_statistics_sheet(self, wb: Workbook, results: list[dict[str, Any]]) -> None:
         """Create statistics sheet."""
         ws = wb.create_sheet("Statistics")
         
@@ -381,14 +390,14 @@ class ExcelExporter(BaseExporter):
 class JSONExporter(BaseExporter):
     """Export results to JSON format."""
 
-    def export(self, results: List[Dict[str, Any]], output_dir: Path) -> Path:
+    def export(self, results: list[dict[str, Any]], output_dir: Path) -> Path:
         """Export results to JSON file."""
         output_file = self._generate_filename(output_dir, 'json')
         
         # Create export structure
         export_data = {
             'export_date': datetime.now().isoformat(),
-            'version': '1.0',
+            'version': __version__,
             'total_domains': len(results),
             'results': results
         }
@@ -403,7 +412,7 @@ class JSONExporter(BaseExporter):
 class CSVExporter(BaseExporter):
     """Export results to CSV format."""
 
-    def export(self, results: List[Dict[str, Any]], output_dir: Path) -> Path:
+    def export(self, results: list[dict[str, Any]], output_dir: Path) -> Path:
         """Export results to CSV file."""
         output_file = self._generate_filename(output_dir, 'csv')
         
@@ -413,112 +422,52 @@ class CSVExporter(BaseExporter):
             # Write headers
             headers = [
                 'Scan Date', 'Original Domain', 'Permutation', 'Fuzzer Type',
-                'Risk Score', 'URLScan Status', 'CT Logs', 'HTTP Status',
+                'Risk Score', 'Age (days)', 'URLScan Status', 'URLScan Report',
+                'CT Logs', 'HTTP Status',
                 'Created Date', 'Updated Date', 'Expires Date',
                 'Registrant', 'Organization', 'Registrar',
                 'Emails', 'Country', 'Status',
                 'Name Servers', 'IP Addresses', 'Mail Servers', 'Recent'
             ]
             writer.writerow(headers)
-            
+
             # Write data
             for result in results:
                 scan_date = result['scan_date']
                 original = result['original_domain']
-                
+
                 for perm in result['permutations']:
-                    # Get threat intelligence data
-                    threat_intel = perm.get('threat_intel', {})
-                    risk_score = perm.get('risk_score', '')
-                    urlscan_status = ''
-                    ct_logs = ''
-                    http_status = ''
-                    
-                    if threat_intel:
-                        if 'urlscan' in threat_intel:
-                            us_data = threat_intel['urlscan']
-                            if us_data:
-                                # Check for error/status conditions first
-                                if 'status' in us_data:
-                                    status = us_data['status']
-                                    error = us_data.get('error', '')
-                                    if status == 'rate_limited':
-                                        urlscan_status = "Rate Limited"
-                                    elif status == 'timeout':
-                                        urlscan_status = "Scan Timeout"
-                                    elif status == 'submission_failed':
-                                        urlscan_status = f"Scan Failed: {error}"
-                                    elif status == 'error':
-                                        urlscan_status = f"Error: {error}"
-                                    else:
-                                        urlscan_status = f"Error: {status}"
-                                else:
-                                    malicious = us_data.get('malicious', False)
-                                    score = us_data.get('score', 0)
-                                    report_url = us_data.get('report_url')
-                                    
-                                    if malicious or score > 0:
-                                        if report_url:
-                                            urlscan_status = f"Malicious ({score}) - {report_url}"
-                                        else:
-                                            urlscan_status = f"Malicious ({score})"
-                                    elif report_url:
-                                        urlscan_status = f"Clean ({score}) - {report_url}"
-                                    else:
-                                        urlscan_status = "No Scan Available"
-                        
-                        if 'certificate_transparency' in threat_intel:
-                            ct_data = threat_intel['certificate_transparency']
-                            if ct_data:
-                                cert_count = ct_data.get('certificates_found', 0)
-                                status = ct_data.get('status', '')
-                                if cert_count > 0:
-                                    ct_logs = f"{cert_count} cert(s)"
-                                elif status:
-                                    ct_logs = status
-                                else:
-                                    ct_logs = "0"
-                        
-                        if 'http_probe' in threat_intel:
-                            http_data = threat_intel['http_probe']
-                            if http_data:
-                                http_active = http_data.get('http_active', False)
-                                https_active = http_data.get('https_active', False)
-                                http_code = http_data.get('http_status', '')
-                                https_code = http_data.get('https_status', '')
-                                
-                                if https_active and https_code:
-                                    http_status = f"HTTPS: {https_code}"
-                                elif http_active and http_code:
-                                    http_status = f"HTTP: {http_code}"
-                                else:
-                                    http_status = "Inactive"
-                    
+                    intel = format_threat_intel(perm)
+
                     row = [
                         scan_date,
                         original,
                         perm['domain'],
                         perm.get('fuzzer', ''),
-                        risk_score,
-                        urlscan_status,
-                        ct_logs,
-                        http_status,
-                        ', '.join(perm.get('whois_created', [])),
-                        ', '.join(perm.get('whois_updated', [])),
-                        ', '.join(perm.get('whois_expires', [])),
+                        perm.get('risk_score', ''),
+                        perm.get('created_days_ago', ''),
+                        intel['urlscan'],
+                        intel['urlscan_url'] or '',
+                        intel['ct'],
+                        intel['http'],
+                        join_values(perm.get('whois_created')),
+                        join_values(perm.get('whois_updated')),
+                        join_values(perm.get('whois_expires')),
                         perm.get('whois_registrant', ''),
                         perm.get('whois_org', ''),
                         perm.get('whois_registrar', ''),
-                        ', '.join(perm.get('whois_emails', [])),
+                        join_values(perm.get('whois_emails')),
                         perm.get('whois_country', ''),
-                        str(perm.get('whois_status', '')),
-                        ', '.join(perm.get('whois_name_servers', [])),
-                        ', '.join(perm.get('dns_a', [])),
-                        ', '.join(perm.get('dns_mx', [])),
-                        'Yes' if perm.get('is_recent', False) else 'No'
+                        join_values(perm.get('whois_status')),
+                        join_values(perm.get('whois_name_servers')),
+                        join_values(perm.get('dns_a')),
+                        join_values(perm.get('dns_mx')),
+                        'Yes' if perm.get('is_recent', False) else 'No',
                     ]
-                    writer.writerow(row)
-        
+
+                    # Guard against spreadsheet formula injection via WHOIS data
+                    writer.writerow([sanitize_spreadsheet_value(v) for v in row])
+
         self.logger.info(f"Exported CSV file: {output_file}")
         return output_file
 
@@ -526,7 +475,7 @@ class CSVExporter(BaseExporter):
 class HTMLExporter(BaseExporter):
     """Export results to HTML format."""
 
-    def export(self, results: List[Dict[str, Any]], output_dir: Path) -> Path:
+    def export(self, results: list[dict[str, Any]], output_dir: Path) -> Path:
         """Export results to HTML file."""
         output_file = self._generate_filename(output_dir, 'html')
         
@@ -538,12 +487,12 @@ class HTMLExporter(BaseExporter):
         self.logger.info(f"Exported HTML file: {output_file}")
         return output_file
 
-    def _generate_html(self, results: List[Dict[str, Any]]) -> str:
+    def _generate_html(self, results: list[dict[str, Any]]) -> str:
         """Generate HTML content."""
         total_registered = sum(r['registered_count'] for r in results)
         total_recent = sum(len([p for p in r['permutations'] if p.get('is_recent', False)]) for r in results)
         
-        html = f"""<!DOCTYPE html>
+        html_content = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -693,31 +642,33 @@ class HTMLExporter(BaseExporter):
         for result in results:
             recent_count = len([p for p in result['permutations'] if p.get('is_recent', False)])
             
-            html += f"""
+            html_content += f"""
         <div class="domain-section">
             <div class="domain-header">
-                {result['original_domain']}
+                {html.escape(str(result['original_domain']))}
             </div>
             <div class="domain-info">
-                <span><strong>Scan Date:</strong> {result['scan_date']}</span>
+                <span><strong>Scan Date:</strong> {html.escape(str(result['scan_date']))}</span>
                 <span><strong>Registered:</strong> {result['registered_count']}</span>
                 <span><strong>Recent:</strong> {recent_count}</span>
             </div>
 """
             
             if result['permutations']:
-                html += """
+                html_content += """
             <table>
                 <thead>
                     <tr>
                         <th>Domain</th>
                         <th>Fuzzer</th>
                         <th>Risk</th>
+                        <th>Age (days)</th>
                         <th>URLScan Status</th>
                         <th>CT Logs</th>
                         <th>HTTP Status</th>
                         <th>Created</th>
                         <th>Registrant</th>
+                        <th>Organization</th>
                         <th>IP</th>
                     </tr>
                 </thead>
@@ -725,108 +676,67 @@ class HTMLExporter(BaseExporter):
 """
                 
                 for perm in result['permutations']:
+                    intel = format_threat_intel(perm)
+
+                    # Everything below originates from third parties: the
+                    # domain name itself, WHOIS registrant/org fields, and the
+                    # <title> of a page served by the squatter. All of it is
+                    # escaped before it reaches the report, so that opening a
+                    # report cannot execute attacker-supplied markup.
                     row_class = 'recent' if perm.get('is_recent', False) else ''
-                    created = perm.get('whois_created', [''])[0] if perm.get('whois_created') else ''
-                    registrant = perm.get('whois_registrant', '')
-                    ip = perm.get('dns_a', [''])[0] if perm.get('dns_a') else ''
-                    
-                    # Get threat intelligence data
-                    threat_intel = perm.get('threat_intel', {})
-                    risk_score = perm.get('risk_score', '')
-                    urlscan_status = ''
-                    ct_logs = ''
-                    http_status = ''
-                    
-                    if threat_intel:
-                        if 'urlscan' in threat_intel:
-                            us_data = threat_intel['urlscan']
-                            if us_data:
-                                # Check for error/status conditions first
-                                if 'status' in us_data:
-                                    status = us_data['status']
-                                    error = us_data.get('error', '')
-                                    if status == 'rate_limited':
-                                        urlscan_status = "⏱️ Rate Limited"
-                                    elif status == 'timeout':
-                                        urlscan_status = "⏱️ Scan Timeout"
-                                    elif status == 'submission_failed':
-                                        urlscan_status = f"❌ Scan Failed: {error}"
-                                    elif status == 'error':
-                                        urlscan_status = f"❌ Error: {error}"
-                                    else:
-                                        urlscan_status = f"❌ Error: {status}"
-                                else:
-                                    malicious = us_data.get('malicious', False)
-                                    score = us_data.get('score', 0)
-                                    report_url = us_data.get('report_url')
-                                    
-                                    if malicious or score > 0:
-                                        if report_url:
-                                            urlscan_status = f"⚠️ <a href='{report_url}' target='_blank'>Malicious ({score})</a>"
-                                        else:
-                                            urlscan_status = f"⚠️ Malicious ({score})"
-                                    elif report_url:
-                                        urlscan_status = f"✓ <a href='{report_url}' target='_blank'>Clean ({score})</a>"
-                                    else:
-                                        urlscan_status = "⚪ No Scan Available"
-                        
-                        if 'certificate_transparency' in threat_intel:
-                            ct_data = threat_intel['certificate_transparency']
-                            if ct_data:
-                                cert_count = ct_data.get('certificates_found', 0)
-                                status = ct_data.get('status', '')
-                                if cert_count > 0:
-                                    ct_logs = f"✓ {cert_count} cert(s)"
-                                elif status:
-                                    ct_logs = status
-                                else:
-                                    ct_logs = "0"
-                        
-                        if 'http_probe' in threat_intel:
-                            http_data = threat_intel['http_probe']
-                            if http_data:
-                                http_active = http_data.get('http_active', False)
-                                https_active = http_data.get('https_active', False)
-                                http_code = http_data.get('http_status', '')
-                                https_code = http_data.get('https_status', '')
-                                
-                                if https_active and https_code:
-                                    http_status = f"🔒 HTTPS: {https_code}"
-                                elif http_active and http_code:
-                                    http_status = f"HTTP: {http_code}"
-                                else:
-                                    http_status = "Inactive"
-                    
-                    html += f"""
-                    <tr class="{row_class}">
-                        <td><code>{perm['domain']}</code></td>
-                        <td><span class="fuzzer-badge">{perm.get('fuzzer', '')}</span></td>
-                        <td>{risk_score}</td>
-                        <td>{urlscan_status}</td>
-                        <td>{ct_logs}</td>
-                        <td>{http_status}</td>
-                        <td>{created}</td>
-                        <td>{registrant}</td>
-                        <td>{ip}</td>
+                    created = ''
+                    if perm.get('whois_created'):
+                        created = str(perm['whois_created'][0])
+
+                    ip = ''
+                    if perm.get('dns_a'):
+                        ip = str(perm['dns_a'][0])
+
+                    if intel['urlscan_url']:
+                        urlscan_cell = (
+                            f'<a href="{html.escape(intel["urlscan_url"], quote=True)}" '
+                            f'target="_blank" rel="noopener noreferrer">'
+                            f'{html.escape(intel["urlscan"])}</a>'
+                        )
+                    else:
+                        urlscan_cell = html.escape(intel['urlscan'])
+
+                    age = perm.get('created_days_ago')
+                    age_cell = '' if age is None else html.escape(str(age))
+
+                    html_row = f"""
+                    <tr class="{html.escape(row_class, quote=True)}">
+                        <td><code>{html.escape(str(perm['domain']))}</code></td>
+                        <td><span class="fuzzer-badge">{html.escape(str(perm.get('fuzzer', '')))}</span></td>
+                        <td>{html.escape(str(perm.get('risk_score', '')))}</td>
+                        <td>{age_cell}</td>
+                        <td>{urlscan_cell}</td>
+                        <td>{html.escape(intel['ct'])}</td>
+                        <td>{html.escape(intel['http'])}</td>
+                        <td>{html.escape(created)}</td>
+                        <td>{html.escape(str(perm.get('whois_registrant') or ''))}</td>
+                        <td>{html.escape(str(perm.get('whois_org') or ''))}</td>
+                        <td>{html.escape(ip)}</td>
                     </tr>
 """
-                
-                html += """
+                    html_content += html_row
+
+                html_content += """
                 </tbody>
             </table>
 """
             else:
-                html += """
+                html_content += """
             <p style="padding: 20px; text-align: center; color: #666;">No registered permutations found</p>
 """
             
-            html += """
+            html_content += """
         </div>
 """
         
-        html += """
+        html_content += """
         <div class="footer">
-            <p>Generated by <strong>Typo Sniper v1.0</strong></p>
+            <p>Generated by <strong>Typo Sniper</strong></p>
             <p>Advanced Domain Typosquatting Detection Tool</p>
         </div>
     </div>
@@ -834,4 +744,4 @@ class HTMLExporter(BaseExporter):
 </html>
 """
         
-        return html
+        return html_content

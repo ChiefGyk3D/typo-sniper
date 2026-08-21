@@ -4,12 +4,9 @@ Typo Sniper - Advanced Domain Typosquatting Detection Tool
 A powerful tool for detecting and monitoring potential typosquatting domains.
 """
 
-__version__ = "1.0.3"
+from .version import __version__
+
 __author__ = "chiefgyk3d"
 __license__ = "MPL-2.0"
 
-from .config import Config
-from .cache import Cache
-from .scanner import DomainScanner
-
-__all__ = ['Config', 'Cache', 'DomainScanner']
+__all__ = ['__author__', '__license__', '__version__']

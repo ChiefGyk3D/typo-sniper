@@ -137,9 +137,6 @@ cache/
 # Test outputs and temporary files
 test_output/
 test_docker.txt
-tests/test_cache.py
-tests/test_data/*.txt
-tests/test_data/test_config.yaml
 
 # Docker
 docker-compose.override.yml

@@ -8,7 +8,7 @@ This guide explains how to run Typo Sniper in Docker.
 
 ```bash
 # Build from the project root directory
-docker build -f docker/Dockerfile -t typo-sniper:1.0.0 .
+docker build -f docker/Dockerfile -t typo-sniper:1.1.0 .
 ```
 
 ### 2. Run a Basic Scan
@@ -18,7 +18,7 @@ docker build -f docker/Dockerfile -t typo-sniper:1.0.0 .
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/monitored_domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/monitored_domains.txt \
   -o /app/results \
   --format excel json
@@ -67,7 +67,7 @@ cd ..
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   -o /app/results \
   --format excel json csv html
@@ -79,7 +79,7 @@ docker run --rm \
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   -o /app/results \
   --months 3 \
@@ -92,7 +92,7 @@ docker run --rm \
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   -o /app/results \
   --no-cache \
@@ -110,8 +110,8 @@ docker volume create typo-sniper-cache
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  -v typo-sniper-cache:/root/.typo_sniper/cache \
-  typo-sniper:1.0.0 \
+  -v typo-sniper-cache:/home/sniper/.typo_sniper/cache \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   -o /app/results \
   --format excel json
@@ -123,7 +123,7 @@ docker run --rm \
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   -o /app/results \
   --max-workers 20 \
@@ -136,7 +136,7 @@ The Docker container uses the following volume mounts:
 
 - **Input**: `/app/data/` - Mount your domain list here
 - **Output**: `/app/results/` - Results are written here
-- **Cache**: `/root/.typo_sniper/cache/` - WHOIS cache for faster subsequent scans
+- **Cache**: `/home/sniper/.typo_sniper/cache/` - WHOIS cache for faster subsequent scans
 
 ## Environment Variables
 
@@ -145,10 +145,10 @@ You can customize behavior with environment variables:
 ```bash
 docker run --rm \
   -e PYTHONUNBUFFERED=1 \
-  -e CACHE_DIR=/root/.typo_sniper/cache \
+  -e CACHE_DIR=/home/sniper/.typo_sniper/cache \
   -v "$(pwd)/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt
 ```
 
@@ -167,7 +167,6 @@ The default `docker-compose.yml` configuration:
 Create a `docker-compose.override.yml`:
 
 ```yaml
-version: '3.8'
 
 services:
   typo-sniper:
@@ -189,7 +188,7 @@ Add to your crontab:
 
 ```bash
 # Run every day at 2 AM
-0 2 * * * docker run --rm -v /path/to/domains.txt:/app/data/domains.txt:ro -v /path/to/results:/app/results -v typo-sniper-cache:/root/.typo_sniper/cache typo-sniper:1.0.0 -i /app/data/domains.txt -o /app/results --months 1 --format excel json
+0 2 * * * docker run --rm -v /path/to/domains.txt:/app/data/domains.txt:ro -v /path/to/results:/app/results -v typo-sniper-cache:/home/sniper/.typo_sniper/cache typo-sniper:1.1.0 -i /app/data/domains.txt -o /app/results --months 1 --format excel json
 ```
 
 ### Using Docker Compose
@@ -201,13 +200,13 @@ The `typo-sniper-scheduled` service can be adapted for scheduled runs.
 ### Build for ARM64 (Apple Silicon, Raspberry Pi)
 
 ```bash
-docker buildx build --platform linux/arm64 -t typo-sniper:1.0.0-arm64 .
+docker buildx build --platform linux/arm64 -t typo-sniper:1.1.0-arm64 .
 ```
 
 ### Build Multi-Platform
 
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64 -t typo-sniper:1.0.0 .
+docker buildx build --platform linux/amd64,linux/arm64 -t typo-sniper:1.1.0 .
 ```
 
 ## Pushing to Docker Registry
@@ -216,19 +215,19 @@ docker buildx build --platform linux/amd64,linux/arm64 -t typo-sniper:1.0.0 .
 
 ```bash
 # Tag the image
-docker tag typo-sniper:1.0.0 yourusername/typo-sniper:1.0.0
-docker tag typo-sniper:1.0.0 yourusername/typo-sniper:latest
+docker tag typo-sniper:1.1.0 yourusername/typo-sniper:1.1.0
+docker tag typo-sniper:1.1.0 yourusername/typo-sniper:latest
 
 # Push to Docker Hub
-docker push yourusername/typo-sniper:1.0.0
+docker push yourusername/typo-sniper:1.1.0
 docker push yourusername/typo-sniper:latest
 ```
 
 ### Using from Docker Hub
 
 ```bash
-docker pull yourusername/typo-sniper:1.0.0
-docker run --rm -v "$(pwd)/domains.txt:/app/data/domains.txt:ro" -v "$(pwd)/results:/app/results" yourusername/typo-sniper:1.0.0 -i /app/data/domains.txt
+docker pull yourusername/typo-sniper:1.1.0
+docker run --rm -v "$(pwd)/domains.txt:/app/data/domains.txt:ro" -v "$(pwd)/results:/app/results" yourusername/typo-sniper:1.1.0 -i /app/data/domains.txt
 ```
 
 ## Integration with CI/CD
@@ -249,14 +248,14 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Build Docker Image
-        run: docker build -t typo-sniper:1.0.0 .
+        run: docker build -t typo-sniper:1.1.0 .
       
       - name: Run Scan
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/monitored_domains.txt:/app/data/domains.txt:ro \
             -v ${{ github.workspace }}/results:/app/results \
-            typo-sniper:1.0.0 \
+            typo-sniper:1.1.0 \
             -i /app/data/domains.txt \
             -o /app/results \
             --months 1 \
@@ -286,7 +285,7 @@ spec:
         spec:
           containers:
           - name: typo-sniper
-            image: typo-sniper:1.0.0
+            image: typo-sniper:1.1.0
             args:
               - "-i"
               - "/app/data/monitored_domains.txt"
@@ -304,7 +303,7 @@ spec:
             - name: results
               mountPath: /app/results
             - name: cache
-              mountPath: /root/.typo_sniper/cache
+              mountPath: /home/sniper/.typo_sniper/cache
           volumes:
           - name: domains
             configMap:
@@ -330,7 +329,7 @@ docker run --rm \
   --user $(id -u):$(id -g) \
   -v "$(pwd)/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt
 ```
 
@@ -351,7 +350,7 @@ docker run --rm \
   --memory="2g" \
   -v "$(pwd)/domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.0 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   --max-workers 5
 ```
@@ -386,7 +385,7 @@ Create `scan.sh`:
 
 DOMAIN_FILE="monitored_domains.txt"
 RESULTS_DIR="./results"
-DOCKER_IMAGE="typo-sniper:1.0.0"
+DOCKER_IMAGE="typo-sniper:1.1.0"
 
 # Create results directory if it doesn't exist
 mkdir -p "$RESULTS_DIR"
@@ -395,7 +394,7 @@ mkdir -p "$RESULTS_DIR"
 docker run --rm \
   -v "$(pwd)/$DOMAIN_FILE:/app/data/domains.txt:ro" \
   -v "$(pwd)/$RESULTS_DIR:/app/results" \
-  -v typo-sniper-cache:/root/.typo_sniper/cache \
+  -v typo-sniper-cache:/home/sniper/.typo_sniper/cache \
   "$DOCKER_IMAGE" \
   -i /app/data/domains.txt \
   -o /app/results \

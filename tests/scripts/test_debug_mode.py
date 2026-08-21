@@ -3,15 +3,16 @@
 Test script to verify debug mode is working with enhanced detection.
 """
 
-import sys
 import asyncio
 import logging
+import sys
 from pathlib import Path
 
 sys.path.insert(0, 'src')
 
 from config import Config
 from enhanced_detection import generate_enhanced_permutations
+
 
 async def test_debug_mode():
     """Test debug mode with enhanced detection."""

@@ -1,0 +1,60 @@
+# Docker reads .dockerignore from the build context root. The compose files and
+# the documented build commands use the repository root as context, so this file
+# must live here — a copy under docker/ is never read.
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Version control and CI
+.git/
+.github/
+.gitignore
+
+# Cache, results, and local secrets
+.typo_sniper/
+results/
+test_output/
+*.log
+.env
+config.yaml
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+pyproject.toml
+requirements-dev.txt
+
+# Docker
+.dockerignore
+docker/
+
+# Documentation and media
+*.md
+docs/
+media/
+
+# Tests
+tests/
