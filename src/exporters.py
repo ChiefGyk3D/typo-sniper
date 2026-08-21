@@ -82,6 +82,10 @@ def format_threat_intel(perm: dict[str, Any]) -> dict[str, Any]:
             summary['http'] = f'HTTPS: {https_code}'
         elif http_data.get('http_active') and http_code:
             summary['http'] = f'HTTP: {http_code}'
+        elif http_data.get('https_active'):
+            # Answered TLS but the certificate was rejected, so no request
+            # was completed and there is no status code to show
+            summary['http'] = 'HTTPS: cert rejected'
         else:
             summary['http'] = 'Inactive'
 

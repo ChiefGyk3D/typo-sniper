@@ -72,11 +72,6 @@ class Config:
     http_timeout: int = 10
     http_max_bytes: int = 1_048_576  # Cap on probed response bodies (1 MiB)
     http_max_redirects: int = 5
-    # Probes always try with TLS verification first. When that fails on an
-    # invalid certificate, retry unverified so live phishing sites with
-    # self-signed or expired certs are still detected. Such responses are
-    # recorded as tls_verified=False. Set to false to never probe unverified.
-    http_allow_invalid_certs: bool = True
     user_agent: str = (
         f'TypoSniper/{__version__} (+https://github.com/ChiefGyk3D/typo-sniper)'
     )

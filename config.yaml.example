@@ -55,11 +55,9 @@ enable_http_probe: true            # Probe domains with HTTP/HTTPS
 http_timeout: 10                   # HTTP request timeout (seconds)
 http_max_bytes: 1048576            # Cap on probed response bodies (1 MiB)
 http_max_redirects: 5              # Maximum redirects to follow
-# Probes always try with TLS verification first, and record whether the
-# certificate validated (reported in the TLS column). When verification fails,
-# retry unverified so live phishing sites with self-signed or expired certs are
-# still found. Set false to never probe without certificate validation.
-http_allow_invalid_certs: true
+# TLS certificates are always validated. A domain that answers but presents an
+# untrusted certificate is reported as "Invalid/self-signed" in the TLS column
+# rather than being fetched over an unauthenticated connection.
 
 # Risk scoring
 enable_risk_scoring: true          # Calculate risk scores for domains

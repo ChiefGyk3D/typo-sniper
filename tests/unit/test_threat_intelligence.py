@@ -133,62 +133,55 @@ class TestAnalyzeDomain:
         assert datetime.fromisoformat(report['timestamp']).tzinfo is not None
 
 
-class TestTlsProbeFallback:
-    """The probe validates certificates first and records the outcome."""
+class TestCertificateHandling:
+    """Certificates are always validated; a failure is recorded, not bypassed."""
 
     @pytest.mark.asyncio
-    async def test_verified_https_is_marked_verified(self, intel, monkeypatch):
+    async def test_rejected_certificate_is_reported_not_retried(self, intel):
+        """A cert failure must never trigger an unverified refetch."""
+        import ssl as ssl_mod
+
+        ctx = MagicMock()
+        ctx.__aenter__ = AsyncMock(side_effect=ssl_mod.SSLError('bad cert'))
+        ctx.__aexit__ = AsyncMock(return_value=False)
+
         calls = []
+        session = MagicMock()
+        session.get = MagicMock(side_effect=lambda *a, **k: (calls.append(k), ctx)[1])
+        intel.session = session
 
-        async def fake_fetch(url, verify_tls):
-            calls.append(verify_tls)
-            return {'status': 200, 'redirects_to': None, 'title': None}
-
-        monkeypatch.setattr(intel, '_fetch', fake_fetch)
-        result = await intel._probe_scheme('https://evil.com')
-
-        assert result['tls_verified'] is True
-        assert calls == [True]  # no unverified retry when the first attempt works
-
-    @pytest.mark.asyncio
-    async def test_falls_back_unverified_and_flags_it(self, intel, monkeypatch):
-        calls = []
-
-        async def fake_fetch(url, verify_tls):
-            calls.append(verify_tls)
-            if verify_tls:
-                return None
-            return {'status': 200, 'redirects_to': None, 'title': None}
-
-        monkeypatch.setattr(intel, '_fetch', fake_fetch)
         result = await intel._probe_scheme('https://evil.com')
 
         assert result['tls_verified'] is False
-        assert calls == [True, False]
+        assert result['title'] is None       # no body read over an unverified channel
+        assert len(calls) == 1               # exactly one attempt, no insecure retry
+        # Verification is never disabled on any call
+        assert all(c.get('ssl') is None for c in calls)
 
     @pytest.mark.asyncio
-    async def test_fallback_can_be_disabled(self, intel, monkeypatch):
-        intel.config.http_allow_invalid_certs = False
-        calls = []
-
-        async def fake_fetch(url, verify_tls):
-            calls.append(verify_tls)
-            return None
-
-        monkeypatch.setattr(intel, '_fetch', fake_fetch)
+    async def test_unreachable_host_returns_none(self, intel):
+        ctx = MagicMock()
+        ctx.__aenter__ = AsyncMock(side_effect=OSError('connection refused'))
+        ctx.__aexit__ = AsyncMock(return_value=False)
+        session = MagicMock()
+        session.get = MagicMock(return_value=ctx)
+        intel.session = session
 
         assert await intel._probe_scheme('https://evil.com') is None
-        assert calls == [True]  # never retried without verification
 
     @pytest.mark.asyncio
-    async def test_plain_http_is_not_retried(self, intel, monkeypatch):
-        calls = []
+    async def test_plain_http_has_no_tls_verdict(self, intel):
+        response = MagicMock()
+        response.status = 200
+        response.history = None
+        response.url = 'http://evil.com'
+        ctx = MagicMock()
+        ctx.__aenter__ = AsyncMock(return_value=response)
+        ctx.__aexit__ = AsyncMock(return_value=False)
+        session = MagicMock()
+        session.get = MagicMock(return_value=ctx)
+        intel.session = session
+        intel._read_title = AsyncMock(return_value=None)
 
-        async def fake_fetch(url, verify_tls):
-            calls.append(verify_tls)
-            return None
-
-        monkeypatch.setattr(intel, '_fetch', fake_fetch)
-
-        assert await intel._probe_scheme('http://evil.com') is None
-        assert calls == [True]
+        result = await intel._probe_scheme('http://evil.com')
+        assert result['tls_verified'] is None

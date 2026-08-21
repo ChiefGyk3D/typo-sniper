@@ -83,23 +83,17 @@ class SecretsManager:
             response = self.aws_client.get_secret_value(SecretId=secret_name)
             
             if 'SecretString' in response:
-                secret_data = json.loads(response['SecretString'])
-                self.aws_secrets = secret_data
-                # Log the count only. Nothing derived from the secret payload
-                # is interpolated into a log record.
-                self.logger.info(
-                    "Loaded %d secret(s) from AWS secret '%s'",
-                    len(self.aws_secrets), secret_name,
-                )
+                self.aws_secrets = json.loads(response['SecretString'])
+                self.logger.info("Loaded AWS secrets successfully")
             else:
-                self.logger.warning("No SecretString found in AWS secret '%s'", secret_name)
+                self.logger.warning("AWS secret contained no SecretString value")
         except Exception as e:
-            # Only the exception type is logged: messages raised by a secrets
-            # backend can embed response content, which must never be written
-            # to a log file.
-            self.logger.error(
-                "Failed to load AWS secret '%s' (%s)", secret_name, type(e).__name__
-            )
+            # Only the exception type is recorded. Messages raised by a secrets
+            # backend can embed response content, and the secret's name can
+            # reveal internal structure in a shared log aggregator. The name is
+            # operator-configured (a single aws_secret_name), so naming it here
+            # would add nothing an operator does not already know.
+            self.logger.error("Failed to load AWS secrets (%s)", type(e).__name__)
             self.use_aws = False
     
     def get_secret(self, key: str, default: str | None = None) -> str | None:

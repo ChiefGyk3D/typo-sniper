@@ -27,17 +27,19 @@ version differ from 1.0.3 — see **Changed** before comparing runs.
   stream an unbounded body into memory. Redirects are also capped, and requests
   now send an identifying User-Agent.
 - Added `pip-audit` and CodeQL workflows.
-- **HTTP probes now validate TLS certificates.** Verification is attempted
-  first and the outcome recorded as a new `TLS` report column: a lookalike
-  domain presenting a valid certificate was set up deliberately, which is
-  useful intelligence rather than something to discard. When verification
-  fails, the probe retries unverified so live phishing sites with self-signed
-  or expired certificates are still detected, flagged `Invalid/self-signed` so
-  nothing downstream treats them as trusted. Set `http_allow_invalid_certs:
-  false` to disable the unverified retry entirely.
-- **AWS Secrets Manager failures no longer log the raw exception.** Messages
-  raised by a secrets backend can embed response content; only the exception
-  type is written to the log now.
+- **HTTP probes always validate TLS certificates.** The outcome is recorded as
+  a new `TLS` report column: a lookalike domain presenting a valid certificate
+  was set up deliberately, which is intelligence worth keeping rather than
+  discarding. A host that answers but fails validation is reported as
+  `Invalid/self-signed` and counted as live, and the probe deliberately stops
+  there instead of refetching with verification disabled — that body would
+  become the page title in an analyst's report, read over a channel just
+  proven unauthenticated. Liveness for such hosts is still established by the
+  plain HTTP probe.
+- **AWS Secrets Manager logging no longer records the exception or the secret
+  name.** Messages raised by a secrets backend can embed response content, and
+  secret names can reveal internal structure in a shared log aggregator. Only
+  the exception type is logged.
 
 ### Fixed
 

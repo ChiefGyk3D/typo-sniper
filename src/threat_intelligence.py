@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import re
+import ssl
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import quote
@@ -422,49 +423,10 @@ class ThreatIntelligence:
         Returns:
             Dictionary with status/redirects_to/title, or None if unreachable
         """
-        # Probe with TLS verification enabled first. Whether a lookalike domain
-        # presents a valid certificate is itself useful intelligence, so the
-        # outcome is recorded rather than discarded.
-        result = await self._fetch(url, verify_tls=True)
-        if result is not None:
-            result['tls_verified'] = url.startswith('https://')
-            return result
-
-        if not url.startswith('https://'):
-            return None
-
-        # HTTPS failed. Retry without verification only if allowed, so that a
-        # live phishing site with a self-signed or expired certificate is still
-        # detected -- flagged as unverified so nothing downstream trusts it.
-        if not self.config.http_allow_invalid_certs:
-            self.logger.debug(f"Skipping unverified retry for {url}")
-            return None
-
-        result = await self._fetch(url, verify_tls=False)
-        if result is not None:
-            result['tls_verified'] = False
-            self.logger.debug(f"{url} responded only without certificate validation")
-
-        return result
-
-    async def _fetch(self, url: str, verify_tls: bool) -> dict[str, Any] | None:
-        """
-        Perform a single HTTP request.
-
-        Args:
-            url: Absolute http(s) URL to probe
-            verify_tls: Whether to validate the server certificate
-
-        Returns:
-            Dictionary with status/redirects_to/title, or None if unreachable
-        """
+        # Certificates are always validated. A validation failure is not an
+        # obstacle to work around: it is itself a finding, recorded below.
         timeout = aiohttp.ClientTimeout(total=self.config.http_timeout)
-
-        # Verification is disabled only on the deliberate fallback path above,
-        # for read-only reconnaissance of hosts already presumed hostile. The
-        # response is never trusted: it is marked tls_verified=False, and only
-        # the status code and page title are retained.
-        ssl_option = None if verify_tls else False  # lgtm[py/request-without-cert-validation]
+        is_https = url.startswith('https://')
 
         try:
             async with self.session.get(
@@ -472,12 +434,12 @@ class ThreatIntelligence:
                 timeout=timeout,
                 allow_redirects=True,
                 max_redirects=self.config.http_max_redirects,
-                ssl=ssl_option,
             ) as response:
                 result = {
                     'status': response.status,
                     'redirects_to': str(response.url) if response.history else None,
                     'title': None,
+                    'tls_verified': True if is_https else None,
                 }
 
                 if response.status == 200:
@@ -485,10 +447,30 @@ class ThreatIntelligence:
 
                 return result
 
+        except (aiohttp.ClientConnectorCertificateError,
+                aiohttp.ClientConnectorSSLError,
+                ssl.SSLError) as e:
+            # The host answered and presented a certificate that failed
+            # validation. That tells us two useful things at once: the domain
+            # is live, and its certificate cannot be trusted.
+            #
+            # The probe deliberately stops here rather than retrying with
+            # verification disabled. Retrying would mean reading a response
+            # body over a channel just proven unauthenticated, and that body
+            # becomes the page title in an analyst's report. Liveness for
+            # such hosts is still established by the plain HTTP probe.
+            self.logger.debug(f"Certificate validation failed for {url}: {e}")
+            return {
+                'status': None,
+                'redirects_to': None,
+                'title': None,
+                'tls_verified': False,
+            }
+
         except asyncio.TimeoutError:
             self.logger.debug(f"Timeout probing {url}")
         except Exception as e:
-            self.logger.debug(f"Probe failed for {url} (verify_tls={verify_tls}): {e}")
+            self.logger.debug(f"Probe failed for {url}: {e}")
 
         return None
 
