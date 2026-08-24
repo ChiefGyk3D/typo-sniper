@@ -267,3 +267,40 @@ def safe_url(url: Any) -> str | None:
         return url
 
     return None
+
+
+def parse_interval(value: str, default: int = 86400) -> int:
+    """
+    Parse a human-friendly interval into seconds.
+
+    Accepts a bare number of seconds or a suffixed value such as "30m", "6h",
+    or "2d", so that watch mode reads naturally on the command line.
+
+    Args:
+        value: Interval string
+        default: Value to return when parsing fails
+
+    Returns:
+        Interval in seconds (minimum 60)
+    """
+    if value is None:
+        return default
+
+    text = str(value).strip().lower()
+    if not text:
+        return default
+
+    units = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400, 'w': 604800}
+    multiplier = 1
+
+    if text[-1] in units:
+        multiplier = units[text[-1]]
+        text = text[:-1]
+
+    try:
+        seconds = int(float(text) * multiplier)
+    except ValueError:
+        return default
+
+    # A scan takes minutes; anything under a minute is a misconfiguration
+    return max(60, seconds)

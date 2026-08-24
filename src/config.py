@@ -51,6 +51,43 @@ class Config:
     # Output settings
     output_dir: Path = field(default_factory=lambda: Path('results'))
     
+    # Registration data lookup
+    # RDAP (RFC 7482) speaks HTTPS on 443 and returns structured JSON. WHOIS
+    # needs TCP/43, which is blocked on many corporate networks and in most CI
+    # sandboxes, where it fails as a silent timeout rather than a clear error.
+    use_rdap: bool = True
+    rdap_timeout: int = 15
+    whois_fallback: bool = True   # Fall back to WHOIS when RDAP has no endpoint
+
+    # Scan history and change detection
+    enable_diff: bool = True
+    state_dir: Path = field(default_factory=lambda: Path.home() / '.typo_sniper' / 'state')
+    history_retain: int = 30      # Scans kept per monitored domain
+
+    # Watch mode
+    watch_interval: int = 86400   # Seconds between scans when --watch is set
+
+    # Notifications (fire on changes only, never on the full result set)
+    enable_notifications: bool = False
+    notify_channels: list = field(default_factory=list)  # slack, discord, webhook, email
+    notify_timeout: int = 20
+    notify_min_changes: int = 1   # Suppress alerts below this many changes
+    notify_on_no_changes: bool = False
+
+    slack_webhook_url: str | None = None
+    discord_webhook_url: str | None = None
+    webhook_url: str | None = None
+    webhook_auth_header: str | None = None   # e.g. "Authorization: Bearer xyz"
+
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: str | None = None
+    smtp_use_tls: bool = True
+    smtp_use_ssl: bool = False
+    email_from: str | None = None
+    email_to: str | None = None   # Comma-separated
+
     # WHOIS settings
     whois_timeout: int = 15
     whois_retry_count: int = 2
@@ -98,6 +135,7 @@ class Config:
         # directory in the working directory.
         self.cache_dir = _expand_path(self.cache_dir)
         self.output_dir = _expand_path(self.output_dir)
+        self.state_dir = _expand_path(self.state_dir)
 
         # Check if Doppler should be used (check for Doppler CLI environment variables)
         if os.getenv('DOPPLER_PROJECT') or os.getenv('DOPPLER_TOKEN') or os.getenv('TYPO_SNIPER_USE_DOPPLER'):
@@ -112,6 +150,29 @@ class Config:
         if not self.urlscan_api_key:
             self.urlscan_api_key = os.getenv('TYPO_SNIPER_URLSCAN_API_KEY') or os.getenv('URLSCAN_API_KEY')
         
+        # Notification endpoints are secrets; accept them from the environment
+        for attr, names in (
+            ('slack_webhook_url', ('TYPO_SNIPER_SLACK_WEBHOOK_URL', 'SLACK_WEBHOOK_URL')),
+            ('discord_webhook_url', ('TYPO_SNIPER_DISCORD_WEBHOOK_URL', 'DISCORD_WEBHOOK_URL')),
+            ('webhook_url', ('TYPO_SNIPER_WEBHOOK_URL',)),
+            ('webhook_auth_header', ('TYPO_SNIPER_WEBHOOK_AUTH_HEADER',)),
+            ('smtp_host', ('TYPO_SNIPER_SMTP_HOST',)),
+            ('smtp_username', ('TYPO_SNIPER_SMTP_USERNAME',)),
+            ('smtp_password', ('TYPO_SNIPER_SMTP_PASSWORD',)),
+            ('email_from', ('TYPO_SNIPER_EMAIL_FROM',)),
+            ('email_to', ('TYPO_SNIPER_EMAIL_TO',)),
+        ):
+            if not getattr(self, attr):
+                for name in names:
+                    value = os.getenv(name)
+                    if value:
+                        setattr(self, attr, value)
+                        break
+
+        # Any configured channel implies notifications are wanted
+        if self.notify_channels and not self.enable_notifications:
+            self.enable_notifications = True
+
         # Load feature flags from environment variables
         enable_urlscan_env = os.getenv('ENABLE_URLSCAN') or os.getenv('TYPO_SNIPER_ENABLE_URLSCAN')
         if enable_urlscan_env:
@@ -191,6 +252,8 @@ class Config:
             data['cache_dir'] = _expand_path(data['cache_dir'])
         if 'output_dir' in data:
             data['output_dir'] = _expand_path(data['output_dir'])
+        if 'state_dir' in data:
+            data['state_dir'] = _expand_path(data['state_dir'])
         
         # Filter only valid fields
         valid_fields = {f.name for f in cls.__dataclass_fields__.values()}
