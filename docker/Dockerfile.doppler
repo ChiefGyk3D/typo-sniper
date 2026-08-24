@@ -4,7 +4,7 @@
 # This Dockerfile includes the optional Doppler CLI for secrets management.
 # Use the standard Dockerfile if Doppler is not needed.
 
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /build
 
@@ -17,7 +17,7 @@ COPY requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 LABEL maintainer="chiefgyk3d"
 LABEL org.opencontainers.image.title="Typo Sniper (Doppler)"

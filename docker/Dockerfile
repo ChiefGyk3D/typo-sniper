@@ -1,7 +1,7 @@
 # Typo Sniper - Dockerfile
 # Mozilla Public License 2.0
 
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /build
 
@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 LABEL maintainer="chiefgyk3d"
 LABEL org.opencontainers.image.title="Typo Sniper"
