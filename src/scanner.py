@@ -4,6 +4,10 @@ Domain scanning module for Typo Sniper.
 Handles domain permutation generation, WHOIS lookups, and DNS queries.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import asyncio
 import logging
 import socket
