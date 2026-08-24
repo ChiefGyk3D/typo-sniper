@@ -8,16 +8,15 @@ Supports multiple secrets sources:
 4. Config file (fallback)
 """
 
-import os
-import logging
 import json
-from typing import Optional
+import logging
+import os
 
 
 class SecretsManager:
     """Manage secrets from multiple sources."""
     
-    def __init__(self, use_doppler: bool = False, use_aws: bool = False, aws_secret_name: Optional[str] = None):
+    def __init__(self, use_doppler: bool = False, use_aws: bool = False, aws_secret_name: str | None = None):
         """
         Initialize secrets manager.
         
@@ -36,8 +35,11 @@ class SecretsManager:
         
         if use_doppler:
             try:
-                # Try to import Doppler SDK
-                from doppler_sdk import DopplerSDK
+                # Probe for the Doppler SDK without importing it; secrets are
+                # read from the environment that `doppler run` injects.
+                import importlib.util
+                if importlib.util.find_spec('doppler_sdk') is None:
+                    raise ImportError('doppler_sdk not installed')
                 self.doppler_available = True
                 self.doppler_client = None
                 self.logger.info("Doppler secrets manager enabled")
@@ -81,16 +83,20 @@ class SecretsManager:
             response = self.aws_client.get_secret_value(SecretId=secret_name)
             
             if 'SecretString' in response:
-                secret_data = json.loads(response['SecretString'])
-                self.aws_secrets = secret_data
-                self.logger.info(f"Loaded {len(secret_data)} secrets from AWS: {secret_name}")
+                self.aws_secrets = json.loads(response['SecretString'])
+                self.logger.info("Loaded AWS secrets successfully")
             else:
-                self.logger.warning(f"No SecretString found in AWS secret: {secret_name}")
+                self.logger.warning("AWS secret contained no SecretString value")
         except Exception as e:
-            self.logger.error(f"Failed to load AWS secrets '{secret_name}': {e}")
+            # Only the exception type is recorded. Messages raised by a secrets
+            # backend can embed response content, and the secret's name can
+            # reveal internal structure in a shared log aggregator. The name is
+            # operator-configured (a single aws_secret_name), so naming it here
+            # would add nothing an operator does not already know.
+            self.logger.error("Failed to load AWS secrets (%s)", type(e).__name__)
             self.use_aws = False
     
-    def get_secret(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get_secret(self, key: str, default: str | None = None) -> str | None:
         """
         Get a secret value from available sources.
         
@@ -147,7 +153,7 @@ class SecretsManager:
         
         return default
     
-    def get_api_key(self, service: str, config_value: Optional[str] = None) -> Optional[str]:
+    def get_api_key(self, service: str, config_value: str | None = None) -> str | None:
         """
         Get API key for a service.
         

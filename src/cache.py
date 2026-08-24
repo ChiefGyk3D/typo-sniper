@@ -4,12 +4,12 @@ Caching module for Typo Sniper.
 Provides persistent caching of WHOIS lookups to avoid redundant queries.
 """
 
+import hashlib
 import json
 import logging
 import time
 from pathlib import Path
-from typing import Any, Optional, Dict
-import hashlib
+from typing import Any
 
 
 class Cache:
@@ -43,7 +43,7 @@ class Cache:
         key_hash = hashlib.sha256(key.encode()).hexdigest()
         return self.cache_dir / f"{key_hash}.json"
     
-    def get(self, key: str) -> Optional[Dict[str, Any]]:
+    def get(self, key: str) -> dict[str, Any] | None:
         """
         Get value from cache.
         
@@ -59,7 +59,7 @@ class Cache:
             return None
         
         try:
-            with open(cache_path, 'r') as f:
+            with open(cache_path) as f:
                 data = json.load(f)
             
             # Check if expired
@@ -71,14 +71,14 @@ class Cache:
             self.logger.debug(f"Cache hit for key: {key}")
             return data.get('value')
         
-        except (json.JSONDecodeError, KeyError, IOError) as e:
+        except (OSError, json.JSONDecodeError, KeyError) as e:
             self.logger.warning(f"Error reading cache for {key}: {e}")
             # Remove corrupted cache file
             if cache_path.exists():
                 cache_path.unlink()
             return None
     
-    def set(self, key: str, value: Dict[str, Any], ttl: int = 86400) -> None:
+    def set(self, key: str, value: dict[str, Any], ttl: int = 86400) -> None:
         """
         Set value in cache.
         
@@ -101,7 +101,7 @@ class Cache:
                 json.dump(data, f, indent=2)
             self.logger.debug(f"Cached value for key: {key}")
         
-        except IOError as e:
+        except OSError as e:
             self.logger.warning(f"Error writing cache for {key}: {e}")
     
     def delete(self, key: str) -> None:
@@ -144,14 +144,14 @@ class Cache:
         
         for cache_file in self.cache_dir.glob('*.json'):
             try:
-                with open(cache_file, 'r') as f:
+                with open(cache_file) as f:
                     data = json.load(f)
                 
                 if data.get('expires_at', 0) < current_time:
                     cache_file.unlink()
                     count += 1
             
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 # Remove corrupted files
                 cache_file.unlink()
                 count += 1
@@ -159,7 +159,7 @@ class Cache:
         self.logger.info(f"Cleared {count} expired cache entries")
         return count
     
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get cache statistics.
         
@@ -176,13 +176,13 @@ class Cache:
             total_size += cache_file.stat().st_size
             
             try:
-                with open(cache_file, 'r') as f:
+                with open(cache_file) as f:
                     data = json.load(f)
                 
                 if data.get('expires_at', 0) < current_time:
                     expired += 1
             
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 expired += 1
         
         return {

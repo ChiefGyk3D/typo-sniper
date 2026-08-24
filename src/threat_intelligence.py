@@ -3,15 +3,28 @@ Threat intelligence integrations for domain analysis.
 """
 
 import asyncio
-import aiohttp
+import json
 import logging
-from typing import Dict, Optional, Any
-from datetime import datetime
+import re
+import ssl
+from datetime import datetime, timezone
+from typing import Any
+from urllib.parse import quote
+
+import aiohttp
+
+# Matches <title ...>...</title> across newlines and with attributes present
+_TITLE_RE = re.compile(r'<title[^>]*>(.*?)</title>', re.IGNORECASE | re.DOTALL)
 
 
 class ThreatIntelligence:
     """Threat intelligence integrations."""
     
+    # API keys already validated in this process. Validation costs a live API
+    # call, and a ThreatIntelligence context is entered once per scanned
+    # domain, so without this a 50-domain run burns 50 requests on validation.
+    _validated_keys = set()
+
     def __init__(self, config):
         """Initialize threat intelligence."""
         self.config = config
@@ -27,7 +40,11 @@ class ThreatIntelligence:
             ttl_dns_cache=300  # Cache DNS for 5 minutes
         )
         timeout = aiohttp.ClientTimeout(total=30, connect=10)
-        self.session = aiohttp.ClientSession(connector=connector, timeout=timeout)
+        self.session = aiohttp.ClientSession(
+            connector=connector,
+            timeout=timeout,
+            headers={'User-Agent': self.config.user_agent},
+        )
         # Validate API keys on startup
         await self.validate_api_keys()
         return self
@@ -45,9 +62,11 @@ class ThreatIntelligence:
             ValueError: If required API keys are invalid or missing
         """
         errors = []
-        
+
         # Validate URLScan API key
         if self.config.enable_urlscan:
+            if self.config.urlscan_api_key in self._validated_keys:
+                return
             if not self.config.urlscan_api_key:
                 errors.append("URLScan.io is enabled but API key is not set. Set TYPO_SNIPER_URLSCAN_API_KEY environment variable or urlscan_api_key in config.")
             else:
@@ -61,7 +80,9 @@ class ThreatIntelligence:
                             errors.append("URLScan.io API key is invalid or unauthorized. Please check your API key.")
                         elif response.status == 403:
                             errors.append("URLScan.io API key is forbidden. Please verify your API key permissions.")
-                        elif response.status != 200:
+                        elif response.status == 200:
+                            self._validated_keys.add(self.config.urlscan_api_key)
+                        else:
                             self.logger.warning(f"URLScan.io API returned status {response.status} during validation")
                 except asyncio.TimeoutError:
                     self.logger.warning("URLScan.io API validation timed out - continuing anyway")
@@ -74,7 +95,7 @@ class ThreatIntelligence:
             self.logger.error(error_msg)
             raise ValueError(error_msg)
     
-    async def check_urlscan(self, domain: str) -> Optional[Dict[str, Any]]:
+    async def check_urlscan(self, domain: str) -> dict[str, Any] | None:
         """
         Check URLScan.io for scan results, submitting a new scan if needed.
         
@@ -111,7 +132,6 @@ class ThreatIntelligence:
                         
                         # Check if scan is recent enough
                         if scan_time:
-                            from datetime import datetime, timezone
                             scan_date = datetime.fromisoformat(scan_time.replace('Z', '+00:00'))
                             age_days = (datetime.now(timezone.utc) - scan_date).days
                             
@@ -146,18 +166,25 @@ class ThreatIntelligence:
                 elif response.status == 429:
                     self.logger.warning(f"URLScan rate limit hit for {domain}")
                     return {'status': 'rate_limited'}
-            
+                else:
+                    # An unexpected status previously fell through to a silent
+                    # None, which the exporters render as "No Scan Available"
+                    self.logger.warning(
+                        f"URLScan search for {domain} returned HTTP {response.status}"
+                    )
+                    return {'status': 'error', 'error': f'HTTP {response.status}'}
+
             # Submit new scan if needed
             if should_submit:
                 return await self._submit_urlscan(domain)
-            
+
             return None
                     
         except Exception as e:
             self.logger.error(f"URLScan check failed for {domain}: {e}")
             return None
     
-    async def _submit_urlscan(self, domain: str) -> Optional[Dict[str, Any]]:
+    async def _submit_urlscan(self, domain: str) -> dict[str, Any] | None:
         """
         Submit a new URLScan and wait for results.
         
@@ -192,7 +219,6 @@ class ThreatIntelligence:
                     self.logger.info(f"URLScan submitted for {domain}, waiting for results (UUID: {uuid})")
                     
                     # Wait for results (with timeout)
-                    import asyncio
                     max_attempts = self.config.urlscan_wait_timeout // 5  # Check every 5 seconds
                     
                     for attempt in range(max_attempts):
@@ -233,11 +259,10 @@ class ThreatIntelligence:
                     self.logger.error(f"URLScan submission failed for {domain}: {response.status} - {error_text}")
                     # Parse error message if possible
                     try:
-                        import json
                         error_data = json.loads(error_text)
                         error_msg = error_data.get('message', 'Bad Request')
                         return {'status': 'submission_failed', 'error': error_msg}
-                    except:
+                    except (ValueError, AttributeError):
                         return {'status': 'submission_failed', 'error': 'Bad Request'}
                 else:
                     error_text = await response.text()
@@ -248,7 +273,7 @@ class ThreatIntelligence:
             self.logger.error(f"URLScan submission failed for {domain}: {e}")
             return {'status': 'error', 'error': str(e)}
     
-    async def check_certificate_transparency(self, domain: str) -> Optional[Dict[str, Any]]:
+    async def check_certificate_transparency(self, domain: str) -> dict[str, Any] | None:
         """
         Check Certificate Transparency logs for domain.
         
@@ -262,52 +287,86 @@ class ThreatIntelligence:
             return None
         
         try:
-            # Use crt.sh API with timeout
-            url = f"https://crt.sh/?q={domain}&output=json"
-            
-            async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as response:
-                if response.status == 200:
-                    content_type = response.headers.get('Content-Type', '')
-                    
-                    # Check if response is actually JSON (not HTML error page)
-                    if 'json' not in content_type.lower():
-                        self.logger.debug(f"CT log returned non-JSON for {domain} (probably no certs)")
-                        return {'certificates_found': 0, 'status': 'no_certificates'}
-                    
-                    try:
-                        data = await response.json()
-                    except Exception as json_err:
-                        self.logger.debug(f"CT log JSON parse error for {domain}: {json_err}")
-                        return {'certificates_found': 0, 'status': 'parse_error'}
-                    
-                    if data and isinstance(data, list):
-                        # Get most recent certificate
-                        recent = data[0]
-                        
-                        return {
-                            'certificates_found': len(data),
-                            'most_recent': {
-                                'issuer': recent.get('issuer_name'),
-                                'not_before': recent.get('not_before'),
-                                'not_after': recent.get('not_after'),
-                                'common_name': recent.get('common_name'),
-                            },
-                            'all_names': [cert.get('common_name') for cert in data[:10]]
-                        }
-                    else:
-                        return {'certificates_found': 0, 'status': 'no_certificates'}
-                else:
-                    self.logger.debug(f"CT log check returned status {response.status} for {domain}")
-                    return {'certificates_found': 0, 'status': f'http_{response.status}'}
-                    
+            # Use crt.sh API with timeout. crt.sh returns 502/504 under load
+            # often enough that a single attempt loses real certificate data.
+            url = f"https://crt.sh/?q={quote(domain, safe='')}&output=json"
+
+            for attempt in range(3):
+                async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+                    if resp.status in (429, 502, 503, 504) and attempt < 2:
+                        await asyncio.sleep(2 ** attempt)
+                        continue
+                    return await self._parse_ct_response(domain, resp)
+
+            return {'certificates_found': 0, 'status': 'unavailable'}
+
         except asyncio.TimeoutError:
             self.logger.debug(f"CT log check timed out for {domain}")
             return {'certificates_found': 0, 'status': 'timeout'}
         except Exception as e:
             self.logger.debug(f"CT log check failed for {domain}: {e}")
             return {'certificates_found': 0, 'status': 'error'}
+
+    async def _parse_ct_response(self, domain: str, response) -> dict[str, Any]:
+        """
+        Turn a crt.sh response into a certificate summary.
+
+        Args:
+            domain: Domain the query was for
+            response: Open aiohttp response
+
+        Returns:
+            Certificate summary dictionary
+        """
+        try:
+            if response.status == 200:
+                content_type = response.headers.get('Content-Type', '')
+
+                # Check if response is actually JSON (not an HTML error page)
+                if 'json' not in content_type.lower():
+                    self.logger.debug(f"CT log returned non-JSON for {domain} (probably no certs)")
+                    return {'certificates_found': 0, 'status': 'no_certificates'}
+
+                try:
+                    data = await response.json()
+                except Exception as json_err:
+                    self.logger.debug(f"CT log JSON parse error for {domain}: {json_err}")
+                    return {'certificates_found': 0, 'status': 'parse_error'}
+
+                if data and isinstance(data, list):
+                    # crt.sh does not sort by date, so pick the newest entry
+                    # rather than assuming the first one is most recent
+                    recent = max(data, key=lambda c: str(c.get('not_before') or ''))
+
+                    names = []
+                    for cert in data:
+                        name = cert.get('common_name')
+                        if name and name not in names:
+                            names.append(name)
+                        if len(names) >= 10:
+                            break
+
+                    return {
+                        'certificates_found': len(data),
+                        'most_recent': {
+                            'issuer': recent.get('issuer_name'),
+                            'not_before': recent.get('not_before'),
+                            'not_after': recent.get('not_after'),
+                            'common_name': recent.get('common_name'),
+                        },
+                        'all_names': names,
+                    }
+
+                return {'certificates_found': 0, 'status': 'no_certificates'}
+
+            self.logger.debug(f"CT log check returned status {response.status} for {domain}")
+            return {'certificates_found': 0, 'status': f'http_{response.status}'}
+
+        except Exception as e:
+            self.logger.debug(f"CT log parse failed for {domain}: {e}")
+            return {'certificates_found': 0, 'status': 'error'}
     
-    async def http_probe(self, domain: str) -> Optional[Dict[str, Any]]:
+    async def http_probe(self, domain: str) -> dict[str, Any] | None:
         """
         Probe domain with HTTP/HTTPS to check if it's active.
         
@@ -327,67 +386,124 @@ class ThreatIntelligence:
             'https_status': None,
             'redirects_to': None,
             'title': None,
+            'tls_verified': None,
         }
-        
-        # Try HTTPS first
-        try:
-            url = f"https://{domain}"
-            timeout = aiohttp.ClientTimeout(total=self.config.http_timeout)
-            
-            async with self.session.get(url, timeout=timeout, allow_redirects=True) as response:
-                results['https_active'] = True
-                results['https_status'] = response.status
-                
-                if response.history:
-                    results['redirects_to'] = str(response.url)
-                
-                # Try to extract title
-                if response.status == 200:
-                    try:
-                        html = await response.text()
-                        import re
-                        title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
-                        if title_match:
-                            results['title'] = title_match.group(1)[:200]
-                    except:
-                        pass
-                        
-        except asyncio.TimeoutError:
-            self.logger.debug(f"HTTPS timeout for {domain}")
-        except Exception as e:
-            self.logger.debug(f"HTTPS probe failed for {domain}: {e}")
-        
-        # Try HTTP
-        try:
-            url = f"http://{domain}"
-            timeout = aiohttp.ClientTimeout(total=self.config.http_timeout)
-            
-            async with self.session.get(url, timeout=timeout, allow_redirects=True) as response:
-                results['http_active'] = True
-                results['http_status'] = response.status
-                
-                if response.history and not results['redirects_to']:
-                    results['redirects_to'] = str(response.url)
-                
-                # Try to extract title if not already found
-                if response.status == 200 and not results['title']:
-                    try:
-                        html = await response.text()
-                        import re
-                        title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
-                        if title_match:
-                            results['title'] = title_match.group(1)[:200]
-                    except:
-                        pass
-                        
-        except asyncio.TimeoutError:
-            self.logger.debug(f"HTTP timeout for {domain}")
-        except Exception as e:
-            self.logger.debug(f"HTTP probe failed for {domain}: {e}")
-        
+
+        # HTTPS first: a typosquat with a valid certificate is the higher signal
+        for scheme in ('https', 'http'):
+            probe = await self._probe_scheme(f"{scheme}://{domain}")
+            if probe is None:
+                continue
+
+            results[f'{scheme}_active'] = True
+            results[f'{scheme}_status'] = probe['status']
+
+            if scheme == 'https':
+                results['tls_verified'] = probe.get('tls_verified')
+
+            if probe['redirects_to'] and not results['redirects_to']:
+                results['redirects_to'] = probe['redirects_to']
+
+            if probe['title'] and not results['title']:
+                results['title'] = probe['title']
+
         return results if (results['http_active'] or results['https_active']) else None
     
-    async def analyze_domain(self, domain: str) -> Dict[str, Any]:
+    async def _probe_scheme(self, url: str) -> dict[str, Any] | None:
+        """
+        Fetch one URL and extract its status, final URL and page title.
+
+        The response body is read in bounded chunks. These are hostile hosts by
+        definition, and an unbounded ``response.text()`` would let one of them
+        exhaust the scanner's memory by streaming an endless body.
+
+        Args:
+            url: Absolute http(s) URL to probe
+
+        Returns:
+            Dictionary with status/redirects_to/title, or None if unreachable
+        """
+        # Certificates are always validated. A validation failure is not an
+        # obstacle to work around: it is itself a finding, recorded below.
+        timeout = aiohttp.ClientTimeout(total=self.config.http_timeout)
+        is_https = url.startswith('https://')
+
+        try:
+            async with self.session.get(
+                url,
+                timeout=timeout,
+                allow_redirects=True,
+                max_redirects=self.config.http_max_redirects,
+            ) as response:
+                result = {
+                    'status': response.status,
+                    'redirects_to': str(response.url) if response.history else None,
+                    'title': None,
+                    'tls_verified': True if is_https else None,
+                }
+
+                if response.status == 200:
+                    result['title'] = await self._read_title(response)
+
+                return result
+
+        except (aiohttp.ClientConnectorCertificateError,
+                aiohttp.ClientConnectorSSLError,
+                ssl.SSLError) as e:
+            # The host answered and presented a certificate that failed
+            # validation. That tells us two useful things at once: the domain
+            # is live, and its certificate cannot be trusted.
+            #
+            # The probe deliberately stops here rather than retrying with
+            # verification disabled. Retrying would mean reading a response
+            # body over a channel just proven unauthenticated, and that body
+            # becomes the page title in an analyst's report. Liveness for
+            # such hosts is still established by the plain HTTP probe.
+            self.logger.debug(f"Certificate validation failed for {url}: {e}")
+            return {
+                'status': None,
+                'redirects_to': None,
+                'title': None,
+                'tls_verified': False,
+            }
+
+        except asyncio.TimeoutError:
+            self.logger.debug(f"Timeout probing {url}")
+        except Exception as e:
+            self.logger.debug(f"Probe failed for {url}: {e}")
+
+        return None
+
+    async def _read_title(self, response) -> str | None:
+        """
+        Read at most ``http_max_bytes`` of a response and extract <title>.
+
+        Args:
+            response: Open aiohttp response
+
+        Returns:
+            The page title, or None
+        """
+        try:
+            chunks = []
+            total = 0
+            async for chunk in response.content.iter_chunked(16384):
+                chunks.append(chunk)
+                total += len(chunk)
+                if total >= self.config.http_max_bytes:
+                    break
+
+            body = b''.join(chunks).decode('utf-8', errors='replace')
+            match = _TITLE_RE.search(body)
+            if match:
+                # Collapse whitespace so the title stays on one report row
+                return ' '.join(match.group(1).split())[:200]
+        except Exception as e:
+            self.logger.debug(f"Could not read title: {e}")
+
+        return None
+
+    async def analyze_domain(self, domain: str) -> dict[str, Any]:
         """
         Perform comprehensive threat intelligence analysis on domain.
         
@@ -399,7 +515,7 @@ class ThreatIntelligence:
         """
         report = {
             'domain': domain,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'urlscan': None,
             'certificate_transparency': None,
             'http_probe': None,
@@ -421,7 +537,7 @@ class ThreatIntelligence:
         if tasks:
             results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
             
-            for (name, _), result in zip(tasks, results):
+            for (name, _), result in zip(tasks, results, strict=False):
                 if isinstance(result, Exception):
                     self.logger.error(f"Error in {name} for {domain}: {result}")
                 else:
@@ -430,49 +546,83 @@ class ThreatIntelligence:
         return report
 
 
-def calculate_risk_score(domain_data: Dict[str, Any], threat_intel: Dict[str, Any]) -> int:
+def calculate_risk_score(domain_data: dict[str, Any], threat_intel: dict[str, Any]) -> int:
     """
     Calculate risk score for a domain based on various factors.
-    
+
+    Weighting rationale, highest signal first:
+      * A URLScan malicious verdict is near-conclusive.
+      * A recent registration is the strongest behavioural signal for
+        typosquatting, since attackers register shortly before a campaign.
+      * MX records on a lookalike domain indicate credential phishing or
+        business email compromise capability, not a parked domain.
+      * A live site matters more than a merely registered name.
+
     Args:
         domain_data: Domain permutation data
         threat_intel: Threat intelligence report
-        
+
     Returns:
         Risk score (0-100, higher is more risky)
     """
     score = 0
-    
-    # Base score for being registered
-    score += 10
-    
-    # URLScan indicators
-    urlscan = threat_intel.get('urlscan')
-    if urlscan:
+
+    # Base score for being registered at all
+    score += 5
+
+    # --- URLScan verdict ---------------------------------------------------
+    urlscan = threat_intel.get('urlscan') or {}
+    if urlscan and not urlscan.get('status'):
         if urlscan.get('malicious'):
-            score += 30
-        score += int(urlscan.get('score', 0) * 20)
-    
-    # HTTP probe indicators
-    http = threat_intel.get('http_probe')
+            score += 35
+
+        # URLScan's overall score is already a 0-100 malicious-confidence
+        # value. The previous code multiplied it by 20, so any non-zero
+        # verdict immediately saturated the 100-point cap and every flagged
+        # domain looked equally dangerous.
+        try:
+            urlscan_score = float(urlscan.get('score', 0) or 0)
+        except (TypeError, ValueError):
+            urlscan_score = 0.0
+        score += int(max(0.0, min(urlscan_score, 100.0)) * 0.25)
+
+    # --- Registration recency ---------------------------------------------
+    days = domain_data.get('created_days_ago')
+    if isinstance(days, (int, float)) and days >= 0:
+        if days < 30:
+            score += 25
+        elif days < 90:
+            score += 15
+        elif days < 180:
+            score += 5
+
+    # --- Phonetic confusability -------------------------------------------
+    if domain_data.get('sounds_alike'):
+        score += 5
+
+    # --- Mail capability ---------------------------------------------------
+    # A lookalike domain that can send and receive mail is set up for phishing
+    if domain_data.get('dns_mx'):
+        score += 15
+
+    # --- Live content ------------------------------------------------------
+    http = threat_intel.get('http_probe') or {}
     if http:
-        if http.get('http_active') or http.get('https_active'):
-            score += 15  # Active site is more concerning
+        if http.get('https_active'):
+            score += 12  # Serving HTTPS implies deliberate setup
+        elif http.get('http_active'):
+            score += 8
+
         if http.get('redirects_to'):
             score += 5
-    
-    # Certificate Transparency
-    ct = threat_intel.get('certificate_transparency')
-    if ct and ct.get('certificates_found', 0) > 0:
-        score += 10  # Has SSL certificate
-    
-    # Recent registration
-    if domain_data.get('created_days_ago'):
-        days = domain_data['created_days_ago']
-        if days < 30:
-            score += 20
-        elif days < 90:
-            score += 10
-    
-    # Cap at 100
-    return min(score, 100)
+
+        # A valid certificate on a lookalike domain means someone did the work
+        if http.get('tls_verified') is True:
+            score += 5
+
+    # --- Certificate Transparency -----------------------------------------
+    ct = threat_intel.get('certificate_transparency') or {}
+    if ct.get('certificates_found', 0) > 0:
+        score += 8  # Someone obtained a certificate for this lookalike
+
+    return max(0, min(score, 100))

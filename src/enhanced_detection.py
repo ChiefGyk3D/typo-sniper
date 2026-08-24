@@ -2,10 +2,9 @@
 Enhanced typosquatting detection algorithms.
 """
 
-import re
 import logging
-from typing import List, Set
-from itertools import product
+import re
+from itertools import combinations, product
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +25,50 @@ class ComboSquattingDetector:
         'download', 'update', 'upgrade', 'install', 'software',
         'security', 'protection', 'antivirus', 'firewall', 'defender'
     ]
-    
-    SEPARATORS = ['-', '_', '']
-    
+
+    # Underscores are not valid in hostnames, so they are not a separator here
+    SEPARATORS = ['-', '']
+
+    # Public suffixes that need two labels to identify the registrable domain.
+    # Without this, "example.co.uk" yields brand="example", tld="uk" and every
+    # generated variation points at the wrong namespace.
+    MULTI_LABEL_SUFFIXES = (
+        'co.uk', 'org.uk', 'me.uk', 'ac.uk', 'gov.uk', 'net.uk', 'sch.uk',
+        'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au', 'id.au',
+        'co.nz', 'net.nz', 'org.nz', 'govt.nz',
+        'co.za', 'org.za', 'net.za',
+        'co.jp', 'or.jp', 'ne.jp', 'ac.jp', 'go.jp',
+        'com.br', 'net.br', 'org.br', 'gov.br',
+        'com.cn', 'net.cn', 'org.cn', 'gov.cn',
+        'co.in', 'net.in', 'org.in', 'gov.in',
+        'com.mx', 'com.ar', 'com.sg', 'com.hk', 'com.tw', 'com.tr',
+    )
+
+    @classmethod
+    def split_domain(cls, domain: str):
+        """
+        Split a domain into its registrable label and suffix.
+
+        Args:
+            domain: Domain such as "example.co.uk"
+
+        Returns:
+            Tuple of (brand, suffix), e.g. ("example", "co.uk")
+        """
+        domain = domain.strip().lower().rstrip('.')
+        parts = domain.split('.')
+
+        if len(parts) < 2:
+            return parts[0] if parts else domain, 'com'
+
+        last_two = '.'.join(parts[-2:])
+        if len(parts) >= 3 and last_two in cls.MULTI_LABEL_SUFFIXES:
+            return parts[-3], last_two
+
+        return parts[-2], parts[-1]
+
     @staticmethod
-    def generate_combosquats(domain: str, keywords: List[str] = None) -> Set[str]:
+    def generate_combosquats(domain: str, keywords: list[str] | None = None) -> set[str]:
         """
         Generate combo-squatting variations.
         
@@ -44,23 +82,25 @@ class ComboSquattingDetector:
         if keywords is None:
             keywords = ComboSquattingDetector.COMMON_KEYWORDS
         
-        # Extract brand name (domain without TLD)
-        brand = domain.split('.')[0]
-        
-        # Get original TLD
-        parts = domain.split('.')
-        tld = parts[-1] if len(parts) > 1 else 'com'
-        
+        brand, tld = ComboSquattingDetector.split_domain(domain)
+
         variations = set()
-        
-        # Generate combinations
-        for keyword in keywords:
+
+        # Deduplicate while preserving the caller's ordering intent
+        for keyword in dict.fromkeys(keywords):
             for separator in ComboSquattingDetector.SEPARATORS:
-                # brand-keyword.tld
-                variations.add(f"{brand}{separator}{keyword}.{tld}")
-                # keyword-brand.tld
-                variations.add(f"{keyword}{separator}{brand}.{tld}")
-        
+                for candidate in (
+                    f"{brand}{separator}{keyword}.{tld}",
+                    f"{keyword}{separator}{brand}.{tld}",
+                ):
+                    # A label may not exceed 63 characters or start/end with a
+                    # hyphen; such names can never resolve, so skip the lookup.
+                    label = candidate.split('.')[0]
+                    if len(label) > 63 or label.startswith('-') or label.endswith('-'):
+                        continue
+                    if candidate != domain:
+                        variations.add(candidate)
+
         return variations
 
 
@@ -78,8 +118,11 @@ class SoundAlikeDetector:
         Returns:
             Soundex code
         """
-        name = name.upper()
-        
+        name = ''.join(c for c in name.upper() if c.isalpha())
+
+        if not name:
+            return '0000'
+
         # Keep first letter
         soundex = name[0]
         
@@ -175,7 +218,7 @@ class IDNHomographDetector:
     }
     
     @staticmethod
-    def generate_homographs(domain: str) -> Set[str]:
+    def generate_homographs(domain: str) -> set[str]:
         """
         Generate IDN homograph variations.
         
@@ -185,10 +228,8 @@ class IDNHomographDetector:
         Returns:
             Set of homograph variations
         """
-        parts = domain.split('.')
-        base = parts[0]
-        tld = parts[-1] if len(parts) > 1 else 'com'
-        
+        base, tld = ComboSquattingDetector.split_domain(domain)
+
         # Find positions where confusables can be substituted
         substitution_positions = []
         for i, char in enumerate(base.lower()):
@@ -204,7 +245,6 @@ class IDNHomographDetector:
         
         # Generate variations with 1-3 character substitutions
         for num_subs in range(1, max_substitutions + 1):
-            from itertools import combinations
             for positions in combinations(substitution_positions, num_subs):
                 # Get all possible character combinations for these positions
                 options = []
@@ -246,17 +286,23 @@ class IDNHomographDetector:
             True if domain contains confusable characters
         """
         base = domain.split('.')[0]
-        
+
         for char in base:
-            # Check if character is in any confusable set
+            # Only non-ASCII characters make a domain an IDN homograph. The
+            # confusable table also lists ASCII lookalikes (l and I stand in
+            # for the digit 1), and matching those flagged every domain
+            # containing the letter "l" as an homograph attack.
+            if char.isascii():
+                continue
+
             for confusable_list in IDNHomographDetector.CONFUSABLES.values():
                 if char in confusable_list:
                     return True
-        
+
         return False
 
 
-def generate_enhanced_permutations(domain: str, config) -> Set[str]:
+def generate_enhanced_permutations(domain: str, config) -> set[str]:
     """
     Generate enhanced permutations based on configuration.
     

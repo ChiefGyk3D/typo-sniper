@@ -3,15 +3,23 @@ Configuration management for Typo Sniper.
 """
 
 import os
-import yaml
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Dict, Any
-from dotenv import load_dotenv, find_dotenv
+from typing import Any
+
+import yaml
+from dotenv import find_dotenv, load_dotenv
+
+from version import __version__
 
 # Load environment variables from .env file (search up directory tree)
 # override=True will replace existing empty env vars
 load_dotenv(find_dotenv(usecwd=True), override=True)
+
+
+def _expand_path(value: Any) -> Path:
+    """Expand ``~`` and environment variables in a path-like value."""
+    return Path(os.path.expandvars(os.path.expanduser(str(value))))
 
 
 @dataclass
@@ -29,6 +37,7 @@ class Config:
     
     # Filter settings
     months_filter: int = 0  # 0 = no filter
+    recent_days: int = 90   # A registration this new is flagged as "recent"
     
     # dnstwist settings
     dnstwist_threads: int = 20
@@ -39,9 +48,9 @@ class Config:
     output_dir: Path = field(default_factory=lambda: Path('results'))
     
     # WHOIS settings
-    whois_timeout: int = 30
-    whois_retry_count: int = 3
-    whois_retry_delay: int = 5
+    whois_timeout: int = 15
+    whois_retry_count: int = 2
+    whois_retry_delay: int = 2
     
     # Enhanced detection features (disabled by default for performance)
     enable_combosquatting: bool = False
@@ -50,7 +59,7 @@ class Config:
     
     # Threat intelligence integrations (optional - require API keys)
     enable_urlscan: bool = False
-    urlscan_api_key: Optional[str] = None
+    urlscan_api_key: str | None = None
     urlscan_free_tier: bool = True  # True = 30 search requests/min (free), False = unlimited (paid)
     urlscan_visibility: str = "public"  # public, unlisted, or private
     urlscan_max_age_days: int = 7  # Submit new scan if existing scan is older than this (days)
@@ -61,6 +70,11 @@ class Config:
     # HTTP probing
     enable_http_probe: bool = True
     http_timeout: int = 10
+    http_max_bytes: int = 1_048_576  # Cap on probed response bodies (1 MiB)
+    http_max_redirects: int = 5
+    user_agent: str = (
+        f'TypoSniper/{__version__} (+https://github.com/ChiefGyk3D/typo-sniper)'
+    )
     
     # Risk scoring
     enable_risk_scoring: bool = True
@@ -68,13 +82,19 @@ class Config:
     # Secrets management
     use_doppler: bool = False
     use_aws_secrets: bool = False
-    aws_secret_name: Optional[str] = None
+    aws_secret_name: str | None = None
     
     # Debug mode (set by CLI flag, not in config file)
     debug_mode: bool = False
     
     def __post_init__(self):
-        """Post-initialization to load secrets from environment."""
+        """Post-initialization: normalise paths and load secrets from environment."""
+        # Expand "~" and environment variables so that a config file containing
+        # "cache_dir: ~/.typo_sniper/cache" does not create a literal "~"
+        # directory in the working directory.
+        self.cache_dir = _expand_path(self.cache_dir)
+        self.output_dir = _expand_path(self.output_dir)
+
         # Check if Doppler should be used (check for Doppler CLI environment variables)
         if os.getenv('DOPPLER_PROJECT') or os.getenv('DOPPLER_TOKEN') or os.getenv('TYPO_SNIPER_USE_DOPPLER'):
             self.use_doppler = True
@@ -118,7 +138,7 @@ class Config:
         try:
             resolved_path = config_path.resolve()
         except (OSError, RuntimeError) as e:
-            raise ValueError(f"Invalid config path: {e}")
+            raise ValueError(f"Invalid config path: {e}") from e
         
         # Validate file extension (allow .yaml, .yml, and .example variations)
         valid_extensions = ['.yaml', '.yml', '.example']
@@ -136,12 +156,12 @@ class Config:
         
         # Validate file is readable
         try:
-            with open(resolved_path, 'r') as f:
+            with open(resolved_path) as f:
                 data = yaml.safe_load(f)
         except PermissionError:
-            raise ValueError(f"Permission denied reading config file: {resolved_path}")
+            raise ValueError(f"Permission denied reading config file: {resolved_path}") from None
         except yaml.YAMLError as e:
-            raise ValueError(f"Invalid YAML in config file: {e}")
+            raise ValueError(f"Invalid YAML in config file: {e}") from e
         
         if not isinstance(data, dict):
             raise ValueError("Config file must contain a YAML dictionary")
@@ -149,7 +169,7 @@ class Config:
         return cls.from_dict(data)
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Config':
+    def from_dict(cls, data: dict[str, Any]) -> 'Config':
         """
         Create Config from dictionary.
         
@@ -159,11 +179,14 @@ class Config:
         Returns:
             Config object
         """
-        # Convert string paths to Path objects
+        # Copy so we never mutate the caller's dictionary
+        data = dict(data)
+
+        # Convert string paths to Path objects (expansion happens in __post_init__)
         if 'cache_dir' in data:
-            data['cache_dir'] = Path(data['cache_dir'])
+            data['cache_dir'] = _expand_path(data['cache_dir'])
         if 'output_dir' in data:
-            data['output_dir'] = Path(data['output_dir'])
+            data['output_dir'] = _expand_path(data['output_dir'])
         
         # Filter only valid fields
         valid_fields = {f.name for f in cls.__dataclass_fields__.values()}
@@ -171,7 +194,7 @@ class Config:
         
         return cls(**filtered_data)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert Config to dictionary.
         
@@ -179,7 +202,7 @@ class Config:
             Configuration dictionary
         """
         data = {}
-        for field_name, field_def in self.__dataclass_fields__.items():
+        for field_name in self.__dataclass_fields__:
             value = getattr(self, field_name)
             if isinstance(value, Path):
                 data[field_name] = str(value)
@@ -201,7 +224,7 @@ class Config:
         try:
             resolved_path = config_path.resolve()
         except (OSError, RuntimeError) as e:
-            raise ValueError(f"Invalid config path: {e}")
+            raise ValueError(f"Invalid config path: {e}") from e
         
         # Validate file extension
         if resolved_path.suffix.lower() not in ['.yaml', '.yml']:

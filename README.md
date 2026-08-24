@@ -7,9 +7,10 @@
 
 **Advanced Domain Typosquatting Detection Tool**
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/ChiefGyk3D/typo-sniper/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiefGyk3D/typo-sniper/actions/workflows/ci.yml)
 [![License: Mozilla Public License 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
-[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
 
 Detect and monitor typosquatting domains targeting your brand with powerful automation, threat intelligence, and beautiful reporting.
 
@@ -84,6 +85,10 @@ cd typo-sniper
 pip install -r requirements.txt
 ```
 
+> **Note:** `dnspython` is required, not optional. Without it dnstwist silently
+> falls back to socket lookups — no MX or NS records are collected and more
+> permutations come back unresolvable. It is pinned in `requirements.txt`.
+
 ### 2️⃣ Create Domain List
 
 ```bash
@@ -107,6 +112,14 @@ xdg-open results/typo_sniper_results_*.xlsx
 > 💡 **Sample Output:** The `results/` directory includes sample output files (`sample.json`, `sample.csv`, `sample.html`, `sample.xlsx`) generated from scanning `eff.org`. These demonstrate what a real scan produces across all output formats.
 
 **Want threat intelligence?** See [TESTING.md](TESTING.md) for API setup.
+
+### 5️⃣ Run the Tests (optional)
+
+```bash
+pip install -r requirements-dev.txt
+pytest              # unit tests, no network required
+ruff check src/ tests/
+```
 
 **[⬆ Back to Top](#-table-of-contents)**
 
@@ -556,6 +569,10 @@ cd typo-sniper
 pip install -r requirements.txt
 ```
 
+> **Note:** `dnspython` is required, not optional. Without it dnstwist silently
+> falls back to socket lookups — no MX or NS records are collected and more
+> permutations come back unresolvable. It is pinned in `requirements.txt`.
+
 ### 2️⃣ Create Domain List
 
 ```bash
@@ -705,13 +722,13 @@ cd typo-sniper
 
 
 # Build the Docker image
-docker build -f docker/Dockerfile -t typo-sniper:1.0.3 .
+docker build -f docker/Dockerfile -t typo-sniper:1.1.0 .
 
 # Run a scan
 docker run --rm \
   -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.0.3 \
+  typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
   --format excel json
 ```
@@ -1312,7 +1329,7 @@ This project is licensed under the Mozilla Public License 2.0 - see the LICENSE 
 
 **Author:** chiefgyk3d
 
-**Version:** 1.0.3
+**Version:** 1.1.0
 
 **Repository:** https://github.com/chiefgyk3d/typo-sniper
 
@@ -1816,7 +1833,7 @@ pip install dnspython
 ```bash
 python src/typo_sniper.py --version
 ```
-Expected output: `Typo Sniper v1.0.0`
+Expected output: `Typo Sniper v1.1.0`
 
 #### 2. View Help
 ```bash

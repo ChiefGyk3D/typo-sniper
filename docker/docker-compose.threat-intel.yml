@@ -4,8 +4,6 @@
 # This compose file demonstrates how to run Typo Sniper with API keys
 # loaded from environment variables or .env file.
 
-version: '3.8'
-
 services:
   typo-sniper:
     build:
@@ -25,7 +23,7 @@ services:
       - ./config.yaml:/app/config.yaml:ro
       
       # Cache directory for persistence
-      - typo-sniper-cache:/root/.typo_sniper/cache
+      - typo-sniper-cache:/home/sniper/.typo_sniper/cache
     
     # Environment variables for API keys
     # Option 1: Set directly here (NOT RECOMMENDED for production)
@@ -76,7 +74,7 @@ services:
       - ./test_domains.txt:/app/data/domains.txt:ro
       - ../results:/app/results
       - ./config.yaml:/app/config.yaml:ro
-      - typo-sniper-cache:/root/.typo_sniper/cache
+      - typo-sniper-cache:/home/sniper/.typo_sniper/cache
     
     environment:
       # Doppler service token
