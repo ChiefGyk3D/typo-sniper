@@ -1383,7 +1383,7 @@ Contributions are welcome! Please feel free to:
 - Submit pull requests
 - Improve documentation
 
-This project is committed to remaining open source under the Mozilla Public License 2.0 to ensure the core code stays free while allowing flexible integration.
+This project is committed to remaining open source under the GNU AGPL v3, so the core stays free and improvements to it stay public.
 
 ---
 
