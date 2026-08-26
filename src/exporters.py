@@ -40,7 +40,22 @@ def format_threat_intel(perm: dict[str, Any]) -> dict[str, Any]:
     Returns:
         Dictionary with 'urlscan', 'urlscan_url', 'ct', and 'http' keys
     """
-    summary = {'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': '', 'tls': ''}
+    summary = {'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': '', 'tls': '',
+               'mail': ''}
+
+    # Mail capability lives beside threat_intel, not inside it
+    mail = perm.get('mail_intel') or {}
+    if mail:
+        posture = mail.get('posture')
+        labels = {
+            'none': '',
+            'receive-only': 'Receive only (MX)',
+            'partial': 'Partial',
+            'provisioned': 'SEND-CAPABLE',
+            'hardened': 'SEND-CAPABLE (DMARC enforced)',
+            'unknown': 'Lookup failed',
+        }
+        summary['mail'] = labels.get(posture, posture or '')
 
     threat_intel = perm.get('threat_intel') or {}
     if not threat_intel:
@@ -233,7 +248,7 @@ class ExcelExporter(BaseExporter):
         # Headers
         headers = [
             "Scan Date", "Original Domain", "Permutation", "Fuzzer Type",
-            "Risk Score", "Age (days)", "URLScan Status", "CT Logs", "HTTP Status", "TLS",
+            "Risk Score", "Age (days)", "Mail", "URLScan Status", "CT Logs", "HTTP Status", "TLS",
             "Created Date", "Updated Date", "Expires Date",
             "Registrant", "Organization", "Registrar",
             "Email", "Country", "Status",
@@ -282,6 +297,7 @@ class ExcelExporter(BaseExporter):
                     perm.get('fuzzer', ''),
                     risk_score,
                     perm.get('created_days_ago', ''),
+                    intel['mail'],
                     urlscan_status,
                     intel['ct'],
                     intel['http'],
@@ -437,7 +453,7 @@ class CSVExporter(BaseExporter):
             # Write headers
             headers = [
                 'Scan Date', 'Original Domain', 'Permutation', 'Fuzzer Type',
-                'Risk Score', 'Age (days)', 'URLScan Status', 'URLScan Report',
+                'Risk Score', 'Age (days)', 'Mail', 'URLScan Status', 'URLScan Report',
                 'CT Logs', 'HTTP Status', 'TLS',
                 'Created Date', 'Updated Date', 'Expires Date',
                 'Registrant', 'Organization', 'Registrar',
@@ -461,6 +477,7 @@ class CSVExporter(BaseExporter):
                         perm.get('fuzzer', ''),
                         perm.get('risk_score', ''),
                         perm.get('created_days_ago', ''),
+                        intel['mail'],
                         intel['urlscan'],
                         intel['urlscan_url'] or '',
                         intel['ct'],
@@ -679,6 +696,7 @@ class HTMLExporter(BaseExporter):
                         <th>Fuzzer</th>
                         <th>Risk</th>
                         <th>Age (days)</th>
+                        <th>Mail</th>
                         <th>URLScan Status</th>
                         <th>CT Logs</th>
                         <th>HTTP Status</th>
@@ -727,6 +745,7 @@ class HTMLExporter(BaseExporter):
                         <td><span class="fuzzer-badge">{html.escape(str(perm.get('fuzzer', '')))}</span></td>
                         <td>{html.escape(str(perm.get('risk_score', '')))}</td>
                         <td>{age_cell}</td>
+                        <td>{html.escape(intel['mail'])}</td>
                         <td>{urlscan_cell}</td>
                         <td>{html.escape(intel['ct'])}</td>
                         <td>{html.escape(intel['http'])}</td>

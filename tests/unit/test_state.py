@@ -227,3 +227,48 @@ class TestSummarize:
         summary = summarize([])
         assert summary['total_changes'] == 0
         assert summary['has_alerts'] is False
+
+
+class TestMailPostureChanges:
+    """A squat gaining send-capable mail is the key pre-phishing transition."""
+
+    def _seed(self, history, permutations):
+        history.record(result(permutations=permutations))
+
+    def test_becoming_send_capable_is_an_escalation(self, history):
+        self._seed(history, [perm('evil.com', mail_intel={'posture': 'none'})])
+        delta = history.diff(result(permutations=[
+            perm('evil.com', mail_intel={'posture': 'provisioned'})
+        ]))
+        assert any(c['kind'] == ESCALATED and 'provisioned to send mail' in c['detail']
+                   for c in delta['changes'])
+
+    def test_gaining_only_mx_is_a_lesser_activation(self, history):
+        self._seed(history, [perm('evil.com', mail_intel={'posture': 'none'})])
+        delta = history.diff(result(permutations=[
+            perm('evil.com', mail_intel={'posture': 'receive-only'})
+        ]))
+        mail_changes = [c for c in delta['changes'] if 'mail configuration' in c['detail']]
+        assert mail_changes and mail_changes[0]['kind'] == ACTIVATED
+
+    def test_hardening_further_still_escalates(self, history):
+        self._seed(history, [perm('evil.com', mail_intel={'posture': 'provisioned'})])
+        delta = history.diff(result(permutations=[
+            perm('evil.com', mail_intel={'posture': 'hardened'})
+        ]))
+        assert any(c['kind'] == ESCALATED for c in delta['changes'])
+
+    def test_losing_mail_capability_is_not_an_alert(self, history):
+        """Regression, not escalation — nothing to page on."""
+        self._seed(history, [perm('evil.com', mail_intel={'posture': 'hardened'})])
+        delta = history.diff(result(permutations=[
+            perm('evil.com', mail_intel={'posture': 'none'})
+        ]))
+        assert not any(c['kind'] == ESCALATED for c in delta['changes'])
+
+    def test_new_send_capable_domain_says_so(self, history):
+        self._seed(history, [])
+        delta = history.diff(result(permutations=[
+            perm('evil.com', mail_intel={'posture': 'hardened'})
+        ]))
+        assert 'SEND-CAPABLE mail' in delta['changes'][0]['detail']

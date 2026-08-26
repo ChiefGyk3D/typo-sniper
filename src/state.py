@@ -144,6 +144,7 @@ class ScanHistory:
             'title': http.get('title'),
             'certificates_found': ct.get('certificates_found', 0),
             'urlscan_malicious': bool(urlscan.get('malicious')),
+            'mail_posture': (perm.get('mail_intel') or {}).get('posture'),
         }
 
     # -- diffing -----------------------------------------------------------
@@ -264,6 +265,40 @@ class ScanHistory:
                 'current': now,
             })
 
+        # Gaining the ability to send deliverable mail is the clearest
+        # pre-phishing transition this tool can observe.
+        rank = {'none': 0, 'receive-only': 1, 'partial': 2,
+                'provisioned': 3, 'hardened': 4}
+        # 'unknown' means the lookup failed, so there is nothing to compare
+        comparable = (before.get('mail_posture') != 'unknown'
+                      and now.get('mail_posture') != 'unknown')
+        old_mail = rank.get(before.get('mail_posture'), 0) if comparable else 0
+        new_mail = rank.get(now.get('mail_posture'), 0) if comparable else 0
+        if new_mail > old_mail and new_mail >= 3:
+            changes.append({
+                'kind': ESCALATED,
+                'domain': name,
+                'risk_score': now.get('risk_score'),
+                'detail': (
+                    f"became provisioned to send mail "
+                    f"({before.get('mail_posture') or 'none'} -> "
+                    f"{now.get('mail_posture')})"
+                ),
+                'current': now,
+            })
+        elif new_mail > old_mail:
+            changes.append({
+                'kind': ACTIVATED,
+                'domain': name,
+                'risk_score': now.get('risk_score'),
+                'detail': (
+                    f"mail configuration added "
+                    f"({before.get('mail_posture') or 'none'} -> "
+                    f"{now.get('mail_posture')})"
+                ),
+                'current': now,
+            })
+
         if now.get('urlscan_malicious') and not before.get('urlscan_malicious'):
             changes.append({
                 'kind': ESCALATED,
@@ -325,6 +360,8 @@ class ScanHistory:
             bits.append(f'registered {int(age)}d ago')
         if now.get('dns_mx'):
             bits.append('has MX')
+        if now.get('mail_posture') in ('provisioned', 'hardened'):
+            bits.append('SEND-CAPABLE mail')
         if now.get('https_active'):
             bits.append('serving HTTPS')
         elif now.get('http_active'):

@@ -108,6 +108,20 @@ class Config:
     
     enable_certificate_transparency: bool = True  # No API key needed
     
+    # Mail-capability intelligence (SPF / DKIM / DMARC)
+    # A lookalike provisioned to send deliverable mail is set up for phishing,
+    # which is a materially different threat from a parked registration.
+    enable_mail_intel: bool = True
+    enable_dkim_probe: bool = True
+    dkim_selectors: list = field(default_factory=list)  # empty = common defaults
+    dns_timeout: float = 5.0
+    dns_nameservers: list = field(default_factory=list)  # empty = system resolvers
+
+    # Combo-squatting keywords specific to your brand. Product names, campaign
+    # names and support portals are far better bait than the generic list.
+    custom_keywords: list = field(default_factory=list)
+    replace_default_keywords: bool = False  # True = use only custom_keywords
+
     # HTTP probing
     enable_http_probe: bool = True
     http_timeout: int = 10

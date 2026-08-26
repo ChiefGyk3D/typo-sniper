@@ -22,6 +22,7 @@ import whois
 
 from cache import Cache
 from config import Config
+from dns_intel import DNSIntelligence
 from enhanced_detection import SoundAlikeDetector, generate_enhanced_permutations
 from rdap import RDAPClient
 from threat_intelligence import ThreatIntelligence, calculate_risk_score
@@ -148,6 +149,11 @@ class DomainScanner:
 
         # Add threat intelligence
         enriched = await self._add_threat_intelligence(enriched)
+
+        # Mail capability: whether a lookalike is provisioned to send
+        # deliverable mail, which is the clearest pre-phishing signal
+        if self.config.enable_mail_intel:
+            await self._add_mail_intelligence(enriched)
 
         # Apply date filters if configured
         if self.config.months_filter > 0:
@@ -466,6 +472,46 @@ class DomainScanner:
                     perm['threat_intel'] = threat_data
         
         return permutations
+
+    async def _add_mail_intelligence(self, permutations: list[dict[str, Any]]) -> None:
+        """
+        Annotate permutations with SPF / DKIM / DMARC findings.
+
+        Args:
+            permutations: Permutation dictionaries, updated in place
+        """
+        if not permutations:
+            return
+
+        intel = DNSIntelligence(self.config)
+        if intel._get_resolver() is None:
+            return
+
+        semaphore = asyncio.Semaphore(max(1, self.config.max_workers))
+
+        async def one(perm):
+            async with semaphore:
+                return await intel.analyze(
+                    perm['domain'], has_mx=bool(perm.get('dns_mx'))
+                )
+
+        results = await asyncio.gather(
+            *(one(p) for p in permutations), return_exceptions=True
+        )
+
+        provisioned = 0
+        for perm, mail in zip(permutations, results, strict=False):
+            if isinstance(mail, Exception):
+                self.logger.debug(f"Mail intel failed for {perm['domain']}: {mail}")
+                continue
+            perm['mail_intel'] = mail
+            if mail.get('posture') in ('provisioned', 'hardened'):
+                provisioned += 1
+
+        if provisioned:
+            self.logger.info(
+                f"{provisioned} lookalike(s) are provisioned to send mail"
+            )
 
     async def _enrich_with_rdap(self, permutations: list[dict[str, Any]]) -> set:
         """

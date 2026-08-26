@@ -93,6 +93,23 @@ urlscan_wait_timeout: 90           # Max seconds to wait for new scan results
 
 enable_certificate_transparency: true  # Enable CT log monitoring (no API key needed)
 
+# Mail-capability intelligence (SPF / DKIM / DMARC)
+# The strongest pre-attack signal a lookalike can emit. Registering a domain is
+# cheap; provisioning it to send mail that passes receiver checks is deliberate
+# work with one obvious purpose. A failed lookup is reported as "unknown" rather
+# than as "no mail capability".
+enable_mail_intel: true
+enable_dkim_probe: true            # One DNS query per selector probed
+dkim_selectors: []                 # empty = common defaults (google, selector1, k1, ...)
+dns_timeout: 5.0
+dns_nameservers: []                # empty = system resolvers
+
+# Combo-squatting keywords specific to your brand. Product names, campaign
+# names and support portals make far better bait than the generic list.
+#   custom_keywords: [vault, sso, partners, billing-portal]
+custom_keywords: []
+replace_default_keywords: false    # true = use only custom_keywords
+
 # HTTP probing
 enable_http_probe: true            # Probe domains with HTTP/HTTPS
 http_timeout: 10                   # HTTP request timeout (seconds)
