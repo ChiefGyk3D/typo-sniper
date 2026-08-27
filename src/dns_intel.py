@@ -18,6 +18,10 @@ A lookalike with a full SPF/DKIM/DMARC stack is a materially different threat
 from one with an A record and nothing else.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import asyncio
 import logging
 import re
