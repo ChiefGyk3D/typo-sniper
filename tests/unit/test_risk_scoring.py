@@ -67,3 +67,58 @@ class TestRiskScore:
     def test_negative_age_is_ignored(self):
         """A clock-skewed future creation date must not score as fresh."""
         assert calculate_risk_score({'created_days_ago': -5}, {}) == 5
+
+
+class TestPageCollectionSignals:
+    """
+    What a page collects is the strongest signal the scanner produces.
+
+    Registering a lookalike is cheap and ambiguous. Standing up a form that
+    asks for a password is neither, and the score has to reflect that gap.
+    """
+
+    def _perm(self, page=None):
+        return {
+            'domain': 'examp1e.com',
+            'created_days_ago': 400,
+            'dns_a': ['203.0.113.1'],
+        }, {'http_probe': {'https_active': True, 'tls_verified': True, 'page': page}}
+
+    def test_a_credential_form_outweighs_a_plain_live_page(self):
+        perm, plain = self._perm()
+        _, phish = self._perm({'parse_ok': True, 'is_credential_form': True,
+                               'has_password_input': True})
+        assert calculate_risk_score(perm, phish) > calculate_risk_score(perm, plain) + 25
+
+    def test_an_off_site_form_action_adds_on_top(self):
+        perm, without = self._perm({'parse_ok': True, 'is_credential_form': True,
+                                    'has_password_input': True})
+        _, with_exfil = self._perm({'parse_ok': True, 'is_credential_form': True,
+                                    'has_password_input': True,
+                                    'external_form_action': True})
+        assert calculate_risk_score(perm, with_exfil) > calculate_risk_score(perm, without)
+
+    def test_a_brand_mention_alone_does_not_raise_the_score(self):
+        """A fan page naming a brand is not a phishing kit."""
+        perm, plain = self._perm()
+        _, mentions = self._perm({'parse_ok': True, 'brand_mentioned': True,
+                                  'form_count': 0})
+        assert calculate_risk_score(perm, mentions) == calculate_risk_score(perm, plain)
+
+    def test_a_brand_mention_beside_a_form_does_raise_it(self):
+        _, form_only = self._perm({'parse_ok': True, 'form_count': 1})
+        perm, both = self._perm({'parse_ok': True, 'form_count': 1,
+                                 'brand_mentioned': True})
+        assert calculate_risk_score(perm, both) > calculate_risk_score(perm, form_only)
+
+    def test_a_parked_page_is_not_penalised(self):
+        perm, plain = self._perm()
+        _, parked = self._perm({'parse_ok': True, 'form_count': 0,
+                                'is_credential_form': False})
+        assert calculate_risk_score(perm, parked) == calculate_risk_score(perm, plain)
+
+    def test_absent_page_analysis_changes_nothing(self):
+        """The feature is additive: scores without it must be unchanged."""
+        perm, plain = self._perm()
+        _, missing = self._perm(None)
+        assert calculate_risk_score(perm, missing) == calculate_risk_score(perm, plain)

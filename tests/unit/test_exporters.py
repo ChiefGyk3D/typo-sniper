@@ -131,7 +131,7 @@ class TestFormatThreatIntel:
     def test_empty_intel(self):
         assert format_threat_intel({}) == {
             'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': '', 'tls': '',
-            'mail': '',
+            'mail': '', 'page': '',
         }
 
     def test_urlscan_error_statuses(self):

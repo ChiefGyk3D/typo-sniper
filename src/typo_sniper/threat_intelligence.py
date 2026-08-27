@@ -17,6 +17,8 @@ from urllib.parse import quote
 
 import aiohttp
 
+from . import page_analysis
+
 # Matches <title ...>...</title> across newlines and with attributes present
 _TITLE_RE = re.compile(r'<title[^>]*>(.*?)</title>', re.IGNORECASE | re.DOTALL)
 
@@ -34,6 +36,9 @@ class ThreatIntelligence:
         self.config = config
         self.logger = logging.getLogger(__name__)
         self.session = None
+        # Set per scan so page analysis can count mentions of the brand being
+        # defended. A lookalike that names its target is imitating it.
+        self.monitored_domain = ''
     
     async def __aenter__(self):
         """Async context manager entry."""
@@ -391,6 +396,7 @@ class ThreatIntelligence:
             'redirects_to': None,
             'title': None,
             'tls_verified': None,
+            'page': None,
         }
 
         # HTTPS first: a typosquat with a valid certificate is the higher signal
@@ -410,6 +416,9 @@ class ThreatIntelligence:
 
             if probe['title'] and not results['title']:
                 results['title'] = probe['title']
+
+            if probe.get('page') and not results.get('page'):
+                results['page'] = probe['page']
 
         return results if (results['http_active'] or results['https_active']) else None
     
@@ -444,10 +453,20 @@ class ThreatIntelligence:
                     'redirects_to': str(response.url) if response.history else None,
                     'title': None,
                     'tls_verified': True if is_https else None,
+                    'page': None,
                 }
 
                 if response.status == 200:
-                    result['title'] = await self._read_title(response)
+                    body = await self._read_body(response)
+                    if body:
+                        result['title'] = self._extract_title(body)
+                        if self.config.enable_page_analysis:
+                            # No extra request: the body is already in memory,
+                            # and what the page collects is the strongest
+                            # signal available about what it is for.
+                            result['page'] = page_analysis.analyse(
+                                body, str(response.url), self.monitored_domain
+                            )
 
                 return result
 
@@ -478,15 +497,15 @@ class ThreatIntelligence:
 
         return None
 
-    async def _read_title(self, response) -> str | None:
+    async def _read_body(self, response) -> str | None:
         """
-        Read at most ``http_max_bytes`` of a response and extract <title>.
+        Read at most ``http_max_bytes`` of a response body.
 
         Args:
             response: Open aiohttp response
 
         Returns:
-            The page title, or None
+            The decoded body, or None if it could not be read
         """
         try:
             chunks = []
@@ -497,14 +516,18 @@ class ThreatIntelligence:
                 if total >= self.config.http_max_bytes:
                     break
 
-            body = b''.join(chunks).decode('utf-8', errors='replace')
-            match = _TITLE_RE.search(body)
-            if match:
-                # Collapse whitespace so the title stays on one report row
-                return ' '.join(match.group(1).split())[:200]
+            return b''.join(chunks).decode('utf-8', errors='replace')
         except Exception as e:
-            self.logger.debug(f"Could not read title: {e}")
+            self.logger.debug(f"Could not read response body: {e}")
+            return None
 
+    @staticmethod
+    def _extract_title(body: str) -> str | None:
+        """Pull <title> out of a page body."""
+        match = _TITLE_RE.search(body or '')
+        if match:
+            # Collapse whitespace so the title stays on one report row
+            return ' '.join(match.group(1).split())[:200]
         return None
 
     async def analyze_domain(self, domain: str) -> dict[str, Any]:
@@ -630,6 +653,28 @@ def calculate_risk_score(domain_data: dict[str, Any], threat_intel: dict[str, An
         # A valid certificate on a lookalike domain means someone did the work
         if http.get('tls_verified') is True:
             score += 5
+
+        # --- What the page is built to collect -----------------------------
+        # This is the strongest single signal the scanner produces. Registering
+        # a lookalike is cheap and ambiguous; standing up a form that asks for
+        # a password is neither. Weighted to dominate accordingly.
+        page = http.get('page') or {}
+        if page.get('is_credential_form'):
+            score += 30
+        elif page.get('has_password_input'):
+            score += 20
+
+        if page.get('external_form_action'):
+            # A form posting to a different registrable domain is an
+            # exfiltration path, not a sign-in page.
+            score += 15
+
+        if page.get('brand_mentioned') and (
+            page.get('has_password_input') or page.get('form_count')
+        ):
+            # Naming the brand is only meaningful alongside something that
+            # collects: a fan page mentioning a brand is not a phishing kit.
+            score += 10
 
     # --- Certificate Transparency -----------------------------------------
     ct = threat_intel.get('certificate_transparency') or {}

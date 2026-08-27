@@ -115,6 +115,13 @@ enable_http_probe: true            # Probe domains with HTTP/HTTPS
 http_timeout: 10                   # HTTP request timeout (seconds)
 http_max_bytes: 1048576            # Cap on probed response bodies (1 MiB)
 http_max_redirects: 5              # Maximum redirects to follow
+# Read what the fetched page appears built to collect: credential forms,
+# forms submitting to another domain, mentions of the brand. This costs no
+# extra request — the body is already in memory from the probe — and it is the
+# strongest single signal the scanner produces. Registering a lookalike is
+# cheap and ambiguous; standing up a form that asks for a password is neither.
+enable_page_analysis: true
+
 # TLS certificates are always validated. A domain that answers but presents an
 # untrusted certificate is reported as "Invalid/self-signed" in the TLS column
 # rather than being fetched over an unauthenticated connection.

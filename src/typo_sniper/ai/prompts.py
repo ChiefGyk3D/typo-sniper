@@ -208,6 +208,23 @@ def describe_permutation(perm: dict[str, Any]) -> str:
         add('page_title', http.get('title'))
         add('redirects_to', http.get('redirects_to'))
 
+    # What the page is built to collect. These are derived by our own parser
+    # from the fetched markup, not copied from attacker-supplied text, so they
+    # are the most trustworthy lines in this block.
+    page = http.get('page') or {}
+    if page.get('parse_ok'):
+        add('page_has_credential_form', page.get('is_credential_form'))
+        add('page_has_password_field', page.get('has_password_input'))
+        add('page_form_count', page.get('form_count'))
+        if page.get('external_form_action'):
+            add('page_form_submits_to_other_domains',
+                ', '.join(page.get('form_action_hosts') or []))
+        add('page_mentions_the_brand', page.get('brand_mentioned'))
+        if page.get('parse_truncated'):
+            add('page_parse_incomplete',
+                'the page could not be fully parsed; absence of a finding here '
+                'is not evidence of absence')
+
     if ct.get('certificates_found'):
         add('certificates_in_ct_logs', ct['certificates_found'])
 

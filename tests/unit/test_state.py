@@ -272,3 +272,61 @@ class TestMailPostureChanges:
             perm('evil.com', mail_intel={'posture': 'hardened'})
         ]))
         assert 'SEND-CAPABLE mail' in delta['changes'][0]['detail']
+
+
+def page_perm(domain, **page):
+    """A permutation whose HTTP probe carries a page analysis."""
+    return perm(domain, threat_intel={'http_probe': {
+        'https_active': True,
+        'page': {'parse_ok': True, **page},
+    }})
+
+
+class TestCredentialFormTransitions:
+    """
+    A credential form appearing is the moment a watched lookalike stops being
+    a possibility and becomes a live collection point. It has to raise a
+    change, not sit silently in a column.
+    """
+
+    def test_a_form_appearing_raises_an_escalation(self, history):
+        history.record(result(permutations=[page_perm('evil.com')]))
+        delta = history.diff(result(permutations=[
+            page_perm('evil.com', is_credential_form=True, has_password_input=True)
+        ]))
+
+        escalations = [c for c in delta['changes'] if c['kind'] == ESCALATED]
+        assert any('credential form' in c['detail'] for c in escalations)
+
+    def test_a_form_that_was_already_there_raises_nothing(self, history):
+        """A daily scan must not re-report the same form every morning."""
+        before = page_perm('evil.com', is_credential_form=True)
+        history.record(result(permutations=[before]))
+        delta = history.diff(result(permutations=[page_perm(
+            'evil.com', is_credential_form=True)]))
+
+        assert not [c for c in delta['changes']
+                    if 'credential form' in (c.get('detail') or '')]
+
+    def test_a_form_starting_to_submit_off_site_raises_an_escalation(self, history):
+        history.record(result(permutations=[page_perm('evil.com', form_count=1)]))
+        delta = history.diff(result(permutations=[page_perm(
+            'evil.com', form_count=1, external_form_action=True)]))
+
+        assert any('submits to a different domain' in (c.get('detail') or '')
+                   for c in delta['changes'])
+
+    def test_page_findings_survive_a_history_round_trip(self, history):
+        """The snapshot has to persist these or the diff can never see them."""
+        history.record(result(permutations=[page_perm(
+            'evil.com', is_credential_form=True, external_form_action=True)]))
+        stored = history.load('example.com')[0]['permutations']['evil.com']
+
+        assert stored['is_credential_form'] is True
+        assert stored['external_form_action'] is True
+
+    def test_domains_without_page_analysis_are_unaffected(self, history):
+        history.record(result(permutations=[perm('quiet.com')]))
+        delta = history.diff(result(permutations=[perm('quiet.com')]))
+        assert not [c for c in delta['changes']
+                    if 'form' in (c.get('detail') or '')]

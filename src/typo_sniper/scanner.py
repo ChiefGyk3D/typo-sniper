@@ -148,7 +148,7 @@ class DomainScanner:
                     perm['sounds_alike'] = False
 
         # Add threat intelligence
-        enriched = await self._add_threat_intelligence(enriched)
+        enriched = await self._add_threat_intelligence(enriched, domain)
 
         # Mail capability: whether a lookalike is provisioned to send
         # deliverable mail, which is the clearest pre-phishing signal
@@ -414,7 +414,9 @@ class DomainScanner:
         except (TimeoutError, socket.gaierror, UnicodeError, OSError):
             return None
     
-    async def _add_threat_intelligence(self, permutations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    async def _add_threat_intelligence(
+        self, permutations: list[dict[str, Any]], monitored_domain: str = ''
+    ) -> list[dict[str, Any]]:
         """
         Add threat intelligence to permutations.
         
@@ -435,6 +437,10 @@ class DomainScanner:
         self.logger.info(f"Gathering threat intelligence for {len(permutations)} domains")
         
         async with ThreatIntelligence(self.config) as threat_intel:
+            # So page analysis can tell whether a page names the brand it is
+            # imitating, which a generic parked page never does.
+            threat_intel.monitored_domain = monitored_domain
+
             tasks = []
             for perm in permutations:
                 task = threat_intel.analyze_domain(perm['domain'])

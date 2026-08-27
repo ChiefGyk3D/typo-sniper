@@ -145,6 +145,11 @@ class ScanHistory:
             'certificates_found': ct.get('certificates_found', 0),
             'urlscan_malicious': bool(urlscan.get('malicious')),
             'mail_posture': (perm.get('mail_intel') or {}).get('posture'),
+            # Persisted so that a credential form *appearing* on a domain that
+            # was previously parked raises a change. That transition is the
+            # moment a watched lookalike becomes an active threat.
+            'is_credential_form': bool((http.get('page') or {}).get('is_credential_form')),
+            'external_form_action': bool((http.get('page') or {}).get('external_form_action')),
         }
 
     # -- diffing -----------------------------------------------------------
@@ -252,6 +257,27 @@ class ScanHistory:
                 'domain': name,
                 'risk_score': now.get('risk_score'),
                 'detail': 'added mail servers (MX)',
+                'current': now,
+            })
+
+        # A credential form appearing is the single most actionable transition
+        # this tool can report: the domain stopped being a possibility and
+        # started being a live collection point.
+        if now.get('is_credential_form') and not before.get('is_credential_form'):
+            changes.append({
+                'kind': ESCALATED,
+                'domain': name,
+                'risk_score': now.get('risk_score'),
+                'detail': 'now serves a credential form (username and password fields)',
+                'current': now,
+            })
+
+        if now.get('external_form_action') and not before.get('external_form_action'):
+            changes.append({
+                'kind': ESCALATED,
+                'domain': name,
+                'risk_score': now.get('risk_score'),
+                'detail': 'a form on this page now submits to a different domain',
                 'current': now,
             })
 

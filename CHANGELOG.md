@@ -5,6 +5,72 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-08-27
+
+The scanner can now see what a suspicious page is built to *do*, not just that
+it exists.
+
+### Added
+
+- **Credential-form detection.** A registered lookalike tells you someone
+  bought a domain. A lookalike serving a form with a password field tells you
+  what they bought it for. That is the difference between a finding worth
+  watching and one worth a takedown request this afternoon, and until now the
+  scanner could not see it — it read the page title and nothing else.
+
+  The HTTP probe already read the page body to extract `<title>`, so this costs
+  **no extra request**. It reports whether the page collects a password,
+  whether it pairs that with a username or email field, how many forms it has,
+  and whether the page names the brand it is imitating.
+
+  A `type="text"` field named `passwd`, `otp`, `cvv` or `card_number` counts:
+  changing the input type is a one-character edit, and the field name gives the
+  intent away.
+
+- **Off-site form actions.** A form on `examp1e.com` that POSTs to
+  `collector.evil.test` is an exfiltration path, not a login page. Comparison
+  is by registrable domain via the Public Suffix List, so `login.examp1e.com`
+  is correctly *not* flagged as off-site.
+
+- **A credential form appearing now raises an `ESCALATED` change.** That
+  transition — a parked lookalike becoming a live collection point — is the
+  most actionable thing this tool can report, and it is now persisted in scan
+  history so the diff engine can see it. So is a form that starts submitting
+  off-site.
+
+- **Five new ML features** and new evidence lines in the AI prompt, both
+  drawn from the same analysis. The page findings are derived by our own
+  parser from the fetched markup rather than copied from attacker-supplied
+  text, which makes them the most trustworthy lines in the prompt's data block.
+
+- **A `Page` column** in the CSV, Excel, and HTML reports.
+
+### Changed
+
+- **Risk scoring is weighted so page findings dominate**, which they should: a
+  credential form adds 30, an off-site form action 15, and a brand mention 10
+  — but only alongside something that actually collects. A fan page naming a
+  brand is not a phishing kit, and scoring it like one would train operators to
+  ignore the signal.
+
+- **The feature set changed, so previously trained ranking models are
+  refused** with a message to retrain, rather than silently scoring a
+  mismatched vector. That guard was added in 1.5.0 for exactly this case.
+
+### Security
+
+- **Parsing uses the standard library's `HTMLParser`, not a third-party
+  parser.** This is attacker-authored markup by definition, so the smaller and
+  more boring the parsing surface, the better: no external entity resolution,
+  no network fetches, no recovery heuristics that could be steered.
+
+- **Every collection is bounded** — forms, inputs, and text — because a page
+  designed to be parsed slowly is a cheap way to stall a scan. The body was
+  already capped at `http_max_bytes`.
+
+- **A page that breaks the parser is reported as truncated**, not as a clean
+  reading. "No password field found" and "we stopped looking" are different
+  claims, and the AI prompt says which one it is.
 ## [2.0.0] - 2026-08-27
 
 Typo Sniper is now installable. `pip install typo-sniper` gets you a
