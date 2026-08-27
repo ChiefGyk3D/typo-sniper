@@ -1,5 +1,5 @@
 # Typo Sniper - Dockerfile
-# Mozilla Public License 2.0
+# Licensed under the GNU AGPL v3. Commercial licensing: see COMMERCIAL.md
 
 FROM python:3.14-slim
 

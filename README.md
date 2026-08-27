@@ -8,19 +8,10 @@
 **Advanced Domain Typosquatting Detection Tool**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MPL 2.0 & Commercial](https://img.shields.io/badge/License-MPL%202.0%20%7C%20Commercial-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Commercial licence available](https://img.shields.io/badge/Commercial-available-green.svg)](COMMERCIAL.md)
 [![Version](https://img.shields.io/badge/version-1.1-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
 
-
----
-
-## License
-
-Typo Sniper is available under a dual-license model:
-
-- **Open Source License:** Mozilla Public License 2.0 (MPL 2.0)
-- **Commercial License:** Available for organizations that cannot comply with MPL 2.0 terms.
-  For commercial licensing inquiries, please contact: licensing@yourdomain.com
 
 Detect and monitor typosquatting domains targeting your brand with powerful automation, threat intelligence, and beautiful reporting.
 
@@ -619,7 +610,7 @@ typo-sniper/
 ├── tests/                         # Unit tests
 │   └── __init__.py                # Test package initialization
 ├── docs/                          # Documentation & configs
-│   ├── LICENSE                    # MPL 2.0 License
+│   ├── LICENSE                    # GNU AGPL v3
 │   └── config.yaml.example        # Example configuration
 ├── QUICKSTART.md                  # 🆕 Quick start guide (start here!)
 ├── TESTING.md                     # 🆕 Testing & API setup guide
@@ -1205,7 +1196,7 @@ typo-sniper/
 ├── tests/                  # Unit tests
 │   └── __init__.py         # Test package initialization
 ├── docs/                   # Documentation
-│   ├── LICENSE             # MPL 2.0 License
+│   ├── LICENSE             # GNU AGPL v3
 │   └── config.yaml.example # Example configuration
 ├── requirements.txt        # Python dependencies
 ├── .gitignore              # Git ignore rules
@@ -1392,15 +1383,26 @@ Contributions are welcome! Please feel free to:
 - Submit pull requests
 - Improve documentation
 
-This project is committed to remaining open source under the Mozilla Public License 2.0 to ensure the core code stays free while allowing flexible integration.
+This project is committed to remaining open source under the GNU AGPL v3, so the core stays free and improvements to it stay public.
 
 ---
 
 ## License
 
-This project is licensed under the Mozilla Public License 2.0 - see the LICENSE file for details.
+This project is dual-licensed:
 
-**Why MPL 2.0?** This license offers the best of both worlds - it keeps modifications to the core files open source (weak copyleft at file level), while allowing integration with proprietary code. It includes patent protection and is ideal for security tools that may be integrated into larger systems or enterprise environments.
+- **[GNU AGPL v3](LICENSE)** for everyone — free to use, modify, and run.
+- **[Commercial licence](COMMERCIAL.md)** for organisations embedding Typo Sniper
+  in a proprietary product or offering it as a hosted service without publishing
+  their modifications.
+
+**Why AGPL v3?** Using Typo Sniper is unrestricted: run it, modify it, and keep
+those changes private, in any organisation, commercially, for as long as you like.
+The obligation applies only if you *distribute* it or offer a *modified version to
+others over a network* — the one case a permissive licence would give away, since
+the most likely commercial use of brand-protection tooling is wrapping it in a
+hosted service. Security teams monitoring their own brands are unaffected. If the
+AGPL does not fit your situation, a [commercial licence](COMMERCIAL.md) is available.
 
 ---
 

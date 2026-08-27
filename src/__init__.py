@@ -6,7 +6,7 @@ A powerful tool for detecting and monitoring potential typosquatting domains.
 
 __version__ = "1.1"
 __author__ = "chiefgyk3d"
-__license__ = "MPL-2.0"
+__license__ = "AGPL-3.0-or-later"
 
 from .config import Config
 from .cache import Cache
