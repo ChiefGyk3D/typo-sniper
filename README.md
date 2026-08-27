@@ -28,6 +28,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 ## 📋 Table of Contents
 
 **Quick Navigation:**
+- [Testing and Feedback Wanted](#-testing-and-feedback-wanted) 🧪
 - [Documentation Guide](#-documentation-guide)
 - [Quick Start](#-quick-start) ⚡ **Start here!**
 - [Installation](#-installation)
@@ -48,6 +49,38 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 
 ---
 
+## 🧪 Testing and Feedback Wanted
+
+Typo Sniper gained a lot of surface area quickly — AI triage, learned ranking,
+seven secrets backends, seven alert channels, Jira ticketing, page analysis, and
+Terraform modules all landed recently.
+
+**Every feature has tests, and the suite is hermetic.** But a passing stub test
+proves the code does what its author expected, not that a vendor's API agrees.
+Several integrations have never had a request leave a developer's machine:
+Doppler, AWS, Vault, Azure, GCP, 1Password, every AI provider, Teams, Matrix,
+Jira, and the Terraform modules.
+
+👉 **[docs/STATUS.md](docs/STATUS.md)** is an honest account of what is verified
+and what is not, with specific things to try.
+
+If you test any of it, **please open an issue either way** — "this worked
+exactly as documented" is as useful as a bug report, and much rarer. Two asks in
+particular:
+
+- **[#5](https://github.com/ChiefGyk3D/typo-sniper/issues/5)** — anyone with an
+  AWS account to confirm Secrets Manager resolution
+- **Jira** — test against a scratch project first; it creates state
+
+And one thing nobody can evaluate yet, including the author: **the learned
+ranking model has no real labels.** It cannot be judged until someone makes
+~30 real triage decisions and runs `--ml-status`. An unremarkable score there is
+a legitimate result worth reporting.
+
+**[⬆ Back to Top](#-table-of-contents)**
+
+---
+
 ## 📚 Documentation Guide
 
 **New to Typo Sniper?** Start here:
@@ -57,7 +90,6 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 
 | **[Quick Start Guide](docs/guides/QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
 | **[README.md](README.md)** | 📖 **You are here.** Complete overview and reference | Understanding features, basic usage |
-| **[Enhancements](docs/guides/ENHANCEMENTS.md)** | 🔬 Deep dive into enhanced detection & threat intel | Understanding detection algorithms |
 | **[Testing Guide](TESTING.md)** | 🧪 Comprehensive testing guide with API setup | Setting up APIs, troubleshooting |
 | **[Debug Mode Guide](docs/guides/DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
 | **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
@@ -157,40 +189,52 @@ ruff check src/ tests/
 
 ```
 typo-sniper/
-├── src/                           # Core Python source code
-│   ├── __init__.py                # Package initialization
-│   ├── cache.py                   # Caching system
-│   ├── config.py                  # Configuration management
-│   ├── exporters.py               # Output format exporters (Excel, JSON, CSV, HTML)
-│   ├── scanner.py                 # Domain scanning & WHOIS enrichment
-│   ├── enhanced_detection.py      # 🆕 Advanced detection algorithms
-│   ├── threat_intelligence.py     # 🆕 Threat intel integrations
-│   ├── secrets_manager.py         # 🆕 Secrets management
-│   └── typo_sniper/              # The installable package
-│       ├── cli.py                # Application & CLI entry point
-│   ├── utils.py                   # Utility functions
-│   └── monitored_domains.txt      # Example domain list
-├── docker/                        # Docker-related files
-│   ├── Dockerfile                 # Standard Docker image
-│   ├── Dockerfile.doppler         # 🆕 Docker with Doppler support
-│   ├── docker-compose.yml         # Docker Compose configuration
-│   ├── docker-compose.threat-intel.yml  # 🆕 Compose with threat intel
-│   ├── .dockerignore              # Docker build exclusions
-│   ├── .env.example               # 🆕 Environment variables template
-│   └── DOCKER.md                  # Docker usage guide
-├── tests/                         # Unit tests
-│   └── __init__.py                # Test package initialization
-├── docs/                          # Documentation & configs
-│   ├── LICENSE                    # GNU AGPL v3
-│   └── config.yaml.example        # Example configuration
-├── QUICKSTART.md                  # 🆕 Quick start guide (start here!)
-├── TESTING.md                     # 🆕 Testing & API setup guide
-<!-- SECRETS_MANAGEMENT.md has been removed from the project structure -->
-├── ENHANCEMENTS.md                # 🆕 Feature documentation
-├── PROJECT_STRUCTURE.md           # Project organization
-├── requirements.txt               # Python dependencies
-├── .gitignore                     # Git ignore rules
-└── README.md                      # This file
+├── src/typo_sniper/               # The installable package
+│   ├── cli.py                     # Application and CLI entry point
+│   ├── __main__.py                # python -m typo_sniper
+│   ├── scanner.py                 # Scanning, permutations, enrichment
+│   ├── enhanced_detection.py      # Combo-squat, sound-alike, IDN homographs
+│   ├── rdap.py                    # RDAP client (WHOIS replacement over HTTPS)
+│   ├── dns_intel.py               # SPF / DKIM / DMARC mail posture
+│   ├── page_analysis.py           # Credential forms, off-site actions
+│   ├── threat_intelligence.py     # URLScan, CT logs, HTTP probing, risk score
+│   ├── state.py                   # Scan history and change detection
+│   ├── notifiers.py               # Slack, Discord, Teams, Matrix, Jira, …
+│   ├── exporters.py               # Excel, JSON, CSV, HTML reports
+│   ├── secrets_manager.py         # env, Doppler, AWS, Vault, Azure, GCP, 1Password
+│   ├── config.py                  # Configuration and secret resolution
+│   ├── cache.py                   # WHOIS/RDAP cache
+│   ├── utils.py                   # Validation, sanitisation, helpers
+│   ├── ai/                        # AI triage (explains, never scores)
+│   │   ├── analyzer.py            # Orchestration
+│   │   ├── prompts.py             # Prompt building and injection defences
+│   │   ├── providers.py           # Claude, OpenAI, Gemini, Ollama
+│   │   └── base.py                # Provider interface
+│   └── ml/                        # Learned ranking (ranks, never scores)
+│       ├── features.py            # Deterministic feature extraction
+│       ├── labels.py              # Operator decisions as training data
+│       ├── dataset.py             # Joins history to labels
+│       └── model.py               # Train (sklearn) / score (pure Python)
+├── infra/terraform/               # Deployment infrastructure
+│   ├── modules/common/            # S3, EFS state, secrets, security groups
+│   ├── modules/ecs-fargate/       # Scheduled Fargate task
+│   ├── modules/eks-cronjob/       # Kubernetes CronJob
+│   └── examples/                  # Runnable examples for both
+├── docker/                        # Container images and compose files
+├── tests/
+│   ├── unit/                      # Automated tests (hermetic, no network)
+│   ├── scripts/                   # Manual walkthroughs (need keys/network)
+│   └── test_data/                 # Fixtures
+├── docs/
+│   ├── STATUS.md                  # What is verified, what needs testing
+│   ├── guides/                    # Per-feature guides
+│   └── config.yaml.example        # Full configuration reference
+├── .github/workflows/             # CI, security scanning, release
+├── pyproject.toml                 # Packaging, extras, tool config
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── COMMERCIAL.md                  # Commercial licensing terms
+└── LICENSE                        # GNU AGPL v3
 ```
 
 **[⬆ Back to Top](#-table-of-contents)**
@@ -199,68 +243,105 @@ typo-sniper/
 
 ## 🎯 Features
 
+Everything below the Core row is optional and off unless configured. The
+scanner's detection and risk scoring are deterministic and run identically with
+every optional feature disabled.
+
+| Area | What you get | Guide |
+|---|---|---|
+| **Detection** | dnstwist permutations, combo-squatting, sound-alike, IDN homographs | [below](#enhanced-detection-methods-optional) |
+| **Registration** | RDAP first (HTTPS, works where port 43 is blocked), WHOIS fallback | — |
+| **Mail posture** | SPF / DKIM / DMARC classified `none` → `hardened` | — |
+| **Page analysis** | Credential forms, off-site form actions, brand mentions | [below](#-page-analysis) |
+| **Threat intel** | URLScan.io, Certificate Transparency, HTTP/TLS probing | [API Keys](docs/guides/API_KEYS_SETUP.md) |
+| **Change detection** | Diffs each scan against the last: new / escalated / activated / resolved | — |
+| **Alerting** | Slack, Discord, Teams, Matrix, webhook, email | [Alerting](docs/guides/ALERTING.md) |
+| **Ticketing** | Jira — one deduplicated issue per domain | [Alerting](docs/guides/ALERTING.md) |
+| **AI triage** | Claude, OpenAI, Gemini, Ollama — explains, never scores | [AI Analysis](docs/guides/AI_ANALYSIS.md) |
+| **Learned ranking** | Orders findings by your own past decisions | [ML Triage](docs/guides/ML_TRIAGE.md) |
+| **Secrets** | env, Doppler, AWS, Vault, Azure, GCP, 1Password | [Secrets](docs/guides/SECRETS_MANAGEMENT.md) |
+| **Deployment** | PyPI, GHCR container, Terraform for ECS Fargate and EKS | [Infrastructure](infra/README.md) |
+| **Reports** | Excel, JSON, CSV, HTML | [below](#-output-formats) |
+
 ### Core Capabilities
-- **Comprehensive Detection** - Uses [dnstwist](https://github.com/elceef/dnstwist) for industry-leading typosquatting detection
-- **Rich WHOIS Data** - Automatically enriches results with detailed WHOIS information
-- **Async & Parallel** - Fast concurrent scanning with configurable worker pools
-- **Smart Caching** - Avoid redundant WHOIS lookups with built-in caching
-- **Date Filtering** - Focus on recently registered domains
-- **Multiple Formats** - Export to Excel, JSON, CSV, and HTML
+
+- **Comprehensive detection** via [dnstwist](https://github.com/elceef/dnstwist),
+  with registrable-domain splitting from the Public Suffix List so
+  `example.com.br` and `example.github.io` are handled correctly.
+- **RDAP with WHOIS fallback.** RDAP is HTTPS on 443, so registration data
+  still resolves in environments where outbound TCP/43 is blocked — which is
+  most corporate networks.
+- **Async and parallel** scanning with configurable worker pools, and a WHOIS
+  circuit breaker so one unresponsive registrar cannot stall a run.
+- **Smart caching** to avoid redundant lookups.
+- **Change detection.** Alerts fire on what *moved* since the last scan, never
+  on the full result set. A daily scan that re-reported the same seventy
+  lookalikes every morning gets ignored within a week.
 
 ### Enhanced Detection Methods (Optional)
+
 > ![Enhance!](https://media1.tenor.com/m/vp7s5OGK-RUAAAAd/enhance.gif)
 >
 > *"ENHANCE!" — Just like in the movies, but with more DNS lookups. Use enhanced detection with caution!*
-- **Combo-Squatting** - Detects domains combining your brand with popular keywords (e.g., `example-shop.com`, `secure-example.com`)
-  - 50+ keywords: login, secure, account, shop, store, support, admin, payment, verify, etc.
-  - Multiple separators: hyphens, underscores, numbers
-  - Configurable via `enable_combosquatting` setting
 
-- **Sound-Alike Detection** - Finds domains that sound phonetically similar using Soundex and Metaphone algorithms
-  - Example: `example.com` → `exampul.com`, `egzample.com`
-  - Configurable via `enable_soundalike` setting
+- **Combo-squatting** — brand plus a keyword (`example-shop.com`,
+  `secure-example.com`). 50+ defaults, and `custom_keywords` for your own
+  product, campaign, and portal names, which make far better bait than the
+  generic list. `enable_combosquatting`
+- **Sound-alike** — Soundex and Metaphone (`exampul.com`, `egzample.com`).
+  `enable_soundalike`
+- **IDN homographs** — confusable Unicode (`еxample.com` with a Cyrillic е).
+  `enable_idn_homograph`
 
-- **IDN Homograph Detection** - Identifies internationalized domain names using confusable Unicode characters
-  - Example: `example.com` → `еxample.com` (Cyrillic 'е'), `exаmple.com` (Cyrillic 'а')
-  - Detects mixed-script attacks using lookalike characters
-  - Configurable via `enable_idn_homograph` setting
+### Signals That Indicate Intent
+
+These are the ones worth acting on, because each represents deliberate work by
+the operator rather than the £8 it costs to register a name.
+
+- **Mail capability (SPF / DKIM / DMARC).** Registering a lookalike is cheap.
+  Provisioning it to send mail that passes receiver checks is deliberate work
+  whose only purpose is deliverable mail — the prerequisite for credential
+  phishing and business email compromise. Classified `none` / `receive-only` /
+  `partial` / `provisioned` / `hardened`, and a domain that *gains* send
+  capability between scans raises an escalation.
+- **Credential forms.** A password field paired with a username or email field
+  is the phishing kit itself. A form submitting to a different registrable
+  domain is an exfiltration path, not a login page.
+- **TLS validity.** A valid certificate on a lookalike means someone did the
+  work. Certificates are always validated — a validation failure is recorded as
+  a finding, not worked around.
+- **Registration age.** Log-scaled, because 3 days versus 30 matters far more
+  than 1000 versus 1027.
 
 ### Threat Intelligence Integration (Optional)
-- **URLScan.io** - Analyze live website behavior and security posture
-  - **Auto-enables when API key is configured** (no additional flags needed!)
-  - Requires API key (free tier available at [urlscan.io](https://urlscan.io))
-  - Smart scanning: checks for existing scans first, only submits new scan if older than `urlscan_max_age_days` (default: 7 days)
-  - Waits up to `urlscan_wait_timeout` seconds (default: 90s) for scan results
-  - Provides verdict: malicious, suspicious, clean with threat scores and categories
-  - Returns screenshot URL and report URL for further investigation
-  - Can be explicitly disabled with `ENABLE_URLSCAN=false` environment variable if needed
-  - Configurable via `urlscan_api_key`, `urlscan_max_age_days`, `urlscan_wait_timeout`, and `urlscan_visibility`
 
-- **Certificate Transparency Logs** - Monitor SSL/TLS certificate issuance
-  - Tracks certificate history for domains
-  - No API key required
-  - Configurable via `enable_certificate_transparency`
+- **URLScan.io** — live behaviour and verdicts. Auto-enables when an API key is
+  configured. Checks for an existing scan before submitting a new one.
+  `urlscan_api_key`, `urlscan_max_age_days`, `urlscan_wait_timeout`
+- **Certificate Transparency** — certificate issuance history. No API key.
+  `enable_certificate_transparency`
+- **HTTP probing** — whether the domain serves content, and what that content
+  is built to collect. `enable_http_probe`, `enable_page_analysis`
+- **Risk scoring** — deterministic 0–100 from all of the above. Colour-coded in
+  Excel. `enable_risk_scoring`
 
-- **HTTP Probing** - Test if domains are actively hosting content
-  - Checks HTTP/HTTPS status codes
-  - Configurable timeout (default: 10s)
-  - Configurable via `enable_http_probe` and `http_timeout`
+### Two Rules Worth Knowing
 
-- **Risk Scoring** - Automated threat assessment (0-100 scale)
-  - Combines threat intelligence signals
-  - Color-coded in Excel reports (Red: 70+, Orange: 50-69, Yellow: 30-49)
-  - Configurable via `enable_risk_scoring`
+Both the AI and ML layers follow the same rule, for the same reason:
 
-### Key Features
-- Complete with modern Python async/await
-- Modular, object-oriented architecture
-- Beautiful CLI with progress bars and colored output
-- Enhanced Excel reports with multiple sheets and rich formatting
-- Stunning HTML reports with responsive design
-- YAML-based configuration system
-- Intelligent retry logic and error handling
-- Comprehensive logging with Rich integration
-- Significant performance improvements
+> **They explain and rank. They never score.**
+
+Risk scores are computed deterministically and are identical with both layers
+disabled. A takedown request to a registrar has to rest on evidence anyone can
+reproduce — *"registered nine days ago, valid SPF and DKIM, serving a login
+page"* is an argument a registrar can check. *"Our model put it first"* is not.
+
+> **A failed lookup is never reported as a finding.**
+
+A DNS query that times out yields `unknown`, which scores zero and is labelled
+"Lookup failed" rather than "no SPF". A page that breaks the parser is marked
+truncated rather than passed off as a clean reading. Absence of evidence is not
+evidence of absence, and a tool that blurs the two teaches you to distrust it.
 
 **[⬆ Back to Top](#-table-of-contents)**
 
@@ -364,19 +445,55 @@ typo-sniper [OPTIONS]
 
 ### Options
 
+**Scanning**
+
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-i, --input FILE` | Input file with domains to monitor | `monitored_domains.txt` |
 | `-o, --output DIR` | Output directory for results | `results/` |
-| `--format FORMAT [FORMAT ...]` | Output formats (excel, json, csv, html) | `excel` |
-| `--months N` | Filter domains registered in last N months (0 = no filter) | `0` |
-| `--config FILE` | Path to YAML configuration file | None |
+| `--format FORMAT [...]` | Output formats: excel, json, csv, html | `excel` |
+| `--months N` | Only domains registered in the last N months (0 = no filter) | `0` |
+| `--config FILE` | Path to a YAML configuration file | None |
 | `--max-workers N` | Maximum concurrent workers | `10` |
-| `--cache-ttl SECONDS` | Cache TTL in seconds | `86400` (24h) |
-| `--no-cache` | Disable caching | False |
-| `-v, --verbose` | Enable verbose output (INFO level) | False |
-| `--debug` | Enable debug output (DEBUG level with tracing) | False |
-| `--version` | Show version and exit | - |
+| `--cache-ttl SECONDS` | Cache TTL | `86400` |
+| `--no-cache` | Disable caching | off |
+| `--no-rdap` | Skip RDAP, use WHOIS only | off |
+
+**Monitoring and alerting**
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--watch` | Run continuously, rescanning on an interval | off |
+| `--interval SPEC` | Interval in watch mode, e.g. `6h`, `30m` | `24h` |
+| `--no-diff` | Disable change detection against previous scans | off |
+| `--notify CHANNEL [...]` | slack, discord, teams, matrix, jira, webhook, email | none |
+| `--notify-min-changes N` | Only alert at or above this many changes | `1` |
+
+**AI triage** — see [AI Analysis](docs/guides/AI_ANALYSIS.md)
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--ai` | Enable AI-assisted triage (explains, never scores) | off |
+| `--ai-provider NAME` | claude, openai, gemini, ollama | `claude` |
+| `--ai-model NAME` | Model for the chosen provider | provider default |
+
+**Learned ranking** — see [ML Triage](docs/guides/ML_TRIAGE.md)
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--label DOMAIN=acted\|dismissed` | Record a triage decision, then exit | — |
+| `--ml-status` | Report label counts and the trained model, then exit | — |
+| `--ml-train` | Train the ranking model on labelled history, then exit | — |
+| `--ml-rank` | Order findings by the trained model | off |
+
+**Diagnostics**
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--secrets-check` | Report reachable secrets backends and where each credential resolved from. Never prints a value. | — |
+| `-v, --verbose` | Verbose output (INFO) | off |
+| `--debug` | Debug output with tracing | off |
+| `--version` | Show version and exit | — |
 
 ### Examples
 
@@ -434,7 +551,7 @@ typo-sniper -v
 typo-sniper --debug
 ```
 
-> 💡 **Tip:** Use `--debug` to troubleshoot issues like "why am I getting 0 enhanced detections?" It will show you which features are enabled/disabled. See [DEBUG_MODE.md](DEBUG_MODE.md) for details.
+> 💡 **Tip:** Use `--debug` to troubleshoot issues like "why am I getting 0 enhanced detections?" It will show you which features are enabled/disabled. See [DEBUG_MODE.md](docs/guides/DEBUG_MODE.md) for details.
 
 **[⬆ Back to Top](#-table-of-contents)**
 
@@ -1535,7 +1652,7 @@ doppler configs tokens create prod-token --plain
 - **AWS Secrets Manager Guide:** https://docs.aws.amazon.com/secretsmanager/
 - **Environment Variables Best Practices:** https://12factor.net/config
 - **Typo Sniper Testing Guide:** [TESTING.md](TESTING.md)
-- **Typo Sniper Quick Start:** [QUICKSTART.md](QUICKSTART.md)
+- **Typo Sniper Quick Start:** [QUICKSTART.md](docs/guides/QUICKSTART.md)
 
 ---
 

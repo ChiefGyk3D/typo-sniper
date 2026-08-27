@@ -8,6 +8,7 @@ Comprehensive documentation for Typo Sniper.
 - **[README.md](../README.md)** - Main project documentation
 - **[QUICKSTART.md](guides/QUICKSTART.md)** - Get up and running in 5 minutes
 - **[TESTING.md](../TESTING.md)** - Testing guide
+- **[STATUS.md](STATUS.md)** - 🧪 What is verified, what needs your testing, what to report
 
 ### Guides
 - **[API_KEYS_SETUP.md](guides/API_KEYS_SETUP.md)** - Setting up URLScan.io API keys
@@ -28,6 +29,7 @@ Comprehensive documentation for Typo Sniper.
 ```
 docs/
 ├── README.md                           # This file
+├── STATUS.md                           # Feature status and help wanted
 ├── config.yaml.example                 # Example configuration
 └── guides/                             # User guides
     ├── API_KEYS_SETUP.md              # API key setup

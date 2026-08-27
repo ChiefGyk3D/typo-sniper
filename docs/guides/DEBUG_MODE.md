@@ -172,6 +172,6 @@ This script demonstrates:
 
 ## See Also
 
-- [TESTING.md](TESTING.md) - Testing documentation
-- [THREAT_INTEL_TESTING.md](THREAT_INTEL_TESTING.md) - Threat intelligence testing
+- [TESTING.md](../../TESTING.md) - Testing documentation
+- [THREAT_INTEL_TESTING.md](../../tests/docs/THREAT_INTEL_TESTING.md) - Threat intelligence testing
 - [QUICKSTART.md](QUICKSTART.md) - Quick start guide
