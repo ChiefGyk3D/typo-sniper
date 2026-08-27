@@ -1,5 +1,5 @@
 # Docker Compose for Typo Sniper with Threat Intelligence
-# Mozilla Public License 2.0
+# Licensed under the GNU AGPL v3. Commercial licensing: see COMMERCIAL.md
 #
 # This compose file demonstrates how to run Typo Sniper with API keys
 # loaded from environment variables or .env file.

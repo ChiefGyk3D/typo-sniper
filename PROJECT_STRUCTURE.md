@@ -4,7 +4,9 @@
 Typo Sniper/
 ├── .env.example                    # Environment variables template (copy to .env)
 ├── .gitignore                      # Git ignore rules
-├── LICENSE                         # Mozilla Public License 2.0
+├── LICENSE                         # GNU AGPL v3
+├── COMMERCIAL.md                   # Dual-licence / commercial terms
+├── CONTRIBUTING.md                 # Contribution + relicensing terms
 ├── README.md                       # Main project documentation
 ├── TESTING.md                      # Testing guide
 ├── requirements.txt                # Python dependencies (pinned)

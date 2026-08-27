@@ -4,6 +4,10 @@ Export modules for Typo Sniper results.
 Supports multiple output formats: Excel, JSON, CSV, and HTML.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import csv
 import html
 import json

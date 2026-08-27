@@ -4,6 +4,10 @@ Caching module for Typo Sniper.
 Provides persistent caching of WHOIS lookups to avoid redundant queries.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import hashlib
 import json
 import logging

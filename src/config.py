@@ -2,6 +2,10 @@
 Configuration management for Typo Sniper.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
