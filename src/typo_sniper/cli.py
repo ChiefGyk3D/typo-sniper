@@ -27,16 +27,16 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 # the environment at import time (Config resolves API keys in its defaults).
 load_dotenv()
 
-from ai import AIAnalyzer  # noqa: E402
-from cache import Cache  # noqa: E402
-from config import Config  # noqa: E402
-from exporters import CSVExporter, ExcelExporter, HTMLExporter, JSONExporter  # noqa: E402
-from ml import LabelStore  # noqa: E402
-from notifiers import dispatch, write_delta_json  # noqa: E402
-from scanner import DomainScanner  # noqa: E402
-from state import ScanHistory, summarize  # noqa: E402
-from utils import parse_interval, setup_logging, validate_domain  # noqa: E402
-from version import __version__  # noqa: E402
+from .ai import AIAnalyzer  # noqa: E402
+from .cache import Cache  # noqa: E402
+from .config import Config  # noqa: E402
+from .exporters import CSVExporter, ExcelExporter, HTMLExporter, JSONExporter  # noqa: E402
+from .ml import LabelStore  # noqa: E402
+from .notifiers import dispatch, write_delta_json  # noqa: E402
+from .scanner import DomainScanner  # noqa: E402
+from .state import ScanHistory, summarize  # noqa: E402
+from .utils import parse_interval, setup_logging, validate_domain  # noqa: E402
+from .version import __version__  # noqa: E402
 
 console = Console()
 
@@ -66,7 +66,7 @@ class TypoSniper:
         # back to the deterministic risk score, which is the default anyway.
         self.triage_model = None
         if config.enable_ml_ranking:
-            import ml
+            from . import ml
             self.triage_model = ml.load(config.state_dir)
 
     def close(self) -> None:
@@ -715,7 +715,7 @@ def apply_labels(config, specs: list[str]) -> int:
     Returns:
         Process exit code
     """
-    from ml.labels import VALID_LABELS
+    from .ml.labels import VALID_LABELS
 
     store = LabelStore(config.state_dir)
     failures = 0
@@ -759,8 +759,8 @@ def print_ml_status(config, domains: list[str] | None = None) -> None:
         config: Configuration object
         domains: Monitored domains whose history should be counted
     """
-    import ml
-    from ml.model import model_path
+    from . import ml
+    from .ml.model import model_path
 
     store = LabelStore(config.state_dir)
     counts = store.counts()
@@ -820,7 +820,7 @@ def run_ml_training(config, domains: list[str]) -> int:
     Returns:
         Process exit code
     """
-    import ml
+    from . import ml
 
     if not ml.sklearn_available():
         console.print(
@@ -898,7 +898,7 @@ def print_secrets_check(config) -> None:
     """
     from rich.table import Table
 
-    from secrets_manager import BACKENDS
+    from .secrets_manager import BACKENDS
 
     backends = Table(title='Secrets backends', title_justify='left')
     backends.add_column('Backend')
@@ -1141,5 +1141,16 @@ async def main():
         sys.exit(exit_code)
 
 
-if __name__ == '__main__':
+def run() -> None:
+    """
+    Console-script entry point.
+
+    ``main`` is a coroutine, but a setuptools entry point has to name a plain
+    callable, so this is the synchronous wrapper the ``typo-sniper`` command
+    resolves to.
+    """
     asyncio.run(main())
+
+
+if __name__ == '__main__':
+    run()

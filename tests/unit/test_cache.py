@@ -1,7 +1,7 @@
 """Tests for the WHOIS cache."""
 
 
-from cache import Cache
+from typo_sniper.cache import Cache
 
 
 class TestCacheBasics:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from typo_sniper import TypoSniper, parse_arguments
+from typo_sniper.cli import TypoSniper, parse_arguments
 
 
 @pytest.fixture
@@ -56,7 +56,8 @@ class TestLoadDomains:
 
     def test_shipped_example_domain_list_is_valid(self, sniper):
         from pathlib import Path
-        example = Path(__file__).resolve().parents[2] / 'src' / 'monitored_domains.txt'
+        example = (Path(__file__).resolve().parents[2]
+                   / 'src' / 'typo_sniper' / 'monitored_domains.txt')
         assert len(sniper.load_domains(example)) == 3
 
 

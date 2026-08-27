@@ -12,8 +12,8 @@ import types
 
 import pytest
 
-import secrets_manager
-from secrets_manager import (
+from typo_sniper import secrets_manager
+from typo_sniper.secrets_manager import (
     BACKENDS,
     AWSSecretsBackend,
     AzureKeyVaultBackend,

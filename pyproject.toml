@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "typo-sniper"
 description = "Advanced domain typosquatting detection and monitoring"
@@ -6,6 +10,25 @@ license = { text = "AGPL-3.0-or-later" }
 authors = [{ name = "chiefgyk3d" }]
 requires-python = ">=3.10"
 dynamic = ["version"]
+
+# Runtime dependencies. Ranges rather than the exact pins in requirements.txt:
+# those exist so a Docker image and CI resolve identically, which is where
+# reproducibility matters. A published distribution has to coexist with
+# whatever else is in the environment it lands in, so it takes lower bounds
+# and a cap at the next major instead.
+dependencies = [
+    "dnstwist>=20240116",
+    "python-whois>=0.9.0,<1",
+    "PyYAML>=6.0,<7",
+    # dnstwist falls back to socket lookups without this: no MX or NS records,
+    # mxcheck becomes a no-op, and permutations return error sentinels.
+    "dnspython>=2.6,<3",
+    "publicsuffixlist>=1.0.2",
+    "openpyxl>=3.1,<4",
+    "rich>=13.0,<16",
+    "aiohttp>=3.9,<4",
+    "python-dotenv>=1.0,<2",
+]
 keywords = ["security", "typosquatting", "dns", "threat-intelligence", "osint"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -17,6 +40,9 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
+
+[project.scripts]
+typo-sniper = "typo_sniper.cli:run"
 
 [project.urls]
 Homepage = "https://github.com/ChiefGyk3D/typo-sniper"
@@ -70,6 +96,16 @@ all = [
     "google-cloud-secret-manager>=2.20.0",
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["typo_sniper*"]
+
+[tool.setuptools.dynamic]
+version = { attr = "typo_sniper.version.__version__" }
+
+[tool.setuptools.package-data]
+typo_sniper = ["*.txt"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
 pythonpath = ["src"]
@@ -110,8 +146,8 @@ ignore = [
 "tests/**" = ["S", "B011"]
 # The confusable-character table is deliberately built from characters that
 # look like ASCII; flagging them as ambiguous defeats the module's purpose.
-"src/enhanced_detection.py" = ["RUF001", "RUF002", "RUF003"]
+"src/typo_sniper/enhanced_detection.py" = ["RUF001", "RUF002", "RUF003"]
 "tests/unit/test_enhanced_detection.py" = ["RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["cache", "config", "enhanced_detection", "exporters", "scanner", "secrets_manager", "threat_intelligence", "utils", "version"]
+known-first-party = ["typo_sniper"]

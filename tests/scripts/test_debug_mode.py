@@ -10,8 +10,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
-from config import Config
-from enhanced_detection import generate_enhanced_permutations
+from typo_sniper.config import Config
+from typo_sniper.enhanced_detection import generate_enhanced_permutations
 
 
 async def test_debug_mode():

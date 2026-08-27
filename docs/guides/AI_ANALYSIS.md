@@ -43,14 +43,14 @@ is the difference between using this feature and disabling it.
 ```bash
 # Simplest: a key in the environment, one flag
 export ANTHROPIC_API_KEY="sk-ant-..."
-python src/typo_sniper.py -i domains.txt --ai
+typo-sniper -i domains.txt --ai
 
 # Pick a provider and model
-python src/typo_sniper.py -i domains.txt --ai-provider ollama --ai-model mistral
+typo-sniper -i domains.txt --ai-provider ollama --ai-model mistral
 
 # Keep everything local
 export TYPO_SNIPER_AI_BASE_URL="http://localhost:11434"
-python src/typo_sniper.py -i domains.txt --ai-provider ollama
+typo-sniper -i domains.txt --ai-provider ollama
 ```
 
 The API key resolves through the full secrets chain, so it can live in Doppler,

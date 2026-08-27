@@ -79,7 +79,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 - **[1Password](https://developer.1password.com/docs/cli/)** (via the `op` CLI)
 - **Config files** (development only - never commit!)
 
-Run `python src/typo_sniper.py --secrets-check` to see which backends are
+Run `typo-sniper --secrets-check` to see which backends are
 reachable and where each credential resolved from. It never prints a value.
 
 See **[Secrets Management](#-secrets-management)** for detailed comparisons and setup guides.
@@ -91,12 +91,25 @@ See **[Secrets Management](#-secrets-management)** for detailed comparisons and 
 ### 1️⃣ Install
 
 ```bash
-# Clone repository
+pip install typo-sniper
+```
+
+Or from a clone, which is what you want if you plan to change anything:
+
+```bash
 git clone https://github.com/chiefgyk3d/typo-sniper.git
 cd typo-sniper
+pip install -e .
+```
 
-# Install dependencies
-pip install -r requirements.txt
+Either way you get a `typo-sniper` command. Optional features are extras —
+`pip install "typo-sniper[claude]"` for AI triage, `[ml]` to train the ranking
+model, `[aws]`/`[azure]`/`[gcp]` for those secrets backends, or `[all]`.
+
+There is also a container image:
+
+```bash
+docker run --rm ghcr.io/chiefgyk3d/typo-sniper:latest --version
 ```
 
 > **Note:** `dnspython` is required, not optional. Without it dnstwist silently
@@ -112,7 +125,7 @@ echo "example.com" > test_domains.txt
 ### 3️⃣ Run Basic Scan
 
 ```bash
-python src/typo_sniper.py -i test_domains.txt --format excel
+typo-sniper -i test_domains.txt --format excel
 ```
 
 ### 4️⃣ View Results
@@ -152,7 +165,8 @@ typo-sniper/
 │   ├── enhanced_detection.py      # 🆕 Advanced detection algorithms
 │   ├── threat_intelligence.py     # 🆕 Threat intel integrations
 │   ├── secrets_manager.py         # 🆕 Secrets management
-│   ├── typo_sniper.py             # Main application & CLI
+│   └── typo_sniper/              # The installable package
+│       ├── cli.py                # Application & CLI entry point
 │   ├── utils.py                   # Utility functions
 │   └── monitored_domains.txt      # Example domain list
 ├── docker/                        # Docker-related files
@@ -268,7 +282,7 @@ docker build -f docker/Dockerfile -t typo-sniper:1.1.0 .
 
 # Run a scan
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
@@ -314,7 +328,7 @@ source test-env/bin/activate
 pip install --upgrade dnstwist python-whois PyYAML openpyxl rich aiofiles
 
 # Test thoroughly before using in production
-python typo_sniper.py --help
+typo-sniper --help
 ```
 
 **Recommended practice:** Review the changelog and security advisories before upgrading any dependency.
@@ -344,7 +358,7 @@ pip install -r requirements.txt
 ### Command-Line Interface
 
 ```bash
-python src/typo_sniper.py [OPTIONS]
+typo-sniper [OPTIONS]
 ```
 
 ### Options
@@ -368,55 +382,55 @@ python src/typo_sniper.py [OPTIONS]
 #### Basic Scan
 ```bash
 # Scan domains from default file
-python src/typo_sniper.py
+typo-sniper
 
 # Scan with custom input file
-python src/typo_sniper.py -i src/my_domains.txt
+typo-sniper -i src/my_domains.txt
 ```
 
 #### Filter by Registration Date
 ```bash
 # Domains registered in last 1 month
-python src/typo_sniper.py --months 1
+typo-sniper --months 1
 
 # Domains registered in last 6 months
-python src/typo_sniper.py --months 6
+typo-sniper --months 6
 ```
 
 #### Multiple Export Formats
 ```bash
 # Export to Excel and JSON
-python src/typo_sniper.py --format excel json
+typo-sniper --format excel json
 
 # Export to all formats
-python src/typo_sniper.py --format excel json csv html
+typo-sniper --format excel json csv html
 ```
 
 #### Performance Tuning
 ```bash
 # Increase concurrent workers for faster scanning
-python src/typo_sniper.py --max-workers 20
+typo-sniper --max-workers 20
 
 # Disable cache for fresh data
-python src/typo_sniper.py --no-cache
+typo-sniper --no-cache
 
 # Longer cache TTL (1 week)
-python src/typo_sniper.py --cache-ttl 604800
+typo-sniper --cache-ttl 604800
 ```
 
 #### Custom Configuration
 ```bash
 # Use custom config file
-python src/typo_sniper.py --config docs/my_config.yaml
+typo-sniper --config docs/my_config.yaml
 ```
 
 #### Verbose Mode
 ```bash
 # Enable verbose logging (INFO level)
-python src/typo_sniper.py -v
+typo-sniper -v
 
 # Enable debug logging (DEBUG level with detailed tracing)
-python src/typo_sniper.py --debug
+typo-sniper --debug
 ```
 
 > 💡 **Tip:** Use `--debug` to troubleshoot issues like "why am I getting 0 enhanced detections?" It will show you which features are enabled/disabled. See [DEBUG_MODE.md](DEBUG_MODE.md) for details.
@@ -648,7 +662,8 @@ typo-sniper/
 │   ├── config.py           # Configuration management
 │   ├── exporters.py        # Output format exporters
 │   ├── scanner.py          # Domain scanning & WHOIS enrichment
-│   ├── typo_sniper.py      # Main application & CLI
+│   └── typo_sniper/       # The installable package
+│       ├── cli.py         # Application & CLI entry point
 │   ├── utils.py            # Utility functions
 │   └── monitored_domains.txt # Domain list
 ├── docker/                 # Docker-related files
@@ -731,7 +746,7 @@ Monitor for typosquatting domains that could:
 
 ```bash
 # Run daily at 2 AM
-0 2 * * * cd /path/to/typo-sniper && python src/typo_sniper.py --months 1
+0 2 * * * cd /path/to/typo-sniper && typo-sniper --months 1
 ```
 
 ### Integration with Other Tools
@@ -793,19 +808,19 @@ pip install -r requirements.txt
 **Issue: WHOIS lookups timing out**
 ```bash
 # Solution: Increase timeout or reduce workers
-python typo_sniper.py --whois-timeout 60 --max-workers 5
+typo-sniper --whois-timeout 60 --max-workers 5
 ```
 
 **Issue: Rate limiting errors**
 ```bash
 # Solution: Reduce concurrent workers and enable delays
-python typo_sniper.py --max-workers 5 --rate-limit-delay 2
+typo-sniper --max-workers 5 --rate-limit-delay 2
 ```
 
 **Issue: Cache directory permission errors**
 ```bash
 # Solution: Change cache directory
-python typo_sniper.py --config config.yaml
+typo-sniper --config config.yaml
 # Edit config.yaml and set cache_dir to writable location
 ```
 
@@ -909,10 +924,10 @@ about intent, which findings are load-bearing, and what the next step is.
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
-python src/typo_sniper.py -i domains.txt --ai
+typo-sniper -i domains.txt --ai
 
 # Or keep every request on your own host
-python src/typo_sniper.py -i domains.txt --ai-provider ollama
+typo-sniper -i domains.txt --ai-provider ollama
 ```
 
 | Provider | Install | Default model |
@@ -956,12 +971,12 @@ login page. This learns that difference from your own decisions.
 
 ```bash
 # Label as you triage — "dismissed" matters as much as "acted"
-python src/typo_sniper.py --label secure-example-login.com=acted
-python src/typo_sniper.py --label example-fanclub.com=dismissed
+typo-sniper --label secure-example-login.com=acted
+typo-sniper --label example-fanclub.com=dismissed
 
-python src/typo_sniper.py -i domains.txt --ml-status   # where am I?
-python src/typo_sniper.py -i domains.txt --ml-train    # needs .[ml]
-python src/typo_sniper.py -i domains.txt --ml-rank     # order by the model
+typo-sniper -i domains.txt --ml-status   # where am I?
+typo-sniper -i domains.txt --ml-train    # needs .[ml]
+typo-sniper -i domains.txt --ml-rank     # order by the model
 ```
 
 **The model ranks. It does not score.** Risk scores are unchanged with this on,
@@ -1001,7 +1016,7 @@ week; one that says "a new lookalike appeared three days ago and it has MX
 records" gets read.
 
 ```bash
-python src/typo_sniper.py -i domains.txt --notify slack jira
+typo-sniper -i domains.txt --notify slack jira
 ```
 
 | Channel | What it does |
@@ -1184,7 +1199,7 @@ doppler setup
 doppler secrets set URLSCAN_API_KEY="your_key"
 
 # Run application
-doppler run -- python src/typo_sniper.py -i domains.txt
+doppler run -- typo-sniper -i domains.txt
 ```
 
 **Pricing:**
@@ -1246,7 +1261,7 @@ aws secretsmanager create-secret \
 
 # Use in application
 export AWS_SECRET_NAME="typo-sniper/prod"
-python src/typo_sniper.py -i domains.txt
+typo-sniper -i domains.txt
 ```
 
 **Pricing:**
@@ -1274,20 +1289,20 @@ python src/typo_sniper.py -i domains.txt
 Environment Variables or Config Files
 ```bash
 export TYPO_SNIPER_URLSCAN_API_KEY="test_key"
-python src/typo_sniper.py -i test.txt
+typo-sniper -i test.txt
 ```
 
 **Production (General):**
 Doppler
 ```bash
-doppler run -- python src/typo_sniper.py -i domains.txt
+doppler run -- typo-sniper -i domains.txt
 ```
 
 **Production (AWS):**
 AWS Secrets Manager
 ```bash
 export AWS_SECRET_NAME="typo-sniper/prod"
-python src/typo_sniper.py -i domains.txt
+typo-sniper -i domains.txt
 ```
 
 **CI/CD Pipelines:**
@@ -1408,7 +1423,7 @@ doppler secrets set URLSCAN_API_KEY="$TYPO_SNIPER_URLSCAN_API_KEY"
 unset TYPO_SNIPER_URLSCAN_API_KEY
 
 # Run with Doppler
-doppler run -- python src/typo_sniper.py -i domains.txt
+doppler run -- typo-sniper -i domains.txt
 ```
 
 **From Doppler to AWS Secrets Manager:**
@@ -1444,7 +1459,7 @@ doppler secrets
 aws secretsmanager get-secret-value --secret-id typo-sniper/prod
 
 # Run with verbose logging
-python src/typo_sniper.py -i domains.txt -v 2>&1 | grep -i secret
+typo-sniper -i domains.txt -v 2>&1 | grep -i secret
 ```
 
 **Permission Denied (AWS):**
@@ -1490,7 +1505,7 @@ doppler configs tokens create prod-token --plain
 |----------|----------------|---------------|
 | Quick test | Environment Variables | `export TYPO_SNIPER_URLSCAN_API_KEY="key"` |
 | Development | Config File + gitignore | `chmod 600 config.yaml` |
-| Production | Doppler | `doppler run -- python src/typo_sniper.py` |
+| Production | Doppler | `doppler run -- typo-sniper` |
 | AWS Production | AWS Secrets Manager | `export AWS_SECRET_NAME="typo-sniper/prod"` |
 | Team Collaboration | Doppler | Setup team access in Doppler dashboard |
 | CI/CD | Platform secrets + Doppler | Configure in CI/CD settings |
@@ -1521,27 +1536,27 @@ pip install dnspython
 
 #### 1. Check Version
 ```bash
-python src/typo_sniper.py --version
+typo-sniper --version
 ```
 Expected output: `Typo Sniper v1.1.0`
 
 #### 2. View Help
 ```bash
-python src/typo_sniper.py --help
+typo-sniper --help
 ```
 Should display all available options and examples.
 
 #### 3. Basic Scan (JSON output)
 ```bash
-python src/typo_sniper.py -i src/monitored_domains.txt --format json
+typo-sniper -i src/typo_sniper/monitored_domains.txt --format json
 ```
-- Scans domains from `src/monitored_domains.txt`
+- Scans domains from `src/typo_sniper/monitored_domains.txt`
 - Generates JSON output in `results/` directory
 - Takes ~30 seconds per domain
 
 #### 4. Multi-Format Export
 ```bash
-python src/typo_sniper.py -i src/monitored_domains.txt --format excel json csv html
+typo-sniper -i src/typo_sniper/monitored_domains.txt --format excel json csv html
 ```
 Generates all output formats:
 - `.xlsx` - Excel workbook with multiple sheets
@@ -1551,13 +1566,13 @@ Generates all output formats:
 
 #### 5. Verbose Mode
 ```bash
-python src/typo_sniper.py -i src/monitored_domains.txt --format json -v
+typo-sniper -i src/typo_sniper/monitored_domains.txt --format json -v
 ```
 Shows detailed debug logging and progress information.
 
 #### 6. Filter Recent Registrations
 ```bash
-python src/typo_sniper.py -i src/monitored_domains.txt --months 3 --format excel
+typo-sniper -i src/typo_sniper/monitored_domains.txt --months 3 --format excel
 ```
 Only shows domains registered in the last 3 months.
 
@@ -1565,16 +1580,16 @@ Only shows domains registered in the last 3 months.
 Create a test file:
 ```bash
 echo "example.com" > src/test_domain.txt
-python src/typo_sniper.py -i src/test_domain.txt --format json
+typo-sniper -i src/test_domain.txt --format json
 ```
 
 #### 8. Performance Tuning
 ```bash
 # Increase workers for faster scanning
-python src/typo_sniper.py -i src/monitored_domains.txt --max-workers 20 --format json
+typo-sniper -i src/typo_sniper/monitored_domains.txt --max-workers 20 --format json
 
 # Disable cache for fresh data
-python src/typo_sniper.py -i src/monitored_domains.txt --no-cache --format json
+typo-sniper -i src/typo_sniper/monitored_domains.txt --no-cache --format json
 ```
 
 ### Test Results
@@ -1662,7 +1677,7 @@ EOF
 
 2. Run scan:
 ```bash
-python src/typo_sniper.py -i src/my_domains.txt --format excel html --months 6
+typo-sniper -i src/my_domains.txt --format excel html --months 6
 ```
 
 ### Performance Notes
@@ -1700,7 +1715,7 @@ chmod 755 ~/.typo_sniper/cache
 #### Too many timeouts
 ```bash
 # Reduce concurrent workers
-python src/typo_sniper.py --max-workers 5 -i src/monitored_domains.txt
+typo-sniper --max-workers 5 -i src/typo_sniper/monitored_domains.txt
 ```
 
 ### Next Steps

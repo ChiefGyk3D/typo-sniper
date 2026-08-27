@@ -7,7 +7,7 @@ services:
     container_name: typo-sniper
     volumes:
       # Mount your domain list
-      - ../src/monitored_domains.txt:/app/data/monitored_domains.txt:ro
+      - ../src/typo_sniper/monitored_domains.txt:/app/data/monitored_domains.txt:ro
       # Mount results directory
       - ../results:/app/results
       # Mount cache directory for persistent WHOIS data
@@ -26,7 +26,7 @@ services:
     profiles:
       - scheduled
     volumes:
-      - ../src/monitored_domains.txt:/app/data/monitored_domains.txt:ro
+      - ../src/typo_sniper/monitored_domains.txt:/app/data/monitored_domains.txt:ro
       - ../results:/app/results
       - typo-sniper-cache:/home/sniper/.typo_sniper/cache
     environment:

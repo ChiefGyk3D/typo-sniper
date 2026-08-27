@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from ml.labels import (
+from typo_sniper.ml.labels import (
     ACTED,
     DISMISSED,
     MIN_LABELS_TO_TRAIN,

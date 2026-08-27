@@ -8,7 +8,7 @@ title — as an attack surface, because that is what it is.
 
 import pytest
 
-from ai import prompts
+from typo_sniper.ai import prompts
 
 # Payloads an operator could place in their own WHOIS record or page title
 INJECTION_PAYLOADS = [

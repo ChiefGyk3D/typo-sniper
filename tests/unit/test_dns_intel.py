@@ -3,7 +3,7 @@
 
 import pytest
 
-from dns_intel import (
+from typo_sniper.dns_intel import (
     DNSIntelligence,
     classify_mail_posture,
     score_mail_capability,
@@ -227,12 +227,12 @@ class TestPublicSuffixSplitting:
         ('example.github.io', ('example', 'github.io')),
     ])
     def test_split(self, domain, expected):
-        from enhanced_detection import ComboSquattingDetector
+        from typo_sniper.enhanced_detection import ComboSquattingDetector
 
         assert ComboSquattingDetector.split_domain(domain) == expected
 
     def test_combosquats_stay_in_the_right_namespace(self):
-        from enhanced_detection import ComboSquattingDetector
+        from typo_sniper.enhanced_detection import ComboSquattingDetector
 
         variants = ComboSquattingDetector.generate_combosquats(
             'example.com.br', ['login']
@@ -242,7 +242,7 @@ class TestPublicSuffixSplitting:
 
 class TestCustomKeywords:
     def test_custom_keywords_are_included(self, config):
-        from enhanced_detection import generate_enhanced_permutations
+        from typo_sniper.enhanced_detection import generate_enhanced_permutations
 
         config.enable_combosquatting = True
         config.custom_keywords = ['vault']
@@ -251,7 +251,7 @@ class TestCustomKeywords:
         assert 'acme-login.com' in result  # defaults still present
 
     def test_replace_mode_uses_only_custom_keywords(self, config):
-        from enhanced_detection import generate_enhanced_permutations
+        from typo_sniper.enhanced_detection import generate_enhanced_permutations
 
         config.enable_combosquatting = True
         config.custom_keywords = ['vault']
@@ -302,7 +302,7 @@ class TestLookupFailureIsNotAFinding:
         assert score_mail_capability({'posture': 'unknown'}) == 0
 
     def test_unknown_is_reported_not_left_blank(self):
-        from exporters import format_threat_intel
+        from typo_sniper.exporters import format_threat_intel
 
         out = format_threat_intel({'mail_intel': {'posture': 'unknown'}})
         assert out['mail'] == 'Lookup failed'

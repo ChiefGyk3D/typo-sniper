@@ -2,7 +2,7 @@
 
 import pytest
 
-from state import ACTIVATED, CHANGED, ESCALATED, NEW, RESOLVED, ScanHistory, summarize
+from typo_sniper.state import ACTIVATED, CHANGED, ESCALATED, NEW, RESOLVED, ScanHistory, summarize
 
 
 def perm(domain, **kwargs):

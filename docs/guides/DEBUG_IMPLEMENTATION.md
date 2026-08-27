@@ -6,7 +6,7 @@ A comprehensive `--debug` flag was added to Typo Sniper to provide detailed inte
 
 ## Changes Made
 
-### 1. Command-Line Interface (`src/typo_sniper.py`)
+### 1. Command-Line Interface (`src/typo_sniper/cli.py`)
 
 **Added `--debug` flag:**
 - Separate from `--verbose` (which is INFO level)
@@ -87,23 +87,23 @@ DEBUG - Enhanced detection complete: 368 total variations
 
 ```bash
 # Normal mode - minimal output
-python src/typo_sniper.py -i test_domains.txt
+typo-sniper -i test_domains.txt
 
 # Verbose mode - standard messages
-python src/typo_sniper.py -i test_domains.txt --verbose
+typo-sniper -i test_domains.txt --verbose
 
 # Debug mode - detailed tracing
-python src/typo_sniper.py -i test_domains.txt --debug
+typo-sniper -i test_domains.txt --debug
 ```
 
 ### Troubleshooting
 
 ```bash
 # See why enhanced detection returns 0 results
-python src/typo_sniper.py -i test_domains.txt --debug 2>&1 | grep "Enhanced detection"
+typo-sniper -i test_domains.txt --debug 2>&1 | grep "Enhanced detection"
 
 # Check which features are enabled
-python src/typo_sniper.py -i test_domains.txt --debug 2>&1 | grep "enable_"
+typo-sniper -i test_domains.txt --debug 2>&1 | grep "enable_"
 ```
 
 ### Testing
@@ -163,7 +163,7 @@ This clearly answers the user's question: "Enhanced detection IS running, but al
 
 ## Files Modified
 
-1. `src/typo_sniper.py` - Added --debug flag and logic
+1. `src/typo_sniper/cli.py` - Added --debug flag and logic
 2. `src/config.py` - Added debug_mode field
 3. `src/enhanced_detection.py` - Added debug logging
 4. `src/scanner.py` - Added debug logging

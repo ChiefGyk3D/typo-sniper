@@ -1,6 +1,6 @@
 """Tests for the domain risk scoring model."""
 
-from threat_intelligence import calculate_risk_score
+from typo_sniper.threat_intelligence import calculate_risk_score
 
 
 class TestRiskScore:

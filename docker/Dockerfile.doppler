@@ -44,7 +44,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
     && rm -rf /wheels
 
-COPY src/ .
+COPY pyproject.toml README.md LICENSE ./
+COPY src/ ./src/
+RUN pip install --no-cache-dir --no-deps .
 
 RUN useradd --create-home --uid 10001 sniper \
     && mkdir -p /app/data /app/results /home/sniper/.typo_sniper/cache \
@@ -59,5 +61,5 @@ ENV CACHE_DIR=/home/sniper/.typo_sniper/cache
 VOLUME ["/app/data", "/app/results", "/home/sniper/.typo_sniper/cache"]
 
 # Uses Doppler when DOPPLER_TOKEN is set, otherwise runs directly
-ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then echo 'Using Doppler for secrets...'; exec doppler run -- python typo_sniper.py \"$@\"; else exec python typo_sniper.py \"$@\"; fi", "--"]
+ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then echo 'Using Doppler for secrets...'; exec doppler run -- typo-sniper \"$@\"; else exec typo-sniper \"$@\"; fi", "--"]
 CMD ["--help"]

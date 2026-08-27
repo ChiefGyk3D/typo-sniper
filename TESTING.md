@@ -65,7 +65,7 @@ This guide covers how to test Typo Sniper's threat intelligence integrations wit
 
 3. **Run the test:**
    ```bash
-   python src/typo_sniper.py \
+   typo-sniper \
      -i test_domains_vt.txt \
      --config test_config_urlscan.yaml \
      --format excel json \
@@ -82,7 +82,7 @@ This guide covers how to test Typo Sniper's threat intelligence integrations wit
 
 ```bash
 export TYPO_SNIPER_URLSCAN_API_KEY="your_api_key_here"
-python src/typo_sniper.py -i test_domains_vt.txt --config test_config_urlscan.yaml --format excel -v
+typo-sniper -i test_domains_vt.txt --config test_config_urlscan.yaml --format excel -v
 ```
 
 ---
@@ -116,7 +116,7 @@ rate_limit_delay: 2.0
 ### Run Full Test
 
 ```bash
-python src/typo_sniper.py \
+typo-sniper \
   -i test_domains_vt.txt \
   --config test_config_full.yaml \
   --format excel json html \
@@ -174,7 +174,7 @@ doppler --version
 5. **Run with Doppler:**
    ```bash
    # Doppler will inject secrets as environment variables
-   doppler run -- python src/typo_sniper.py \
+   doppler run -- typo-sniper \
      -i test_domains_vt.txt \
      --config test_config.yaml \
      --format excel \
@@ -211,7 +211,7 @@ doppler --version
        rm -rf /var/lib/apt/lists/*
    
    # Entrypoint with Doppler support
-   ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then doppler run -- python typo_sniper.py \"$@\"; else python typo_sniper.py \"$@\"; fi", "sh"]
+   ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then doppler run -- typo-sniper \"$@\"; else typo-sniper \"$@\"; fi", "sh"]
    ```
 
 ### Environment Variables Priority
@@ -306,7 +306,7 @@ pip install boto3 botocore
 export AWS_SECRET_NAME="typo-sniper/prod"
 
 # Run Typo Sniper (API keys loaded automatically)
-python src/typo_sniper.py \
+typo-sniper \
   -i test_domains.txt \
   --format excel json \
   -v
@@ -378,7 +378,7 @@ export TYPO_SNIPER_URLSCAN_API_KEY="your_key"
 export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key"
 
 # Run
-python src/typo_sniper.py -i test.txt --format excel -v
+typo-sniper -i test.txt --format excel -v
 ```
 
 **Security Note:** Environment variables may be visible in process lists. Use secrets managers for production.
@@ -556,7 +556,7 @@ export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key"
 echo "example.com" > test_small.txt
 
 # 5. Run test
-python src/typo_sniper.py \
+typo-sniper \
   -i test_small.txt \
   --config test_threat_intel.yaml \
   --format excel json html \

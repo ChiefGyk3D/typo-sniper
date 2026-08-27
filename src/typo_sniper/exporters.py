@@ -21,9 +21,9 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from config import Config
-from utils import safe_url, sanitize_spreadsheet_value
-from version import __version__
+from .config import Config
+from .utils import safe_url, sanitize_spreadsheet_value
+from .version import __version__
 
 
 def format_threat_intel(perm: dict[str, Any]) -> dict[str, Any]:

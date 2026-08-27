@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from ai import PROVIDERS, AIAnalyzer, get_provider
-from ai.base import AIProvider, AIResult
-from ai.providers import ClaudeProvider, OllamaProvider, _to_gemini_schema
+from typo_sniper.ai import PROVIDERS, AIAnalyzer, get_provider
+from typo_sniper.ai.base import AIProvider, AIResult
+from typo_sniper.ai.providers import ClaudeProvider, OllamaProvider, _to_gemini_schema
 
 
 @pytest.fixture
@@ -140,7 +140,7 @@ class TestGeminiSchemaAdaptation:
         assert 'additionalProperties' not in out['properties']['items']['items']
 
     def test_preserves_everything_else(self):
-        from ai.prompts import TRIAGE_SCHEMA
+        from typo_sniper.ai.prompts import TRIAGE_SCHEMA
 
         out = _to_gemini_schema(TRIAGE_SCHEMA)
         assert out['required'] == ['summary', 'assessments']

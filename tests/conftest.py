@@ -50,7 +50,7 @@ def _no_network(monkeypatch, request):
 @pytest.fixture
 def config(tmp_path):
     """A Config pointed at a temporary cache directory."""
-    from config import Config
+    from typo_sniper.config import Config
 
     cfg = Config()
     cfg.cache_dir = tmp_path / 'cache'

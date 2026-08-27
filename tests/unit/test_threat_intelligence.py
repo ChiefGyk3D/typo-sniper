@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from threat_intelligence import _TITLE_RE, ThreatIntelligence
+from typo_sniper.threat_intelligence import _TITLE_RE, ThreatIntelligence
 
 
 class FakeResponse:

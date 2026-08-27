@@ -6,7 +6,7 @@ import json
 import pytest
 from openpyxl import load_workbook
 
-from exporters import (
+from typo_sniper.exporters import (
     CSVExporter,
     ExcelExporter,
     HTMLExporter,

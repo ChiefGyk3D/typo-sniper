@@ -5,8 +5,8 @@ from datetime import date, timedelta
 
 import pytest
 
-from cache import Cache
-from scanner import DomainScanner
+from typo_sniper.cache import Cache
+from typo_sniper.scanner import DomainScanner
 
 RECENT = (date.today() - timedelta(days=7)).isoformat()
 OLD = (date.today() - timedelta(days=2500)).isoformat()

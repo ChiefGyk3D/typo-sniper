@@ -156,7 +156,7 @@ ai_explain_changes: true           # Also summarise what moved since the last sc
 # `env` is always consulted first and is re-inserted if you omit it: an
 # operator overriding one key for one run must never have to edit their vault.
 #
-# Run `python src/typo_sniper.py --secrets-check` to see which backends are
+# Run `typo-sniper --secrets-check` to see which backends are
 # reachable and where each credential came from. It never prints a value.
 secrets_backends: []               # empty = env, doppler, aws, vault, azure, gcp, onepassword
 
@@ -198,12 +198,12 @@ onepassword_item: ''
 # judgements is not.
 #
 # Label findings as you triage them:
-#   python src/typo_sniper.py --label evil-example.com=acted
-#   python src/typo_sniper.py --label parked-example.com=dismissed
+#   typo-sniper --label evil-example.com=acted
+#   typo-sniper --label parked-example.com=dismissed
 #
 # Then, once there are enough of both:
-#   python src/typo_sniper.py -i domains.txt --ml-train    # needs .[ml]
-#   python src/typo_sniper.py -i domains.txt --ml-rank
+#   typo-sniper -i domains.txt --ml-train    # needs .[ml]
+#   typo-sniper -i domains.txt --ml-rank
 #
 # Check progress any time with --ml-status. Training needs scikit-learn;
 # scoring does not — a trained model is JSON and the scorer is pure Python.

@@ -44,15 +44,16 @@ config.yaml
 .coverage
 coverage.xml
 htmlcov/
-pyproject.toml
 requirements-dev.txt
 
 # Docker
 .dockerignore
 docker/
 
-# Documentation and media
+# Documentation and media. README.md is kept: pyproject.toml names it as the
+# package readme, so the build fails without it.
 *.md
+!README.md
 docs/
 media/
 

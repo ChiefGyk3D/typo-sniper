@@ -60,7 +60,7 @@ python3 test_urlscan_api.py
 set -a; source .env; set +a
 
 # Then run Typo Sniper
-python src/typo_sniper.py -i test_domains.txt --config test_config.yaml
+typo-sniper -i test_domains.txt --config test_config.yaml
 ```
 
 ### Option 2: Add to ~/.bashrc (Linux/macOS)
@@ -78,7 +78,7 @@ source ~/.bashrc
 ```bash
 TYPO_SNIPER_URLSCAN_API_KEY='your-key' \
 TYPO_SNIPER_ENABLE_URLSCAN=true \
-python src/typo_sniper.py -i test_domains.txt
+typo-sniper -i test_domains.txt
 ```
 
 ## Verifying Keys are Loaded
@@ -136,7 +136,7 @@ doppler setup
 doppler secrets set URLSCAN_API_KEY='your-key'
 
 # Run with Doppler
-doppler run -- python src/typo_sniper.py -i test_domains.txt
+doppler run -- typo-sniper -i test_domains.txt
 ```
 
 See [SECRETS_MANAGEMENT.md](SECRETS_MANAGEMENT.md) for more details.

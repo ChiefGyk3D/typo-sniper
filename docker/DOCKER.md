@@ -16,7 +16,7 @@ docker build -f docker/Dockerfile -t typo-sniper:1.1.0 .
 ```bash
 # Using your local domain list (run from project root)
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/monitored_domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/monitored_domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   typo-sniper:1.1.0 \
   -i /app/data/monitored_domains.txt \
@@ -65,7 +65,7 @@ cd ..
 
 ```bash
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
@@ -77,7 +77,7 @@ docker run --rm \
 
 ```bash
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
@@ -90,7 +90,7 @@ docker run --rm \
 
 ```bash
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
@@ -108,7 +108,7 @@ docker volume create typo-sniper-cache
 
 # Run with persistent cache
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   -v typo-sniper-cache:/home/sniper/.typo_sniper/cache \
   typo-sniper:1.1.0 \
@@ -121,7 +121,7 @@ docker run --rm \
 
 ```bash
 docker run --rm \
-  -v "$(pwd)/src/monitored_domains.txt:/app/data/domains.txt:ro" \
+  -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
   typo-sniper:1.1.0 \
   -i /app/data/domains.txt \
