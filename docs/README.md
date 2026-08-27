@@ -15,6 +15,7 @@ Comprehensive documentation for Typo Sniper.
 - **[AI_ANALYSIS.md](guides/AI_ANALYSIS.md)** - AI-assisted triage with Claude, OpenAI, Gemini, or Ollama
 - **[ML_TRIAGE.md](guides/ML_TRIAGE.md)** - Learned ranking from your own triage decisions
 - **[ALERTING.md](guides/ALERTING.md)** - Slack, Discord, Teams, Matrix, Jira, webhook, email
+- **[infra/README.md](../infra/README.md)** - Terraform/OpenTofu for ECS Fargate and EKS
 - **[DEBUG_MODE.md](guides/DEBUG_MODE.md)** - Debug mode usage
 - **[DEBUG_IMPLEMENTATION.md](guides/DEBUG_IMPLEMENTATION.md)** - Debug system architecture
 - **[PERFORMANCE_OPTIMIZATION.md](guides/PERFORMANCE_OPTIMIZATION.md)** - Performance tuning

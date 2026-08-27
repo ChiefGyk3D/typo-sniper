@@ -213,6 +213,23 @@ class Config:
     
     def __post_init__(self):
         """Post-initialization: normalise paths and load secrets from environment."""
+        # Directory overrides from the environment. A container image ships a
+        # default and the deployment redirects it, so for these three the
+        # environment wins — unlike credentials, where an explicit config value
+        # is a deliberate act and takes precedence.
+        #
+        # state_dir especially: it holds the scan history every delta is
+        # computed against. Point it at ephemeral storage and the scanner still
+        # runs, still reports, and silently never detects a change again.
+        for attr, name in (
+            ('cache_dir', 'TYPO_SNIPER_CACHE_DIR'),
+            ('output_dir', 'TYPO_SNIPER_OUTPUT_DIR'),
+            ('state_dir', 'TYPO_SNIPER_STATE_DIR'),
+        ):
+            value = os.getenv(name)
+            if value:
+                setattr(self, attr, value)
+
         # Expand "~" and environment variables so that a config file containing
         # "cache_dir: ~/.typo_sniper/cache" does not create a literal "~"
         # directory in the working directory.

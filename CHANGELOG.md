@@ -5,6 +5,51 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-08-27
+
+### Added
+
+- **Terraform / OpenTofu modules** for running Typo Sniper as a scheduled
+  scanner on AWS, in `infra/terraform/`: a Fargate task driven by EventBridge
+  Scheduler, a Kubernetes CronJob for teams already on EKS, and a shared module
+  holding the S3 reports bucket, EFS state, Secrets Manager secret, and
+  security groups both use. Working examples for each.
+
+- **boto3 and a report uploader in the container image.** The image is how
+  people run this on AWS, and both the Secrets Manager backend and shipping
+  reports to S3 need a client. `typo-sniper-upload` sends a finished scan's
+  reports to `RESULTS_BUCKET`, and is inert when that variable is unset.
+
+- **`TYPO_SNIPER_STATE_DIR`, `TYPO_SNIPER_OUTPUT_DIR` and
+  `TYPO_SNIPER_CACHE_DIR`.** A container image ships a default and the
+  deployment redirects it, so for these three the environment wins — unlike
+  credentials, where an explicit config value is a deliberate act and takes
+  precedence.
+
+### Fixed
+
+- **A containerised deployment could silently stop detecting changes.** The
+  scan history that every delta is computed against lives in `state_dir`, which
+  had no environment override, so a container had no way to point it at a
+  persistent volume without a config file baked into the image. On ephemeral
+  storage every scheduled run looks like a first run: no deltas, no alerts, and
+  a scanner that appears to work perfectly while doing none of the job it was
+  deployed for. Nothing errors and nothing warns, which is what makes it worth
+  calling out.
+
+  Found while writing the IaC — the Terraform set the variable and the
+  application ignored it.
+
+- **The container image had no AWS client**, so on AWS the documented Secrets
+  Manager backend resolved nothing and the scan ran with no API keys at all,
+  reporting no error. Weighing the megabytes against a scanner that quietly
+  runs unauthenticated, the megabytes lose.
+
+- **`.dockerignore` excluded `docker/`**, which would have broken the image
+  build once the uploader was copied in — the same way it excluded
+  `pyproject.toml` in 2.0.0. Caught this time by building the context before
+  pushing rather than after CI failed.
+
 ## [2.1.0] - 2026-08-27
 
 The scanner can now see what a suspicious page is built to *do*, not just that
