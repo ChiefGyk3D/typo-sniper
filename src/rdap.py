@@ -16,6 +16,10 @@ WHOIS remains available as a fallback for registries that do not publish an
 RDAP endpoint.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import asyncio
 import logging
 from datetime import date, datetime, timezone

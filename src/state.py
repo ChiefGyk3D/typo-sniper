@@ -8,6 +8,10 @@ with new registrations, newly activated sites, and escalating risk instead of
 restating the steady state.
 """
 
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 ChiefGyk3D
+# Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
+
 import json
 import logging
 import time
