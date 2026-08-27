@@ -39,6 +39,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 - [Advanced Usage](#-advanced-usage)
 - [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
+- [AI-Assisted Triage](#-ai-assisted-triage) 🤖
 - [Secrets Management](#-secrets-management) 🔐
 - [Testing & Verification](#-testing-and-verification)
 
@@ -57,6 +58,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 | **[Testing Guide](TESTING.md)** | 🧪 Comprehensive testing guide with API setup | Setting up APIs, troubleshooting |
 | **[Debug Mode Guide](docs/guides/DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
 | **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
+| **[AI Analysis](docs/guides/AI_ANALYSIS.md)** | 🤖 AI-assisted triage and its injection defences | Enabling `--ai`, choosing a provider |
 | **[Docker Guide](docker/DOCKER.md)** | 🐳 Docker deployment guide | Container deployment |
 | **[Project Structure](PROJECT_STRUCTURE.md)** | 📁 Project organization details | Contributing, understanding codebase |
 
@@ -65,9 +67,16 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 
 **Secrets Management Options:**
 - **Environment Variables** (easiest for testing)
-- **[Doppler](https://doppler.com)** (⭐ recommended for production)
+- **[Doppler](https://doppler.com)** (⭐ recommended for production — needs nothing installed)
+- **[HashiCorp Vault](https://www.vaultproject.io/)** (self-hosted — also needs nothing installed)
 - **[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/)** (AWS environments)
+- **[Azure Key Vault](https://azure.microsoft.com/products/key-vault)** (Azure environments)
+- **[Google Cloud Secret Manager](https://cloud.google.com/secret-manager)** (GCP environments)
+- **[1Password](https://developer.1password.com/docs/cli/)** (via the `op` CLI)
 - **Config files** (development only - never commit!)
+
+Run `python src/typo_sniper.py --secrets-check` to see which backends are
+reachable and where each credential resolved from. It never prints a value.
 
 See **[Secrets Management](#-secrets-management)** for detailed comparisons and setup guides.
 
@@ -1354,6 +1363,53 @@ Made for brand protection and security research
 **[Back to Top](#typo-sniper)**
 
 </div>
+
+**[⬆ Back to Top](#-table-of-contents)**
+
+---
+
+## 🤖 AI-Assisted Triage
+
+Optional, off by default, and strictly additive. A scan of a well-known brand
+returns hundreds of registered permutations; risk scores rank them but do not
+explain them. `--ai` reads the signals together and says what they suggest
+about intent, which findings are load-bearing, and what the next step is.
+
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."
+python src/typo_sniper.py -i domains.txt --ai
+
+# Or keep every request on your own host
+python src/typo_sniper.py -i domains.txt --ai-provider ollama
+```
+
+| Provider | Install | Default model |
+|---|---|---|
+| `claude` | `pip install -e ".[claude]"` | `claude-opus-5` |
+| `openai` | `pip install -e ".[openai]"` | `gpt-4o` |
+| `gemini` | `pip install -e ".[gemini]"` | `gemini-2.0-flash` |
+| `ollama` | nothing | `llama3.1` |
+
+**The model explains. It never scores.** Risk scores are computed
+deterministically and are identical with AI off, because a takedown request to
+a registrar has to rest on reproducible evidence. The response schema has no
+score field at all.
+
+**Scan data is treated as hostile input.** The domain name, WHOIS registrant,
+organisation, and page title were all written by the person who registered the
+domain, and a registrant field is a free text box. Untrusted values never enter
+the system prompt, are fenced inside delimiters the data cannot reproduce, are
+stripped and truncated, and are schema-constrained; assessments naming domains
+that were not in the request are discarded. An injection attempt is **marked,
+not deleted** — a registrant field carrying an instruction aimed at an
+automated analyst is itself evidence of intent.
+
+**Ollama is a first-class option.** A scan's output names the domains an
+organisation is defending, which reveals what they own and what they are
+worried about. For teams that cannot send that to a third party, a local model
+is the difference between using this feature and disabling it.
+
+See **[AI Analysis](docs/guides/AI_ANALYSIS.md)** for the full guide.
 
 **[⬆ Back to Top](#-table-of-contents)**
 
