@@ -41,6 +41,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 - [Contributing](#-contributing)
 - [AI-Assisted Triage](#-ai-assisted-triage) 🤖
 - [Learned Triage Ranking](#-learned-triage-ranking) 🧠
+- [Alerting and Ticketing](#-alerting-and-ticketing) 🔔
 - [Secrets Management](#-secrets-management) 🔐
 - [Testing & Verification](#-testing-and-verification)
 
@@ -61,6 +62,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 | **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
 | **[AI Analysis](docs/guides/AI_ANALYSIS.md)** | 🤖 AI-assisted triage and its injection defences | Enabling `--ai`, choosing a provider |
 | **[ML Triage](docs/guides/ML_TRIAGE.md)** | 🧠 Learned ranking from your own decisions | Labelling findings, training a model |
+| **[Alerting](docs/guides/ALERTING.md)** | 🔔 Slack, Discord, Teams, Matrix, Jira, webhook, email | Wiring up notifications and tickets |
 | **[Docker Guide](docker/DOCKER.md)** | 🐳 Docker deployment guide | Container deployment |
 | **[Project Structure](PROJECT_STRUCTURE.md)** | 📁 Project organization details | Contributing, understanding codebase |
 
@@ -986,6 +988,49 @@ would teach the model that dead domains are the dangerous ones — an inversion
 learned from perfectly good labels.
 
 See **[ML Triage](docs/guides/ML_TRIAGE.md)** for the full guide.
+
+**[⬆ Back to Top](#-table-of-contents)**
+
+---
+
+## 🔔 Alerting and Ticketing
+
+Alerts fire on **changes**, never on the full result set. A daily scan that
+re-reported the same seventy lookalikes every morning gets ignored within a
+week; one that says "a new lookalike appeared three days ago and it has MX
+records" gets read.
+
+```bash
+python src/typo_sniper.py -i domains.txt --notify slack jira
+```
+
+| Channel | What it does |
+|---|---|
+| `slack` / `discord` | Block Kit message / severity-coloured embed |
+| `teams` | Adaptive Card via a Power Automate workflow |
+| `matrix` | Room message via the client-server API, no SDK |
+| `jira` | **One deduplicated ticket per domain** |
+| `webhook` / `email` | Raw JSON to any endpoint / SMTP |
+
+**Jira is ticketing, not alerting, and that changes the design.** A message is
+disposable; a ticket is state. A scheduled scan that opened a fresh ticket for
+the same lookalike every morning would bury a queue within a week. So it files
+**one issue per domain**, deduplicated by a deterministic label, and **caps
+creation per run** — the first scan of a well-known brand can surface hundreds
+of lookalikes, and turning that into hundreds of tickets would be the most
+destructive thing this tool could do to your backlog. What the cap drops is
+logged and stays in the report.
+
+**Teams uses Power Automate**, not the retired Office 365 connector. **Matrix
+sends its token as a bearer header**, never the deprecated `?access_token=`
+query parameter that would land in the homeserver's request logs.
+
+Chat channels strip the markup characters a registrant could use to forge
+formatting or embed a link in your Slack channel. The `webhook` channel
+deliberately does not: its consumer is a machine, and a domain name is the
+primary key it correlates on.
+
+See **[Alerting](docs/guides/ALERTING.md)** for the full guide.
 
 **[⬆ Back to Top](#-table-of-contents)**
 

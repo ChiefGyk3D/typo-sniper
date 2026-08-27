@@ -5,6 +5,62 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-08-27
+
+Completes the alerting channels, and adds ticketing as something distinct from
+alerting.
+
+### Added
+
+- **Microsoft Teams** alerts, as an Adaptive Card sent to a Power Automate
+  "When a Teams webhook request is received" trigger. That is the current path:
+  the older Office 365 connector, which took a MessageCard at an
+  `outlook.office.com` URL, has been retired by Microsoft.
+
+- **Matrix** alerts via the client-server API, with no SDK required. Two
+  details that matter: the access token is sent as a bearer header rather than
+  the deprecated `?access_token=` query parameter, which would put the
+  credential in the homeserver's request logs and in every proxy along the way;
+  and each send carries a fresh transaction ID, so a retried delivery is
+  idempotent at the homeserver instead of double-posting.
+
+- **Jira ticketing.** This is not another chat channel, and the difference
+  drives its design. A message is disposable; a ticket is state, and a
+  scheduled scan that opened a fresh ticket for the same lookalike every
+  morning would bury a queue within a week. So:
+
+  - **One issue per domain, not per scan.** A lookalike is tracked from
+    detection through takedown, which is the unit of work an analyst has.
+  - **Deduplicated by a deterministic label.** The project is searched for an
+    open issue carrying this domain's label before anything is created. A
+    closed issue stays closed — a domain that comes back raises a new ticket,
+    which is correct, because it genuinely is a new event.
+  - **Capped per run** (`jira_max_issues_per_run`, default 10). The first scan
+    of a well-known brand can surface hundreds of registered lookalikes, and
+    turning that into hundreds of tickets would be the most destructive thing
+    this tool could do to someone's backlog. What the cap drops is logged, and
+    stays in the report and the delta JSON.
+
+  Only new, escalated, and activated findings are ticketed. A resolved domain
+  is good news, not work.
+
+### Changed
+
+- Notifiers now share one request helper supporting any HTTP method and custom
+  headers, so Slack's POST and Matrix's PUT go through the same timeout,
+  error-handling, and logging path. `WebhookNotifier` keeps its own call
+  deliberately, because it sends operator-supplied headers verbatim.
+
+- Teams, Matrix, and Jira credentials resolve through the secrets backends like
+  every other credential, so none of them need to sit in `config.yaml`.
+
+### Fixed
+
+- **`aiohttp.BasicAuth` is deprecated and removed in aiohttp 4.0.** The Jira
+  Basic header is now built with the standard library, which works on every
+  aiohttp version and adds no dependency. Caught by running the notifier tests
+  with `-W error::DeprecationWarning` rather than by waiting for aiohttp 4.
+
 ## [1.5.0] - 2026-08-27
 
 Learned triage: the tool starts using your own past decisions to order what it

@@ -69,7 +69,8 @@ class Config:
 
     # Notifications (fire on changes only, never on the full result set)
     enable_notifications: bool = False
-    notify_channels: list = field(default_factory=list)  # slack, discord, webhook, email
+    # slack, discord, teams, matrix, jira, webhook, email
+    notify_channels: list = field(default_factory=list)
     notify_timeout: int = 20
     notify_min_changes: int = 1   # Suppress alerts below this many changes
     notify_on_no_changes: bool = False
@@ -78,6 +79,26 @@ class Config:
     discord_webhook_url: str | None = None
     webhook_url: str | None = None
     webhook_auth_header: str | None = None   # e.g. "Authorization: Bearer xyz"
+
+    # Microsoft Teams. Use a Power Automate "When a Teams webhook request is
+    # received" trigger; the older Office 365 connector has been retired.
+    teams_webhook_url: str | None = None
+
+    # Matrix, via the client-server API. No SDK required.
+    matrix_homeserver: str | None = None      # https://matrix.example.org
+    matrix_access_token: str | None = None
+    matrix_room_id: str | None = None         # !room:example.org
+
+    # Jira. This is ticketing rather than alerting: one issue per domain,
+    # deduplicated by a deterministic label, and capped per run so a first
+    # scan of a large brand cannot bury a backlog.
+    jira_url: str | None = None               # https://you.atlassian.net
+    jira_email: str | None = None
+    jira_api_token: str | None = None
+    jira_project_key: str | None = None       # e.g. SEC
+    jira_issue_type: str = 'Task'
+    jira_max_issues_per_run: int = 10
+    jira_labels: list = field(default_factory=list)
 
     smtp_host: str | None = None
     smtp_port: int = 587
@@ -235,6 +256,14 @@ class Config:
         ('discord_webhook_url', ('DISCORD_WEBHOOK_URL',)),
         ('webhook_url', ()),
         ('webhook_auth_header', ()),
+        ('teams_webhook_url', ('TEAMS_WEBHOOK_URL',)),
+        ('matrix_homeserver', ('MATRIX_HOMESERVER',)),
+        ('matrix_access_token', ('MATRIX_ACCESS_TOKEN',)),
+        ('matrix_room_id', ('MATRIX_ROOM_ID',)),
+        ('jira_url', ('JIRA_URL',)),
+        ('jira_email', ('JIRA_EMAIL',)),
+        ('jira_api_token', ('JIRA_API_TOKEN',)),
+        ('jira_project_key', ('JIRA_PROJECT_KEY',)),
         ('smtp_host', ()),
         ('smtp_username', ()),
         ('smtp_password', ()),
