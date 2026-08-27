@@ -113,3 +113,66 @@ class TestEnvironmentIntegration:
 
     def test_user_agent_identifies_the_tool(self):
         assert Config().user_agent.startswith('TypoSniper/')
+
+
+class TestSecretResolution:
+    """Credentials must reach Config through the secrets backends, not only os.getenv."""
+
+    @pytest.fixture(autouse=True)
+    def clean_env(self, monkeypatch):
+        for key in (
+            'TYPO_SNIPER_URLSCAN_API_KEY', 'URLSCAN_API_KEY',
+            'TYPO_SNIPER_AI_API_KEY', 'ANTHROPIC_API_KEY', 'OPENAI_API_KEY',
+            'GEMINI_API_KEY', 'GOOGLE_API_KEY',
+            'TYPO_SNIPER_SLACK_WEBHOOK_URL', 'SLACK_WEBHOOK_URL',
+            'DOPPLER_TOKEN', 'DOPPLER_PROJECT', 'AWS_SECRET_NAME',
+            'VAULT_ADDR', 'VAULT_TOKEN',
+        ):
+            monkeypatch.delenv(key, raising=False)
+
+    def test_prefixed_variable_is_used(self, monkeypatch):
+        monkeypatch.setenv('TYPO_SNIPER_URLSCAN_API_KEY', 'from-env')
+        assert Config().urlscan_api_key == 'from-env'
+
+    def test_vendor_standard_variable_is_accepted(self, monkeypatch):
+        monkeypatch.setenv('ANTHROPIC_API_KEY', 'sk-ant-x')
+        assert Config().ai_api_key == 'sk-ant-x'
+
+    def test_a_backend_supplies_credentials(self, monkeypatch):
+        """The regression this guards: backends were configured but never called."""
+        import secrets_manager
+
+        monkeypatch.setenv('VAULT_ADDR', 'https://vault.example.com')
+        monkeypatch.setenv('VAULT_TOKEN', 'hvs.token')
+        monkeypatch.setattr(
+            secrets_manager, '_https_json',
+            lambda url, headers: {'data': {'data': {
+                'urlscan_api_key': 'from-vault',
+                'slack_webhook_url': 'https://hooks.example/from-vault',
+            }}},
+        )
+
+        config = Config()
+        assert config.urlscan_api_key == 'from-vault'
+        assert config.slack_webhook_url == 'https://hooks.example/from-vault'
+        assert config.secrets.resolved_from['urlscan_api_key'] == 'vault'
+
+    def test_explicit_config_value_is_not_overridden(self, monkeypatch):
+        """An explicit setting must not lose to a stale entry in a shared vault."""
+        monkeypatch.setenv('TYPO_SNIPER_URLSCAN_API_KEY', 'from-env')
+        assert Config(urlscan_api_key='from-config').urlscan_api_key == 'from-config'
+
+    def test_backend_order_is_configurable(self):
+        names = [b.name for b in Config(secrets_backends=['env', 'vault']).secrets.backends]
+        assert names == ['env', 'vault']
+
+    def test_default_leaves_every_remote_backend_unconfigured(self):
+        statuses = {e['backend']: e['status'] for e in Config().secrets.describe()}
+        assert statuses['env'] == 'ready'
+        assert statuses['doppler'] == 'not configured'
+        assert statuses['aws'] == 'not configured'
+
+    def test_every_secret_field_exists_on_the_config(self):
+        config = Config()
+        for attr, _aliases in Config.SECRET_FIELDS:
+            assert hasattr(config, attr), attr

@@ -27,6 +27,7 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 # the environment at import time (Config resolves API keys in its defaults).
 load_dotenv()
 
+from ai import AIAnalyzer  # noqa: E402
 from cache import Cache  # noqa: E402
 from config import Config  # noqa: E402
 from exporters import CSVExporter, ExcelExporter, HTMLExporter, JSONExporter  # noqa: E402
@@ -57,6 +58,8 @@ class TypoSniper:
 
         self.history = ScanHistory(config.state_dir, config.history_retain)
         self.deltas: list = []
+        self.analyzer = AIAnalyzer(config)
+        self.ai_results: list = []
 
     def close(self) -> None:
         """Release the scanner's worker threads."""
@@ -320,6 +323,99 @@ class TypoSniper:
 
         return summary
 
+    async def run_ai_analysis(self, summary: dict | None) -> None:
+        """
+        Run AI triage over the findings and, when configured, the delta.
+
+        Strictly additive: any failure is reported and the deterministic
+        results are untouched.
+
+        Args:
+            summary: Aggregate delta summary, or None when diffing is off
+        """
+        ready, reason = self.analyzer.status()
+        if not ready:
+            if self.config.enable_ai_analysis:
+                console.print(f"[yellow]⚠ AI triage skipped: {reason}[/yellow]")
+            return
+
+        console.print("\n[bold]Running AI triage…[/bold]")
+
+        for result in self.results:
+            outcome = await self.analyzer.triage(
+                result['original_domain'], result.get('permutations', [])
+            )
+            if outcome is None:
+                continue
+            if not outcome.ok:
+                console.print(f"[red]✗[/red] AI triage failed: {outcome.error}")
+                continue
+
+            result['ai_analysis'] = outcome.content
+            self.ai_results.append(outcome)
+            self._print_ai_result(result['original_domain'], outcome)
+
+        if summary and self.config.ai_explain_changes:
+            outcome = await self.analyzer.explain_changes(summary)
+            if outcome and outcome.ok:
+                summary['ai_analysis'] = outcome.content
+                self.ai_results.append(outcome)
+                text = outcome.content.get('summary')
+                if text:
+                    console.print(f"\n[bold]AI summary of changes:[/bold] {text}")
+
+        usage = self.analyzer.usage_summary()
+        if usage['input_tokens'] or usage['output_tokens']:
+            console.print(
+                f"[dim]AI tokens: {usage['input_tokens']} in, "
+                f"{usage['output_tokens']} out ({usage['provider']})[/dim]"
+            )
+
+        if usage['injection_attempts']:
+            # Not a nuisance to suppress: a WHOIS record containing text aimed
+            # at the analysis system is evidence about who registered it.
+            console.print(
+                f"[bold red]⚠ {len(usage['injection_attempts'])} domain(s) carried "
+                f"text targeting the analysis system — treat as a signal of "
+                f"deliberate evasion:[/bold red] "
+                f"{', '.join(usage['injection_attempts'][:5])}"
+            )
+
+    def _print_ai_result(self, domain: str, outcome) -> None:
+        """Render one AI assessment to the console."""
+        from rich.table import Table
+
+        content = outcome.content
+        if content.get('summary'):
+            console.print(f"\n[bold cyan]{domain}[/bold cyan]: {content['summary']}")
+
+        assessments = content.get('assessments') or []
+        if not assessments:
+            return
+
+        table = Table(show_header=True, header_style="bold magenta", box=None)
+        table.add_column("Domain", style="cyan", width=30)
+        table.add_column("Action", width=12)
+        table.add_column("Conf.", width=7)
+        table.add_column("Reading")
+
+        colours = {'escalate': 'bold red', 'investigate': 'yellow',
+                   'monitor': 'blue', 'no action': 'green'}
+
+        for a in assessments[:15]:
+            action = str(a.get('suggested_action', ''))
+            style = colours.get(action, '')
+            table.add_row(
+                str(a.get('domain', '')),
+                f"[{style}]{action}[/{style}]" if style else action,
+                str(a.get('confidence', '')),
+                str(a.get('reading', ''))[:160],
+            )
+
+        console.print(table)
+        console.print("[dim]AI assessments are advisory. Risk scores above are "
+                      "computed deterministically and are not model output.[/dim]")
+
     async def notify(self, summary: dict) -> None:
         """
         Deliver the delta summary through configured alert channels.
@@ -353,6 +449,7 @@ class TypoSniper:
         """Clear per-scan results so the instance can run again in watch mode."""
         self.results = []
         self.deltas = []
+        self.ai_results = []
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -490,12 +587,80 @@ Examples:
     )
 
     parser.add_argument(
+        '--secrets-check',
+        action='store_true',
+        help='Report which secrets backends are reachable and where each '
+             'credential resolved from, then exit. Never prints a value.'
+    )
+
+    parser.add_argument(
+        '--ai',
+        action='store_true',
+        help='Enable AI-assisted triage of findings (explains, never scores)'
+    )
+
+    parser.add_argument(
+        '--ai-provider',
+        choices=['claude', 'openai', 'gemini', 'ollama'],
+        default=None,
+        help='AI backend to use (default: claude; ollama keeps data on your host)'
+    )
+
+    parser.add_argument(
+        '--ai-model',
+        type=str,
+        default=None,
+        help="Model name for the chosen provider (default: the provider's own)"
+    )
+
+    parser.add_argument(
         '--version',
         action='version',
         version=f'Typo Sniper v{__version__}'
     )
 
     return parser.parse_args()
+
+
+def print_secrets_check(config) -> None:
+    """
+    Report secret resolution without disclosing any secret.
+
+    Operators debugging a missing API key otherwise reach for echo, which puts
+    the value in their shell history. This prints only whether each credential
+    was found and which backend supplied it.
+
+    Args:
+        config: Configuration object, already resolved
+    """
+    from rich.table import Table
+
+    backends = Table(title='Secrets backends', title_justify='left')
+    backends.add_column('Backend')
+    backends.add_column('Status')
+    for entry in config.secrets.describe():
+        colour = {'ready': 'green', 'not configured': 'dim'}.get(entry['status'], 'red')
+        backends.add_row(entry['backend'], f"[{colour}]{entry['status']}[/{colour}]")
+    console.print(backends)
+
+    credentials = Table(title='Credentials', title_justify='left')
+    credentials.add_column('Name')
+    credentials.add_column('Resolved')
+    credentials.add_column('Source')
+    for attr, _aliases in config.SECRET_FIELDS:
+        value = getattr(config, attr, None)
+        # A value present without a recorded lookup came from the config file
+        source = config.secrets.resolved_from.get(attr, 'config file' if value else '—')
+        credentials.add_row(
+            attr,
+            '[green]yes[/green]' if value else '[dim]no[/dim]',
+            source,
+        )
+    console.print(credentials)
+    console.print(
+        '\n[dim]Values are never printed. Set TYPO_SNIPER_<NAME> to override '
+        'any single credential for one run.[/dim]\n'
+    )
 
 
 async def run_scan(sniper, domains, args, config) -> None:
@@ -528,6 +693,8 @@ async def run_scan(sniper, domains, args, config) -> None:
 
     console.print("\n[bold]Exporting results...[/bold]")
     sniper.export_results(args.format, args.output)
+
+    await sniper.run_ai_analysis(summary)
 
     if summary is not None:
         try:
@@ -563,6 +730,10 @@ async def main():
     # Load configuration
     config = Config.from_file(args.config) if args.config else Config()
 
+    if args.secrets_check:
+        print_secrets_check(config)
+        return
+
     # Override config with command-line arguments
     config.max_workers = args.max_workers
     config.cache_ttl = args.cache_ttl
@@ -581,6 +752,13 @@ async def main():
         config.notify_min_changes = args.notify_min_changes
     if args.interval:
         config.watch_interval = parse_interval(args.interval, config.watch_interval)
+    if args.ai:
+        config.enable_ai_analysis = True
+    if args.ai_provider:
+        config.ai_provider = args.ai_provider
+        config.enable_ai_analysis = True
+    if args.ai_model:
+        config.ai_model = args.ai_model
 
     # Display banner
     console.print("\n[bold cyan]" + "=" * 60 + "[/bold cyan]")
@@ -613,6 +791,12 @@ async def main():
         if config.enable_notifications:
             console.print(
                 f"[bold]Alerts:[/bold] {', '.join(config.notify_channels) or 'none configured'}"
+            )
+        if config.enable_ai_analysis:
+            ready, reason = sniper.analyzer.status()
+            console.print(
+                "[bold]AI triage:[/bold] "
+                + (config.ai_provider if ready else f"[yellow]unavailable ({reason})[/yellow]")
             )
         if args.months > 0:
             console.print(

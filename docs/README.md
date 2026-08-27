@@ -11,7 +11,8 @@ Comprehensive documentation for Typo Sniper.
 
 ### Guides
 - **[API_KEYS_SETUP.md](guides/API_KEYS_SETUP.md)** - Setting up URLScan.io API keys
-- **[SECRETS_MANAGEMENT.md](guides/SECRETS_MANAGEMENT.md)** - Using Doppler/AWS Secrets Manager
+- **[SECRETS_MANAGEMENT.md](guides/SECRETS_MANAGEMENT.md)** - Doppler, AWS, Vault, Azure, GCP, 1Password
+- **[AI_ANALYSIS.md](guides/AI_ANALYSIS.md)** - AI-assisted triage with Claude, OpenAI, Gemini, or Ollama
 - **[DEBUG_MODE.md](guides/DEBUG_MODE.md)** - Debug mode usage
 - **[DEBUG_IMPLEMENTATION.md](guides/DEBUG_IMPLEMENTATION.md)** - Debug system architecture
 - **[PERFORMANCE_OPTIMIZATION.md](guides/PERFORMANCE_OPTIMIZATION.md)** - Performance tuning
@@ -31,7 +32,8 @@ docs/
     ├── DEBUG_MODE.md                   # Debug mode guide
     ├── PERFORMANCE_OPTIMIZATION.md     # Performance tuning
     ├── QUICKSTART.md                   # Quick start guide
-    └── SECRETS_MANAGEMENT.md           # Secrets management
+    ├── SECRETS_MANAGEMENT.md           # Secrets management
+    └── AI_ANALYSIS.md                  # AI-assisted triage
 ```
 
 ## Documentation by Topic

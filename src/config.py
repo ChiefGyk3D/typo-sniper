@@ -117,6 +117,22 @@ class Config:
     dns_timeout: float = 5.0
     dns_nameservers: list = field(default_factory=list)  # empty = system resolvers
 
+    # AI-assisted triage (optional, strictly additive)
+    # The model explains findings; it never assigns risk scores. Scores stay
+    # deterministic so an analyst can reproduce and defend them in a takedown
+    # request. Scan data is attacker-controlled, so it is neutralised and
+    # delimited before it reaches a prompt -- see src/ai/prompts.py.
+    enable_ai_analysis: bool = False
+    ai_provider: str = 'claude'        # claude | openai | gemini | ollama
+    ai_model: str = ''                 # empty = the provider's default
+    ai_api_key: str | None = None
+    ai_base_url: str | None = None     # Ollama host, or an OpenAI-compatible gateway
+    ai_max_tokens: int = 4096
+    ai_timeout: float = 120.0
+    ai_effort: str = 'medium'          # Claude only: low | medium | high | xhigh | max
+    ai_min_risk_score: int = 30        # Skip AI on findings below this score
+    ai_explain_changes: bool = True    # Also summarise what changed since last scan
+
     # Combo-squatting keywords specific to your brand. Product names, campaign
     # names and support portals are far better bait than the generic list.
     custom_keywords: list = field(default_factory=list)
@@ -134,10 +150,31 @@ class Config:
     # Risk scoring
     enable_risk_scoring: bool = True
     
-    # Secrets management
+    # Secrets management. Backends are consulted in listed order; an empty
+    # list means the default order (env, doppler, aws, vault, azure, gcp,
+    # onepassword). Every backend that is not configured is skipped, so the
+    # default is safe to leave alone.
+    secrets_backends: list = field(default_factory=list)
     use_doppler: bool = False
     use_aws_secrets: bool = False
+    # Doppler: only needed for the REST path; `doppler run` needs neither
+    doppler_project: str | None = None
+    doppler_config: str | None = None
+    # AWS Secrets Manager: one JSON secret holding many keys
     aws_secret_name: str | None = None
+    aws_region: str | None = None
+    # HashiCorp Vault (KV v2)
+    vault_addr: str | None = None
+    vault_token: str | None = None
+    vault_path: str | None = None
+    vault_namespace: str | None = None
+    # Azure Key Vault
+    azure_key_vault_url: str | None = None
+    # Google Cloud Secret Manager
+    gcp_project_id: str | None = None
+    # 1Password, via the op CLI
+    onepassword_vault: str | None = None
+    onepassword_item: str | None = None
     
     # Debug mode (set by CLI flag, not in config file)
     debug_mode: bool = False
@@ -151,37 +188,19 @@ class Config:
         self.output_dir = _expand_path(self.output_dir)
         self.state_dir = _expand_path(self.state_dir)
 
-        # Check if Doppler should be used (check for Doppler CLI environment variables)
+        # Doppler and AWS remain callable by environment alone, so an existing
+        # deployment that only sets DOPPLER_TOKEN keeps working unchanged.
         if os.getenv('DOPPLER_PROJECT') or os.getenv('DOPPLER_TOKEN') or os.getenv('TYPO_SNIPER_USE_DOPPLER'):
             self.use_doppler = True
-        
-        # Check if AWS Secrets Manager should be used
+
         if os.getenv('AWS_SECRET_NAME') or os.getenv('TYPO_SNIPER_USE_AWS_SECRETS'):
             self.use_aws_secrets = True
-            self.aws_secret_name = os.getenv('AWS_SECRET_NAME') or os.getenv('TYPO_SNIPER_AWS_SECRET_NAME')
-        
-        # Try to load API keys from environment if not set in config        
-        if not self.urlscan_api_key:
-            self.urlscan_api_key = os.getenv('TYPO_SNIPER_URLSCAN_API_KEY') or os.getenv('URLSCAN_API_KEY')
-        
-        # Notification endpoints are secrets; accept them from the environment
-        for attr, names in (
-            ('slack_webhook_url', ('TYPO_SNIPER_SLACK_WEBHOOK_URL', 'SLACK_WEBHOOK_URL')),
-            ('discord_webhook_url', ('TYPO_SNIPER_DISCORD_WEBHOOK_URL', 'DISCORD_WEBHOOK_URL')),
-            ('webhook_url', ('TYPO_SNIPER_WEBHOOK_URL',)),
-            ('webhook_auth_header', ('TYPO_SNIPER_WEBHOOK_AUTH_HEADER',)),
-            ('smtp_host', ('TYPO_SNIPER_SMTP_HOST',)),
-            ('smtp_username', ('TYPO_SNIPER_SMTP_USERNAME',)),
-            ('smtp_password', ('TYPO_SNIPER_SMTP_PASSWORD',)),
-            ('email_from', ('TYPO_SNIPER_EMAIL_FROM',)),
-            ('email_to', ('TYPO_SNIPER_EMAIL_TO',)),
-        ):
-            if not getattr(self, attr):
-                for name in names:
-                    value = os.getenv(name)
-                    if value:
-                        setattr(self, attr, value)
-                        break
+            if not self.aws_secret_name:
+                self.aws_secret_name = (
+                    os.getenv('AWS_SECRET_NAME') or os.getenv('TYPO_SNIPER_AWS_SECRET_NAME')
+                )
+
+        self.resolve_secrets()
 
         # Any configured channel implies notifications are wanted
         if self.notify_channels and not self.enable_notifications:
@@ -198,6 +217,45 @@ class Config:
             # Manual env vars or .env files still require explicit ENABLE_URLSCAN=true
             self.enable_urlscan = True
     
+    # Every field here holds credential material. Each is resolved through the
+    # secrets backends, so a deployment can keep all of them in Doppler, Vault,
+    # AWS, Azure, GCP, or 1Password and leave the config file free of secrets.
+    # The tuple is the vendor-standard environment variables also accepted, for
+    # the case where a key is already exported under its usual name.
+    SECRET_FIELDS = (
+        ('urlscan_api_key', ('URLSCAN_API_KEY',)),
+        ('slack_webhook_url', ('SLACK_WEBHOOK_URL',)),
+        ('discord_webhook_url', ('DISCORD_WEBHOOK_URL',)),
+        ('webhook_url', ()),
+        ('webhook_auth_header', ()),
+        ('smtp_host', ()),
+        ('smtp_username', ()),
+        ('smtp_password', ()),
+        ('email_from', ()),
+        ('email_to', ()),
+        ('ai_api_key', ('ANTHROPIC_API_KEY', 'OPENAI_API_KEY',
+                        'GEMINI_API_KEY', 'GOOGLE_API_KEY')),
+        ('ai_base_url', ('OLLAMA_HOST',)),
+    )
+
+    def resolve_secrets(self) -> None:
+        """
+        Fill in unset credential fields from the configured secrets backends.
+
+        A value already present in the config file is left alone: an explicit
+        setting is a deliberate act and must not be silently overridden by a
+        stale entry in a shared vault.
+        """
+        from secrets_manager import SecretsManager
+
+        self.secrets = SecretsManager(self, self.secrets_backends or None)
+
+        for attr, aliases in self.SECRET_FIELDS:
+            if not getattr(self, attr, None):
+                value = self.secrets.get_secret(attr, aliases=aliases)
+                if value:
+                    setattr(self, attr, value)
+
     @classmethod
     def from_file(cls, config_path: Path) -> 'Config':
         """

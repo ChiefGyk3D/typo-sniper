@@ -5,6 +5,78 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-27
+
+AI-assisted triage, and secrets management that is actually wired in.
+
+### Added
+
+- **AI-assisted triage (`--ai`).** A scan of a well-known brand returns hundreds
+  of registered permutations; risk scores rank them but do not explain them.
+  This reads the signals together and says what they suggest about intent, which
+  findings are load-bearing, and what the next step would be. Four backends:
+  Claude, OpenAI, Gemini, and Ollama.
+
+  **The model explains, it never scores.** Risk scores stay deterministic and
+  identical with AI off, because a takedown request has to rest on reproducible
+  evidence. The system prompt forbids scoring, the response schema has no score
+  field, and `additionalProperties: false` means a steered model fails
+  validation rather than quietly landing a number in a report.
+
+  **Ollama is a first-class option, not a footnote.** A scan's output names the
+  domains an organisation is defending, which reveals what they own and what
+  they are worried about. For teams that cannot send that to a third party, a
+  local model is the difference between using this feature and disabling it.
+
+- **Prompt-injection defences.** Every field the model sees about a suspicious
+  domain — the name, the WHOIS registrant and organisation, the page title —
+  was written by the person who registered it, and a registrant field is a free
+  text box that costs nothing to fill with an instruction. Untrusted values
+  never enter the system prompt; they are fenced inside delimiters the data
+  cannot reproduce, stripped of control characters, collapsed to a single line,
+  truncated, and schema-constrained, and any assessment naming a domain that
+  was not in the request is discarded.
+
+  An injection attempt is **marked, not deleted**: the text stays visible and
+  the finding is surfaced, because a registrant field carrying an instruction
+  aimed at an automated analyst is itself evidence of intent.
+
+- **Secrets backends: HashiCorp Vault, Azure Key Vault, Google Cloud Secret
+  Manager, and 1Password**, joining environment variables, Doppler, and AWS
+  Secrets Manager. Doppler and Vault are reached over HTTPS with the standard
+  library, so the two most commonly self-hosted stores need nothing installed.
+  Backend order is configurable via `secrets_backends`.
+
+- **`--secrets-check`.** Reports which backends are reachable and where each
+  credential resolved from, and never prints a value. Debugging a missing key
+  with `echo` puts the value in shell history; this exists so that is never the
+  first thing reached for.
+
+### Fixed
+
+- **Secrets managers were advertised but never used.** `SecretsManager` existed
+  and was documented, but nothing called it: `Config` read `os.getenv` directly,
+  so a key stored in Doppler or AWS was only ever found when it happened to
+  already be an environment variable. Every credential field now resolves
+  through the backend chain. A value set explicitly in `config.yaml` still wins,
+  since an explicit setting must not be overridden by a stale vault entry.
+
+- **A failing secrets backend no longer takes the run with it.** An unreachable
+  store is passed over and the next backend is tried. Backend errors record only
+  the exception type, never its message, because a store's error text can echo
+  the request body, the token, or the secret itself into a log.
+
+- **The `op` binary is resolved to an absolute path** rather than relying on
+  PATH order at call time, and is run without a shell.
+
+### Changed
+
+- `env` is always consulted first and is re-inserted if omitted from
+  `secrets_backends`. Overriding one key for one run must never require editing
+  a vault the whole team shares.
+- Optional dependencies are now extras: `.[claude]`, `.[openai]`, `.[gemini]`,
+  `.[ai-all]`, `.[aws]`, `.[azure]`, `.[gcp]`, `.[secrets-all]`, `.[all]`.
+
 ## [1.3.0] - 2026-08-24
 
 Detection quality. Adds the single strongest pre-attack signal a lookalike can

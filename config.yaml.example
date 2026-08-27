@@ -121,3 +121,69 @@ http_max_redirects: 5              # Maximum redirects to follow
 
 # Risk scoring
 enable_risk_scoring: true          # Calculate risk scores for domains
+
+# ---------------------------------------------------------------------------
+# AI-assisted triage (optional)
+# ---------------------------------------------------------------------------
+# Strictly additive. Detection and risk scores are computed deterministically
+# and are identical with AI off; the model explains findings, it never scores
+# them, so a takedown request still rests on reproducible evidence.
+#
+# Scan data is written by the operators of the domains under investigation, so
+# it is treated as hostile input: neutralised, fenced inside delimiters, and
+# constrained by a schema. A domain whose WHOIS or page title carries text
+# aimed at the model is flagged, because that is itself a signal of intent.
+enable_ai_analysis: false
+ai_provider: claude                # claude | openai | gemini | ollama
+ai_model: ''                       # empty = the provider's default
+ai_base_url: ''                    # Ollama host, or an OpenAI-compatible gateway
+ai_max_tokens: 4096
+ai_timeout: 120
+ai_effort: medium                  # low | medium | high (Claude)
+ai_min_risk_score: 50              # Skip the request when nothing scores this high
+ai_explain_changes: true           # Also summarise what moved since the last scan
+# Never put an API key here. Set TYPO_SNIPER_AI_API_KEY, use the provider's own
+# variable (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY), or store it in
+# one of the secrets backends below. Ollama keeps every request on your host.
+
+# ---------------------------------------------------------------------------
+# Secrets backends (optional)
+# ---------------------------------------------------------------------------
+# API keys, webhook URLs, and SMTP passwords are resolved through these, in the
+# order listed, so this file can stay free of credentials. Every backend that
+# is not configured is skipped, so leaving this alone is safe.
+#
+# `env` is always consulted first and is re-inserted if you omit it: an
+# operator overriding one key for one run must never have to edit their vault.
+#
+# Run `python src/typo_sniper.py --secrets-check` to see which backends are
+# reachable and where each credential came from. It never prints a value.
+secrets_backends: []               # empty = env, doppler, aws, vault, azure, gcp, onepassword
+
+# Doppler — needs nothing installed. Either wrap the command in `doppler run`,
+# or set DOPPLER_TOKEN and let Typo Sniper call the API itself.
+doppler_project: ''
+doppler_config: ''
+
+# AWS Secrets Manager — one secret holding a JSON object of many keys.
+# Needs boto3: pip install -e ".[aws]"
+aws_secret_name: ''                # e.g. typo-sniper/prod
+aws_region: ''
+
+# HashiCorp Vault (KV v2) — needs nothing installed. The token is taken from
+# VAULT_TOKEN or the ~/.vault-token file that `vault login` writes.
+vault_addr: ''                     # https://vault.example.com
+vault_path: ''                     # default: secret/data/typo-sniper
+vault_namespace: ''                # Vault Enterprise only
+
+# Azure Key Vault — pip install -e ".[azure]". Key Vault names allow only
+# letters, digits and dashes, so urlscan_api_key is read as urlscan-api-key.
+azure_key_vault_url: ''            # https://your-vault.vault.azure.net/
+
+# Google Cloud Secret Manager — pip install -e ".[gcp]"
+gcp_project_id: ''
+
+# 1Password — uses the `op` CLI, so it covers both a signed-in laptop and a
+# service account in CI. Values are read as op://<vault>/<item>/<field>.
+onepassword_vault: ''
+onepassword_item: ''

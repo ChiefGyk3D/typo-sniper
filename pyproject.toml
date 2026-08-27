@@ -29,8 +29,41 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.9",
 ]
-doppler = ["doppler-sdk>=1.3.0"]
+
+# AI providers. Each is optional and imported lazily; the scanner's detection
+# and risk scoring are deterministic and run identically with none installed.
+claude = ["anthropic>=0.40.0"]
+openai = ["openai>=1.50.0"]
+gemini = ["google-genai>=1.0.0"]
+# ollama needs no SDK: it is plain HTTP to a daemon you run
+ai-all = [
+    "anthropic>=0.40.0",
+    "openai>=1.50.0",
+    "google-genai>=1.0.0",
+]
+
+# Secrets backends. Doppler and HashiCorp Vault need nothing installed — both
+# are reached over HTTPS with the standard library — so they are absent here.
 aws = ["boto3>=1.35.0"]
+azure = ["azure-keyvault-secrets>=4.8.0", "azure-identity>=1.17.0"]
+gcp = ["google-cloud-secret-manager>=2.20.0"]
+# onepassword uses the `op` CLI rather than a Python package
+secrets-all = [
+    "boto3>=1.35.0",
+    "azure-keyvault-secrets>=4.8.0",
+    "azure-identity>=1.17.0",
+    "google-cloud-secret-manager>=2.20.0",
+]
+
+all = [
+    "anthropic>=0.40.0",
+    "openai>=1.50.0",
+    "google-genai>=1.0.0",
+    "boto3>=1.35.0",
+    "azure-keyvault-secrets>=4.8.0",
+    "azure-identity>=1.17.0",
+    "google-cloud-secret-manager>=2.20.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
