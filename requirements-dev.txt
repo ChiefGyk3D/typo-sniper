@@ -9,4 +9,7 @@ ruff==0.14.4
 # Training the triage ranking model. Only training needs this — scoring is
 # pure Python, so hosts that run scans never install it. Present here so CI
 # exercises the training path rather than skipping it.
-scikit-learn==1.9.0
+#
+# Held at 1.7.x: this project supports Python 3.10, and scikit-learn 1.8
+# dropped it. Raise this pin only alongside requires-python.
+scikit-learn==1.7.2
