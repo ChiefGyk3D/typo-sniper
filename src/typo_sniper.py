@@ -620,9 +620,11 @@ Examples:
     parser.add_argument(
         '--notify',
         nargs='+',
-        choices=['slack', 'discord', 'webhook', 'email'],
+        choices=['slack', 'discord', 'teams', 'matrix', 'jira', 'webhook', 'email'],
         default=None,
-        help='Alert channels to notify when changes are detected'
+        help='Alert channels to notify when changes are detected. '
+             "'jira' opens one deduplicated ticket per domain rather than "
+             'sending a message.'
     )
 
     parser.add_argument(

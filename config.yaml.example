@@ -210,3 +210,42 @@ onepassword_item: ''
 enable_ml_ranking: false
 ml_min_labels: 30                  # Refuse to train below this many labels
 ml_explain_top: 3                  # Feature contributions recorded per finding
+
+# ---------------------------------------------------------------------------
+# Microsoft Teams
+# ---------------------------------------------------------------------------
+# Use a Power Automate "When a Teams webhook request is received" trigger and
+# paste its URL here. The older Office 365 connector (outlook.office.com) has
+# been retired by Microsoft and is no longer supported.
+# Prefer TYPO_SNIPER_TEAMS_WEBHOOK_URL or a secrets backend over this file.
+teams_webhook_url: ''
+
+# ---------------------------------------------------------------------------
+# Matrix
+# ---------------------------------------------------------------------------
+# Talks to the client-server API directly; no SDK needed. The access token is
+# sent as a bearer header, never as a query parameter, so it does not land in
+# the homeserver's request logs.
+matrix_homeserver: ''              # https://matrix.example.org
+matrix_access_token: ''            # Prefer TYPO_SNIPER_MATRIX_ACCESS_TOKEN
+matrix_room_id: ''                 # !roomid:example.org
+
+# ---------------------------------------------------------------------------
+# Jira — ticketing, not alerting
+# ---------------------------------------------------------------------------
+# Opens one issue per domain rather than one per scan, deduplicated by a
+# deterministic label, so a scheduled scan does not file the same lookalike
+# every morning. Only new, escalated, and activated findings are ticketed; a
+# resolved domain is good news, not work.
+#
+# Creation is capped per run. The first scan of a well-known brand can surface
+# hundreds of registered lookalikes, and turning that into hundreds of tickets
+# would be the most destructive thing this tool could do to your backlog.
+# Anything over the cap is logged and stays in the report and the delta JSON.
+jira_url: ''                       # https://you.atlassian.net
+jira_email: ''
+jira_api_token: ''                 # Prefer TYPO_SNIPER_JIRA_API_TOKEN
+jira_project_key: ''               # e.g. SEC
+jira_issue_type: Task
+jira_max_issues_per_run: 10
+jira_labels: []                    # Extra labels added to every issue
