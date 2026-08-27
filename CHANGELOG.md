@@ -5,6 +5,51 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-08-27
+
+Documentation catch-up. The feature list had not been touched since 1.1.0 while
+a dozen features landed behind it.
+
+### Added
+
+- **[docs/STATUS.md](docs/STATUS.md)** — an honest account of what has been
+  verified against real services and what has only ever run against tests and
+  stubs, with specific things to try and what to report.
+
+  Every feature has tests and the suite is hermetic, but a passing stub test
+  proves the code does what its author expected, not that a vendor's API
+  agrees. Several integrations have never had a request leave a developer's
+  machine: all six remote secrets backends, every AI provider, Teams, Matrix,
+  Jira, and the Terraform modules. The learned ranking model cannot be
+  evaluated by anyone yet, because it has no real labels.
+
+- A **Testing and Feedback Wanted** section at the top of the README pointing
+  at it, calling out the two highest-value asks: AWS Secrets Manager
+  (issue #5), and Jira against a scratch project, since it creates state.
+
+### Changed
+
+- **Rewrote the README feature list.** It described the tool as of 1.1.0 and
+  omitted change detection, notifications, ticketing, RDAP, mail intelligence,
+  the Public Suffix List, AI triage, learned ranking, page analysis, secrets
+  backends, and deployment. Added a summary table, a section on the signals
+  that indicate intent, and the two rules that govern the whole design: the AI
+  and ML layers explain and rank but never score, and a failed lookup is never
+  reported as a finding.
+
+- **Rebuilt the CLI options tables** from the actual parser, grouped by task.
+  Fourteen flags were missing, including every flag for monitoring, alerting,
+  AI, and learned ranking.
+
+- **Regenerated the project structure tree**, which still showed the pre-2.0.0
+  flat module layout.
+
+### Fixed
+
+- **Seven broken documentation links**, including two pointing at a guide that
+  never existed and four using paths relative to the repository root from files
+  inside `docs/guides/`. Verified by a link check across every Markdown file.
+
 ## [2.2.0] - 2026-08-27
 
 ### Added

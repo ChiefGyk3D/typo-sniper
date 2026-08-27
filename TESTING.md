@@ -6,12 +6,18 @@ This guide covers how to test Typo Sniper's threat intelligence integrations wit
 
 1. [Getting API Keys](#getting-api-keys)
 2. [Testing with URLScan.io](#testing-with-urlscanio)
-4. [Secrets Management Options](#secrets-management-options)
+3. [Full Threat Intelligence Configuration](#full-threat-intelligence-configuration)
+4. Secrets management
    - [Using Doppler](#using-doppler-secrets-manager)
    - [Using AWS Secrets Manager](#using-aws-secrets-manager)
    - [Using Environment Variables](#using-environment-variables)
 5. [Testing with Docker](#testing-with-docker)
 6. [Troubleshooting](#troubleshooting)
+7. [Example Test Workflow](#example-test-workflow)
+
+> This page covers the manual, API-key-dependent checks. For the automated
+> suite see [tests/README.md](tests/README.md), and for what has and has not
+> been verified against real services see [docs/STATUS.md](docs/STATUS.md).
 
 ---
 

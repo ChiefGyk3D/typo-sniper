@@ -92,7 +92,7 @@ aws secretsmanager create-secret \
 export AWS_SECRET_NAME="typo-sniper/prod"
 ```
 
-**See [TESTING.md](TESTING.md) for complete setup guides for each option.**
+**See [TESTING.md](../../TESTING.md) for complete setup guides for each option.**
 
 ## 3. Run Your First Test (1 minute)
 
