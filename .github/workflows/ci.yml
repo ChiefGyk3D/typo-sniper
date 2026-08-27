@@ -77,19 +77,19 @@ jobs:
           python-version: '3.13'
           cache: pip
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install the package
+        run: pip install .
 
       - name: CLI responds
         run: |
-          python src/typo_sniper.py --version
-          python src/typo_sniper.py --help
+          python -m typo_sniper --version
+          python -m typo_sniper --help
+          typo-sniper --version
 
       - name: Example config is loadable
         run: |
           python -c "
-          import sys; sys.path.insert(0, 'src')
-          from config import Config
+          from typo_sniper.config import Config
           cfg = Config.from_file(__import__('pathlib').Path('config.yaml.example'))
           assert '~' not in str(cfg.cache_dir), cfg.cache_dir
           print('config.yaml.example loads cleanly')

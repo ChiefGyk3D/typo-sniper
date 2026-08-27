@@ -31,8 +31,13 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
     && rm -rf /wheels
 
-# Copy application files from src directory
-COPY src/ .
+# Install the package itself, so the image runs the same console script an
+# operator gets from PyPI rather than a loose copy of the modules.
+COPY pyproject.toml README.md LICENSE ./
+COPY pyproject.toml README.md LICENSE ./
+COPY src/ ./src/
+RUN pip install --no-cache-dir --no-deps ./src/
+RUN pip install --no-cache-dir --no-deps .
 
 # Run as an unprivileged user. The scanner only needs outbound network access,
 # so there is no reason to give it root inside the container.
@@ -48,5 +53,5 @@ ENV CACHE_DIR=/home/sniper/.typo_sniper/cache
 
 VOLUME ["/app/data", "/app/results", "/home/sniper/.typo_sniper/cache"]
 
-ENTRYPOINT ["python", "typo_sniper.py"]
+ENTRYPOINT ["typo-sniper"]
 CMD ["--help"]

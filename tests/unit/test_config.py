@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from config import Config
+from typo_sniper.config import Config
 
 
 class TestPathExpansion:
@@ -140,7 +140,7 @@ class TestSecretResolution:
 
     def test_a_backend_supplies_credentials(self, monkeypatch):
         """The regression this guards: backends were configured but never called."""
-        import secrets_manager
+        from typo_sniper import secrets_manager
 
         monkeypatch.setenv('VAULT_ADDR', 'https://vault.example.com')
         monkeypatch.setenv('VAULT_TOKEN', 'hvs.token')

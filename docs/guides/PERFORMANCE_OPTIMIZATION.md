@@ -95,13 +95,13 @@ enable_soundalike: false      # Usually not needed
 ### For Maximum Speed
 ```bash
 # Increase workers (if you have bandwidth)
-python src/typo_sniper.py --max-workers 20 -i domains.txt
+typo-sniper --max-workers 20 -i domains.txt
 
 # Use cache
-python src/typo_sniper.py --cache-ttl 604800 -i domains.txt
+typo-sniper --cache-ttl 604800 -i domains.txt
 
 # Filter results to reduce noise
-python src/typo_sniper.py --months 6 -i domains.txt
+typo-sniper --months 6 -i domains.txt
 ```
 
 ## When to Enable Enhanced Detection
@@ -176,7 +176,7 @@ If you have an existing config file with enhanced detection enabled:
 
 3. **Test performance:**
    ```bash
-   time python src/typo_sniper.py -i test_domains.txt --config config.yaml
+   time typo-sniper -i test_domains.txt --config config.yaml
    ```
 
 4. **Compare results:**

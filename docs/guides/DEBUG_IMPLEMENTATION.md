@@ -87,23 +87,23 @@ DEBUG - Enhanced detection complete: 368 total variations
 
 ```bash
 # Normal mode - minimal output
-python src/typo_sniper.py -i test_domains.txt
+typo-sniper -i test_domains.txt
 
 # Verbose mode - standard messages
-python src/typo_sniper.py -i test_domains.txt --verbose
+typo-sniper -i test_domains.txt --verbose
 
 # Debug mode - detailed tracing
-python src/typo_sniper.py -i test_domains.txt --debug
+typo-sniper -i test_domains.txt --debug
 ```
 
 ### Troubleshooting
 
 ```bash
 # See why enhanced detection returns 0 results
-python src/typo_sniper.py -i test_domains.txt --debug 2>&1 | grep "Enhanced detection"
+typo-sniper -i test_domains.txt --debug 2>&1 | grep "Enhanced detection"
 
 # Check which features are enabled
-python src/typo_sniper.py -i test_domains.txt --debug 2>&1 | grep "enable_"
+typo-sniper -i test_domains.txt --debug 2>&1 | grep "enable_"
 ```
 
 ### Testing

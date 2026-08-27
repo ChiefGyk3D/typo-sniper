@@ -2,7 +2,7 @@
 
 import pytest
 
-from enhanced_detection import (
+from typo_sniper.enhanced_detection import (
     ComboSquattingDetector,
     IDNHomographDetector,
     SoundAlikeDetector,

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from notifiers import (
+from typo_sniper.notifiers import (
     DiscordNotifier,
     EmailNotifier,
     JiraNotifier,
@@ -17,7 +17,7 @@ from notifiers import (
     build_lines,
     dispatch,
 )
-from state import ACTIVATED, CHANGED, ESCALATED, NEW, RESOLVED
+from typo_sniper.state import ACTIVATED, CHANGED, ESCALATED, NEW, RESOLVED
 
 
 def summary(changes=None, counts=None, actionable=None):

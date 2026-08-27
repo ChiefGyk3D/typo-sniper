@@ -2,7 +2,7 @@
 
 import pytest
 
-from utils import (
+from typo_sniper.utils import (
     clean_dns_records,
     is_registered,
     parse_fuzzer_name,

@@ -67,7 +67,7 @@ A handful of vendor-standard variables are also accepted directly:
 ## Checking your setup
 
 ```bash
-python src/typo_sniper.py --secrets-check
+typo-sniper --secrets-check
 ```
 
 This prints which backends are reachable and where each credential resolved
@@ -102,7 +102,7 @@ Always available, always first.
 ```bash
 export TYPO_SNIPER_URLSCAN_API_KEY="..."
 export TYPO_SNIPER_ENABLE_URLSCAN=true
-python src/typo_sniper.py -i domains.txt
+typo-sniper -i domains.txt
 ```
 
 A `.env` file in the working directory or any parent is loaded automatically.
@@ -112,7 +112,7 @@ A `.env` file in the working directory or any parent is loaded automatically.
 Either wrap the command, which needs no configuration at all:
 
 ```bash
-doppler run -- python src/typo_sniper.py -i domains.txt
+doppler run -- typo-sniper -i domains.txt
 ```
 
 …or give the process a service token and let it fetch its own config, which
@@ -122,7 +122,7 @@ suits a container whose entry point you do not control:
 export DOPPLER_TOKEN="dp.st.prd...."
 export DOPPLER_PROJECT="typo-sniper"   # optional if the token is config-scoped
 export DOPPLER_CONFIG="prd"
-python src/typo_sniper.py -i domains.txt
+typo-sniper -i domains.txt
 ```
 
 ### AWS Secrets Manager

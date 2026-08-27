@@ -14,7 +14,7 @@ from typing import Any
 import yaml
 from dotenv import find_dotenv, load_dotenv
 
-from version import __version__
+from .version import __version__
 
 # Load environment variables from .env file (search up directory tree)
 # override=True will replace existing empty env vars
@@ -282,7 +282,7 @@ class Config:
         setting is a deliberate act and must not be silently overridden by a
         stale entry in a shared vault.
         """
-        from secrets_manager import SecretsManager
+        from .secrets_manager import SecretsManager
 
         self.secrets = SecretsManager(self, self.secrets_backends or None)
 

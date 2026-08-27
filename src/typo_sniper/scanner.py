@@ -20,13 +20,13 @@ import aiohttp
 import dnstwist
 import whois
 
-from cache import Cache
-from config import Config
-from dns_intel import DNSIntelligence
-from enhanced_detection import SoundAlikeDetector, generate_enhanced_permutations
-from rdap import RDAPClient
-from threat_intelligence import ThreatIntelligence, calculate_risk_score
-from utils import clean_dns_records, is_registered
+from .cache import Cache
+from .config import Config
+from .dns_intel import DNSIntelligence
+from .enhanced_detection import SoundAlikeDetector, generate_enhanced_permutations
+from .rdap import RDAPClient
+from .threat_intelligence import ThreatIntelligence, calculate_risk_score
+from .utils import clean_dns_records, is_registered
 
 
 class DomainScanner:

@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from rdap import RDAPClient
+from typo_sniper.rdap import RDAPClient
 
 # A representative registry response: Verisign/PIR-style domain object
 DOMAIN_RESPONSE = {

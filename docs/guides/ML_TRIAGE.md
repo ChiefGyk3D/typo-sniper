@@ -34,13 +34,13 @@ matters, which is exactly the thing this feature exists to replace.
 
 ```bash
 # Worth acting on: escalated, reported, blocked, taken down
-python src/typo_sniper.py --label secure-example-login.com=acted
+typo-sniper --label secure-example-login.com=acted
 
 # Reviewed and judged not worth acting on
-python src/typo_sniper.py --label example-fanclub.com=dismissed
+typo-sniper --label example-fanclub.com=dismissed
 
 # Several at once, with a note
-python src/typo_sniper.py \
+typo-sniper \
   --label a.com=acted --label b.com=dismissed
 ```
 
@@ -52,7 +52,7 @@ data — record it.
 ### 2. Check where you are
 
 ```bash
-python src/typo_sniper.py -i domains.txt --ml-status
+typo-sniper -i domains.txt --ml-status
 ```
 
 ```
@@ -74,7 +74,7 @@ Model
 
 ```bash
 pip install -e ".[ml]"
-python src/typo_sniper.py -i domains.txt --ml-train
+typo-sniper -i domains.txt --ml-train
 ```
 
 Training refuses to run below **30 labels total** and **8 of each class**.
@@ -85,7 +85,7 @@ signal.
 ### 4. Rank
 
 ```bash
-python src/typo_sniper.py -i domains.txt --ml-rank
+typo-sniper -i domains.txt --ml-rank
 ```
 
 Findings are ordered by the model. Each one carries `ml_rank` and `ml_explain`

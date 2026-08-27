@@ -12,12 +12,12 @@ import json
 
 import pytest
 
-import ml
-from ml import build
-from ml.features import FEATURE_NAMES
-from ml.labels import ACTED, DISMISSED, LabelStore
-from ml.model import TriageModel, model_path
-from state import ScanHistory
+from typo_sniper import ml
+from typo_sniper.ml import build
+from typo_sniper.ml.features import FEATURE_NAMES
+from typo_sniper.ml.labels import ACTED, DISMISSED, LabelStore
+from typo_sniper.ml.model import TriageModel, model_path
+from typo_sniper.state import ScanHistory
 
 sklearn_missing = importlib.util.find_spec('sklearn') is None
 needs_sklearn = pytest.mark.skipif(

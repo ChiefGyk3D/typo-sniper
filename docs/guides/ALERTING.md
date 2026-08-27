@@ -18,7 +18,7 @@ and it has MX records" gets read.
 | `email` | SMTP, HTML and plain text | SMTP settings |
 
 ```bash
-python src/typo_sniper.py -i domains.txt --notify slack jira
+typo-sniper -i domains.txt --notify slack jira
 ```
 
 Every credential resolves through the secrets backends, so none of them need

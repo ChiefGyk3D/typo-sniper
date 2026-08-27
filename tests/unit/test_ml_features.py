@@ -11,8 +11,8 @@ import math
 
 import pytest
 
-from ml import features
-from ml.features import FEATURE_COUNT, FEATURE_NAMES, extract
+from typo_sniper.ml import features
+from typo_sniper.ml.features import FEATURE_COUNT, FEATURE_NAMES, extract
 
 
 def perm(**overrides):

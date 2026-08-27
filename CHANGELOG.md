@@ -5,6 +5,89 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-08-27
+
+Typo Sniper is now installable. `pip install typo-sniper` gets you a
+`typo-sniper` command, and there is a container image on GHCR.
+
+The major version is because the way you invoke it changed. See **Migrating**
+below; it is a one-line change.
+
+### Breaking
+
+- **`python src/typo_sniper.py` no longer exists.** The code moved into a real
+  `typo_sniper` package under `src/`, so the entry points are now:
+
+  | Before | Now |
+  |---|---|
+  | `python src/typo_sniper.py -i domains.txt` | `typo-sniper -i domains.txt` |
+  | — | `python -m typo_sniper -i domains.txt` |
+
+  Update any cron entry, systemd unit, or CI step that called the script path.
+
+- **The Docker image's entrypoint is now the installed console script** rather
+  than a loose copy of the modules. Arguments are unchanged, so
+  `docker run ... typo-sniper:tag -i domains.txt` works as it did.
+
+### Added
+
+- **PyPI packaging.** `pip install typo-sniper`, with optional extras for AI
+  providers (`[claude]`, `[openai]`, `[gemini]`, `[ai-all]`), model training
+  (`[ml]`), and secrets backends (`[aws]`, `[azure]`, `[gcp]`,
+  `[secrets-all]`), or `[all]`.
+
+- **A release workflow** publishing on a version tag: a multi-architecture
+  image (amd64 and arm64) to GHCR with build provenance and an SBOM, and a
+  distribution to PyPI via **Trusted Publishing**. There is no long-lived PyPI
+  token stored in this repository to leak; the credential is minted per run and
+  scoped to this workflow.
+
+  The workflow refuses to publish when the git tag disagrees with the packaged
+  version, because an artifact whose version cannot be traced back to a commit
+  is worse than no artifact.
+
+- **`python -m typo_sniper`** as an entry point alongside the console script.
+
+### Fixed
+
+Packaging that had been quietly broken. All three were found by actually
+building and installing the thing rather than by reading the config:
+
+- **`pyproject.toml` had no `[build-system]` and no package discovery.** An
+  install "succeeded" and produced something unusable: `import typo_sniper`
+  resolved to the CLI script, which then died on its own sibling imports.
+
+- **The package reported `Version: 0.0.0`.** `dynamic = ["version"]` was
+  declared with nothing configured to resolve it, so setuptools fell back to a
+  placeholder. The version now comes from `typo_sniper.version.__version__`,
+  and CI checks it against the release tag.
+
+- **No runtime dependencies were declared at all.** A `pip install` of the
+  distribution would have fetched the code and none of the libraries it needs.
+  `pyproject.toml` now lists them as ranges; `requirements.txt` keeps its exact
+  pins, which is where reproducibility actually matters — the Docker image and
+  CI.
+
+- **Flat modules would have polluted the top-level namespace.** Publishing this
+  as it stood would have put `config`, `utils`, `cache`, `state`, `scanner` and
+  friends directly into every installing user's `site-packages`, colliding with
+  anything else that owns those names. The release workflow now asserts that
+  none of them are importable after install.
+
+### Migrating
+
+```bash
+pip install -e .           # from a clone; or pip install typo-sniper
+
+# then, wherever you had:
+#   python src/typo_sniper.py -i domains.txt
+# use:
+typo-sniper -i domains.txt
+```
+
+Config files, state directories, cached data, trained models, and labels are
+all unchanged and need no migration.
+
 ## [1.6.0] - 2026-08-27
 
 Completes the alerting channels, and adds ticketing as something distinct from

@@ -57,7 +57,7 @@ This tests the simplest configuration method.
 export TYPO_SNIPER_URLSCAN_API_KEY="your_urlscan_key_here"
 
 # Run a test scan
-python src/typo_sniper.py \
+typo-sniper \
   -i test_domains.txt \
   --config test_config.yaml \
   --format excel json \
@@ -123,7 +123,7 @@ doppler secrets
 unset TYPO_SNIPER_URLSCAN_API_KEY
 
 # Run scan with Doppler
-doppler run -- python src/typo_sniper.py \
+doppler run -- typo-sniper \
   -i test_domains.txt \
   --config test_config.yaml \
   --format excel json \
@@ -260,7 +260,7 @@ cat results/typo_sniper_results_*.json | jq '.results[0].threat_intel'
 
 ```bash
 echo "malicious-site.com" > malicious_test.txt
-python src/typo_sniper.py -i malicious_test.txt --config test_config.yaml -v
+typo-sniper -i malicious_test.txt --config test_config.yaml -v
 ```
 
 
@@ -268,7 +268,7 @@ python src/typo_sniper.py -i malicious_test.txt --config test_config.yaml -v
 
 ```bash
 echo "brand-new-domain-2025.com" > new_domain_test.txt
-python src/typo_sniper.py -i new_domain_test.txt --config test_config.yaml -v
+typo-sniper -i new_domain_test.txt --config test_config.yaml -v
 ```
 
 **Expected:** May have limited threat intel data
@@ -277,7 +277,7 @@ python src/typo_sniper.py -i new_domain_test.txt --config test_config.yaml -v
 
 ```bash
 # Test with many domains to trigger API rate limits
-python src/typo_sniper.py -i src/monitored_domains.txt --config test_config.yaml -v
+typo-sniper -i src/typo_sniper/monitored_domains.txt --config test_config.yaml -v
 ```
 
 **Expected:** Graceful handling of rate limits, retries
@@ -331,7 +331,7 @@ max_workers: 2
 rate_limit_delay: 2.0
 
 # Or use rate limit delays
-python src/typo_sniper.py --max-workers 2 --rate-limit-delay 2 -i test_domains.txt
+typo-sniper --max-workers 2 --rate-limit-delay 2 -i test_domains.txt
 ```
 
 ---

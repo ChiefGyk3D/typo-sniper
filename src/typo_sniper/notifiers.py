@@ -29,7 +29,7 @@ from urllib.parse import quote
 
 import aiohttp
 
-from state import ACTIVATED, CHANGED, ESCALATED, NEW, RESOLVED
+from .state import ACTIVATED, CHANGED, ESCALATED, NEW, RESOLVED
 
 # Presentation per change kind: (emoji, human label, hex colour)
 KIND_STYLE = {

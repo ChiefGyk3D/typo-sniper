@@ -107,7 +107,7 @@ EOF
 ### Run with Environment Variables
 
 ```bash
-python src/typo_sniper.py \
+typo-sniper \
   -i test_small.txt \
   --format excel json \
   -v
@@ -116,7 +116,7 @@ python src/typo_sniper.py \
 ### Run with Config File
 
 ```bash
-python src/typo_sniper.py \
+typo-sniper \
   -i test_small.txt \
   --config test_config.yaml \
   --format excel json \
@@ -126,7 +126,7 @@ python src/typo_sniper.py \
 ### Run with Doppler
 
 ```bash
-doppler run -- python src/typo_sniper.py \
+doppler run -- typo-sniper \
   -i test_small.txt \
   --format excel json \
   -v
@@ -282,7 +282,7 @@ cat test_config.yaml | grep api_key
 ### "No threat intelligence in results"
 ```bash
 # Run with verbose to see what's happening
-python src/typo_sniper.py -i test_small.txt -v 2>&1 | grep -i "threat\|urlscan"
+typo-sniper -i test_small.txt -v 2>&1 | grep -i "threat\|urlscan"
 ```
 
 ### "Doppler not working"
@@ -330,13 +330,13 @@ chmod 600 docker/.env
 
 ```bash
 # Test with minimal features (fastest)
-python src/typo_sniper.py -i test.txt --format excel
+typo-sniper -i test.txt --format excel
 
 # Test with threat intelligence (slower, needs API keys)
-python src/typo_sniper.py -i test.txt --config test_config.yaml --format excel -v
+typo-sniper -i test.txt --config test_config.yaml --format excel -v
 
 # Test with Doppler
-doppler run -- python src/typo_sniper.py -i test.txt --format excel -v
+doppler run -- typo-sniper -i test.txt --format excel -v
 
 # Docker test
 docker run --rm \
