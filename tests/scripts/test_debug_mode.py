@@ -8,7 +8,7 @@ import logging
 import sys
 from pathlib import Path
 
-sys.path.insert(0, 'src')
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'src'))
 
 from config import Config
 from enhanced_detection import generate_enhanced_permutations
@@ -24,7 +24,11 @@ async def test_debug_mode():
     
     logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
     
-    config = Config.from_file(Path('test_config.yaml'))
+    # Resolved from this file, not the working directory: the script has to
+    # run the same way from anywhere, and there is no test_config.yaml at the
+    # repository root.
+    repo_root = Path(__file__).resolve().parents[2]
+    config = Config.from_file(repo_root / 'tests' / 'test_data' / 'test_config.yaml')
     config.debug_mode = False
     
     domain = 'google.com'
