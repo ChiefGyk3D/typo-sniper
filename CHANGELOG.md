@@ -5,6 +5,45 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-24
+
+Detection quality. Adds the single strongest pre-attack signal a lookalike can
+emit, and fixes registrable-domain splitting for most of the world.
+
+### Added
+
+- **Mail-capability intelligence (SPF / DKIM / DMARC).** Registering a lookalike
+  is cheap and means little. Provisioning it to send mail that passes receiver
+  checks is deliberate work whose only purpose is deliverable mail, which is the
+  prerequisite for credential phishing and business email compromise. Domains are
+  now classified `none` / `receive-only` / `partial` / `provisioned` / `hardened`,
+  reported in a new `Mail` column, and scored accordingly. A squat that gains
+  send capability between scans raises an `ESCALATED` change.
+- **Public Suffix List** for registrable-domain splitting, replacing the ~40-entry
+  hardcoded tuple added in 1.1.0. That list mishandled everything outside it:
+  `example.com.br` and `example.github.io` were split wrongly, so generated
+  variations pointed at the wrong namespace entirely. `publicsuffixlist` bundles
+  its data offline and is released on the PSL's own cadence.
+- **Per-brand combo-squatting keywords** (`custom_keywords`). Product names,
+  campaign names, and support portals are better bait than the generic list.
+  `replace_default_keywords` uses only your terms.
+
+### Fixed
+
+- **A failed DNS lookup is no longer reported as a finding.** Large TXT responses
+  need TCP, and the first implementation returned "no SPF" for any domain whose
+  response exceeded UDP limits — `google.com` among them. That is the same
+  mistake as treating a WHOIS timeout as "no registration date": absence of
+  evidence rendered as evidence of absence. Lookups now retry over TCP, and a
+  genuine failure yields `unknown`, which scores zero and is labelled
+  "Lookup failed" in reports rather than left blank.
+
+### Changed
+
+- Risk scoring uses the full mail assessment where available, replacing the
+  earlier MX-only heuristic. MX alone shows a domain can *receive*; SPF shows it
+  is provisioned to *send*.
+
 ## [1.2.0] - 2026-08-24
 
 Turns a report generator into a monitoring tool. Scans are now diffed against

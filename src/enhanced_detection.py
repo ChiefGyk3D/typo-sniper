@@ -33,40 +33,71 @@ class ComboSquattingDetector:
     # Underscores are not valid in hostnames, so they are not a separator here
     SEPARATORS = ['-', '']
 
-    # Public suffixes that need two labels to identify the registrable domain.
-    # Without this, "example.co.uk" yields brand="example", tld="uk" and every
-    # generated variation points at the wrong namespace.
-    MULTI_LABEL_SUFFIXES = (
-        'co.uk', 'org.uk', 'me.uk', 'ac.uk', 'gov.uk', 'net.uk', 'sch.uk',
-        'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au', 'id.au',
-        'co.nz', 'net.nz', 'org.nz', 'govt.nz',
-        'co.za', 'org.za', 'net.za',
-        'co.jp', 'or.jp', 'ne.jp', 'ac.jp', 'go.jp',
-        'com.br', 'net.br', 'org.br', 'gov.br',
-        'com.cn', 'net.cn', 'org.cn', 'gov.cn',
-        'co.in', 'net.in', 'org.in', 'gov.in',
-        'com.mx', 'com.ar', 'com.sg', 'com.hk', 'com.tw', 'com.tr',
+    # Registrable-domain splitting uses the Public Suffix List. The previous
+    # hardcoded tuple covered perhaps forty suffixes out of several thousand,
+    # so anything outside it (example.com.br, example.github.io) was split
+    # wrongly and generated variations in the wrong namespace.
+    _psl = None
+    _psl_checked = False
+
+    # Fallback for the handful of suffixes that matter most, used only when
+    # publicsuffixlist is not installed
+    FALLBACK_SUFFIXES = (
+        'co.uk', 'org.uk', 'ac.uk', 'gov.uk',
+        'com.au', 'net.au', 'org.au',
+        'co.nz', 'co.za', 'co.jp', 'co.in',
+        'com.br', 'com.cn', 'com.mx', 'com.sg', 'com.tr',
     )
+
+    @classmethod
+    def _get_psl(cls):
+        """Load the Public Suffix List once, or None when unavailable."""
+        if cls._psl_checked:
+            return cls._psl
+
+        cls._psl_checked = True
+        try:
+            from publicsuffixlist import PublicSuffixList
+
+            cls._psl = PublicSuffixList()
+        except ImportError:
+            logger.warning(
+                "publicsuffixlist is not installed; falling back to a small "
+                "hardcoded suffix list. Multi-label domains outside it may be "
+                "split incorrectly."
+            )
+            cls._psl = None
+
+        return cls._psl
 
     @classmethod
     def split_domain(cls, domain: str):
         """
-        Split a domain into its registrable label and suffix.
+        Split a domain into its registrable label and public suffix.
 
         Args:
-            domain: Domain such as "example.co.uk"
+            domain: Domain such as "example.co.uk" or "example.github.io"
 
         Returns:
             Tuple of (brand, suffix), e.g. ("example", "co.uk")
         """
         domain = domain.strip().lower().rstrip('.')
-        parts = domain.split('.')
+        parts = [p for p in domain.split('.') if p]
 
         if len(parts) < 2:
-            return parts[0] if parts else domain, 'com'
+            return (parts[0] if parts else domain), 'com'
 
+        psl = cls._get_psl()
+        if psl is not None:
+            suffix = psl.publicsuffix(domain)
+            if suffix and suffix != domain:
+                remainder = domain[: -(len(suffix) + 1)].split('.')
+                if remainder and remainder[-1]:
+                    return remainder[-1], suffix
+
+        # Fallback: check the two-label suffixes we know about
         last_two = '.'.join(parts[-2:])
-        if len(parts) >= 3 and last_two in cls.MULTI_LABEL_SUFFIXES:
+        if len(parts) >= 3 and last_two in cls.FALLBACK_SUFFIXES:
             return parts[-3], last_two
 
         return parts[-2], parts[-1]
@@ -327,7 +358,15 @@ def generate_enhanced_permutations(domain: str, config) -> set[str]:
     
     # Combo-squatting
     if config.enable_combosquatting:
-        combos = ComboSquattingDetector.generate_combosquats(domain)
+        custom = list(getattr(config, 'custom_keywords', None) or [])
+        if custom and getattr(config, 'replace_default_keywords', False):
+            keywords = custom
+        elif custom:
+            # Brand-specific terms first: they are the likeliest bait
+            keywords = custom + ComboSquattingDetector.COMMON_KEYWORDS
+        else:
+            keywords = None
+        combos = ComboSquattingDetector.generate_combosquats(domain, keywords)
         enhanced.update(combos)
         if hasattr(config, 'debug_mode') and config.debug_mode:
             logger.debug(f"  Generated {len(combos)} combo-squatting variations")

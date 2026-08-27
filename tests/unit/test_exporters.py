@@ -130,7 +130,8 @@ class TestJsonExporter:
 class TestFormatThreatIntel:
     def test_empty_intel(self):
         assert format_threat_intel({}) == {
-            'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': '', 'tls': ''
+            'urlscan': '', 'urlscan_url': None, 'ct': '', 'http': '', 'tls': '',
+            'mail': '',
         }
 
     def test_urlscan_error_statuses(self):
@@ -158,6 +159,16 @@ class TestFormatThreatIntel:
         out = format_threat_intel({'threat_intel': {'http_probe': {
             'https_active': True, 'https_status': 200, 'tls_verified': verified}}})
         assert out['tls'] == expected
+
+    @pytest.mark.parametrize('posture,expected', [
+        ('provisioned', 'SEND-CAPABLE'),
+        ('hardened', 'SEND-CAPABLE (DMARC enforced)'),
+        ('receive-only', 'Receive only (MX)'),
+        ('none', ''),
+    ])
+    def test_reports_mail_posture(self, posture, expected):
+        out = format_threat_intel({'mail_intel': {'posture': posture}})
+        assert out['mail'] == expected
 
     def test_ct_certificate_count(self):
         out = format_threat_intel({'threat_intel': {

@@ -605,8 +605,15 @@ def calculate_risk_score(domain_data: dict[str, Any], threat_intel: dict[str, An
         score += 5
 
     # --- Mail capability ---------------------------------------------------
-    # A lookalike domain that can send and receive mail is set up for phishing
-    if domain_data.get('dns_mx'):
+    # Prefer the full SPF/DKIM/DMARC assessment when it ran: publishing SPF on
+    # a lookalike is deliberate work whose only purpose is deliverable mail.
+    # MX alone only shows the domain can receive.
+    mail = domain_data.get('mail_intel')
+    if mail:
+        from dns_intel import score_mail_capability
+
+        score += score_mail_capability(mail)
+    elif domain_data.get('dns_mx'):
         score += 15
 
     # --- Live content ------------------------------------------------------
