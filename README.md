@@ -40,6 +40,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#-contributing)
 - [AI-Assisted Triage](#-ai-assisted-triage) 🤖
+- [Page Analysis](#-page-analysis) 🔎
 - [Learned Triage Ranking](#-learned-triage-ranking) 🧠
 - [Alerting and Ticketing](#-alerting-and-ticketing) 🔔
 - [Secrets Management](#-secrets-management) 🔐
@@ -957,6 +958,45 @@ worried about. For teams that cannot send that to a third party, a local model
 is the difference between using this feature and disabling it.
 
 See **[AI Analysis](docs/guides/AI_ANALYSIS.md)** for the full guide.
+
+**[⬆ Back to Top](#-table-of-contents)**
+
+---
+
+## 🔎 Page Analysis
+
+A registered lookalike tells you someone bought a domain. A lookalike serving a
+form with a password field tells you **what they bought it for**.
+
+On by default, and it costs no extra request — the HTTP probe already reads the
+page body to pull out `<title>`, so this reads the same bytes:
+
+| Signal | Why it matters |
+|---|---|
+| Credential form | Username/email paired with a password field — the phishing kit itself |
+| Password field | Present even without a matching username field |
+| Off-site form action | A form on `examp1e.com` POSTing to `collector.evil.test` is exfiltration, not login |
+| Brand mentioned | Only counted alongside something that collects |
+| Form count | Context for the above |
+
+A `type="text"` field named `passwd`, `otp`, `cvv`, or `card_number` counts —
+changing the input type is a one-character edit, and the name gives the intent
+away. Off-site comparison is by registrable domain via the Public Suffix List,
+so `login.examp1e.com` is correctly *not* flagged.
+
+**A credential form appearing raises an `ESCALATED` change.** That transition —
+a parked lookalike becoming a live collection point — is the most actionable
+thing this tool reports, and it is persisted in scan history so the diff engine
+can catch it between runs.
+
+Parsing uses the standard library's `HTMLParser` rather than a third-party
+parser. This is attacker-authored markup by definition, so the smaller and more
+boring the parsing surface, the better: no external entity resolution, no
+network fetches, no recovery heuristics that could be steered. Every collection
+is bounded, because a page designed to be parsed slowly is a cheap way to stall
+a scan. A page that breaks the parser is reported as **truncated** rather than
+as a clean reading — "no password field found" and "we stopped looking" are
+different claims.
 
 **[⬆ Back to Top](#-table-of-contents)**
 

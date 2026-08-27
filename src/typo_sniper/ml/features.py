@@ -97,6 +97,11 @@ FEATURE_NAMES = (
     'title_parked_words',
     'certificates_log',
     'urlscan_malicious',
+    'has_credential_form',
+    'has_password_input',
+    'external_form_action',
+    'form_count',
+    'brand_mentioned_on_page',
 )
 
 FEATURE_COUNT = len(FEATURE_NAMES)
@@ -182,6 +187,7 @@ def extract(perm: dict[str, Any], monitored_domain: str) -> list[float]:
     http = threat.get('http_probe') or {}
     ct = threat.get('certificate_transparency') or {}
     urlscan = threat.get('urlscan') or {}
+    page = http.get('page') or {}
 
     def field(key, http_key=None, default=None):
         if key in perm:
@@ -259,6 +265,17 @@ def extract(perm: dict[str, Any], monitored_domain: str) -> list[float]:
         'urlscan_malicious': float(bool(
             urlscan.get('malicious') or perm.get('urlscan_malicious')
         )),
+        # Page analysis, read from either the live record's nested shape or
+        # the flattened history snapshot, like every other field here.
+        'has_credential_form': float(bool(
+            page.get('is_credential_form') or perm.get('is_credential_form')
+        )),
+        'has_password_input': float(bool(page.get('has_password_input'))),
+        'external_form_action': float(bool(
+            page.get('external_form_action') or perm.get('external_form_action')
+        )),
+        'form_count': min(float(page.get('form_count') or 0), 5.0) / 5.0,
+        'brand_mentioned_on_page': float(bool(page.get('brand_mentioned'))),
     }
 
     return [float(values[fname]) for fname in FEATURE_NAMES]

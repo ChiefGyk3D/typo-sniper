@@ -171,6 +171,10 @@ class Config:
     http_timeout: int = 10
     http_max_bytes: int = 1_048_576  # Cap on probed response bodies (1 MiB)
     http_max_redirects: int = 5
+    # Read what the fetched page appears built to collect: credential forms,
+    # off-site form actions, brand mentions. Costs no extra request; the body
+    # is already in memory from the probe.
+    enable_page_analysis: bool = True
     user_agent: str = (
         f'TypoSniper/{__version__} (+https://github.com/ChiefGyk3D/typo-sniper)'
     )
