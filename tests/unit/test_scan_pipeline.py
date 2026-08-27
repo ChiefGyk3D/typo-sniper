@@ -39,6 +39,15 @@ def scanner(config, tmp_path, monkeypatch):
     s = DomainScanner(config, Cache(tmp_path / 'cache'))
     monkeypatch.setattr(s, '_run_dnstwist', lambda domain: copy.deepcopy(DNSTWIST_OUTPUT))
     monkeypatch.setattr(s, '_whois_lookup', lambda domain: dict(WHOIS_DATA.get(domain, {})))
+
+    # Exercise the WHOIS path deterministically. Leaving RDAP live made these
+    # tests depend on whether the environment could reach real registries:
+    # they passed where RDAP was blocked and failed where it resolved.
+    async def no_rdap(perms):
+        return {p['domain'] for p in perms}
+
+    monkeypatch.setattr(s, '_enrich_with_rdap', no_rdap)
+
     yield s
     s.close()
 
@@ -124,3 +133,91 @@ class TestScanDomain:
         scanner.config.use_cache = True
         await scanner.scan_domain('example.com')
         assert scanner.cache.get('whois:exampe.com') == WHOIS_DATA['exampe.com']
+
+
+class TestRegistrationSourceSelection:
+    """RDAP is tried first; WHOIS covers registries that publish no endpoint."""
+
+    @pytest.fixture
+    def scanner(self, config, tmp_path, monkeypatch):
+        s = DomainScanner(config, Cache(tmp_path / 'cache'))
+        monkeypatch.setattr(s, '_run_dnstwist',
+                            lambda domain: copy.deepcopy(DNSTWIST_OUTPUT))
+        yield s
+        s.close()
+
+    @pytest.mark.asyncio
+    async def test_rdap_success_skips_whois(self, scanner, monkeypatch):
+        whois_calls = []
+
+        async def rdap_resolves_all(perms):
+            for p in perms:
+                p.update({'whois_created': [RECENT], 'registration_source': 'rdap'})
+                scanner.lookup_sources['rdap'] += 1
+                scanner.whois_succeeded += 1
+            return set()
+
+        monkeypatch.setattr(scanner, '_enrich_with_rdap', rdap_resolves_all)
+        monkeypatch.setattr(scanner, '_whois_lookup',
+                            lambda d: whois_calls.append(d) or {})
+
+        result = await scanner.scan_domain('example.com')
+
+        assert whois_calls == []
+        assert result['lookup_sources']['rdap'] == 2
+        assert all(p['registration_source'] == 'rdap'
+                   for p in result['permutations'])
+
+    @pytest.mark.asyncio
+    async def test_whois_covers_what_rdap_cannot(self, scanner, monkeypatch):
+        async def rdap_resolves_one(perms):
+            perms[0].update({'whois_created': [RECENT], 'registration_source': 'rdap'})
+            scanner.lookup_sources['rdap'] += 1
+            scanner.whois_succeeded += 1
+            return {p['domain'] for p in perms[1:]}
+
+        monkeypatch.setattr(scanner, '_enrich_with_rdap', rdap_resolves_one)
+        monkeypatch.setattr(
+            scanner, '_whois_lookup',
+            lambda d: {'whois_created': [OLD], 'whois_registrar': 'Fallback Registrar'},
+        )
+
+        result = await scanner.scan_domain('example.com')
+        sources = {p['domain']: p.get('registration_source')
+                   for p in result['permutations']}
+
+        assert 'rdap' in sources.values()
+        assert 'whois' in sources.values()
+
+    @pytest.mark.asyncio
+    async def test_fallback_can_be_disabled(self, scanner, monkeypatch):
+        """--no-whois-fallback must not silently fall through."""
+        scanner.config.whois_fallback = False
+        whois_calls = []
+
+        async def rdap_resolves_nothing(perms):
+            return {p['domain'] for p in perms}
+
+        monkeypatch.setattr(scanner, '_enrich_with_rdap', rdap_resolves_nothing)
+        monkeypatch.setattr(scanner, '_whois_lookup',
+                            lambda d: whois_calls.append(d) or {})
+
+        await scanner.scan_domain('example.com')
+        assert whois_calls == []
+
+    @pytest.mark.asyncio
+    async def test_rdap_disabled_uses_whois_only(self, scanner, monkeypatch):
+        scanner.config.use_rdap = False
+        rdap_calls = []
+
+        async def should_not_run(perms):
+            rdap_calls.append(perms)
+            return set()
+
+        monkeypatch.setattr(scanner, '_enrich_with_rdap', should_not_run)
+        monkeypatch.setattr(scanner, '_whois_lookup',
+                            lambda d: {'whois_created': [OLD]})
+
+        result = await scanner.scan_domain('example.com')
+        assert rdap_calls == []
+        assert result['lookup_sources']['whois'] == 2

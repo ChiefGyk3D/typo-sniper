@@ -12,6 +12,41 @@ if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch, request):
+    """
+    Fail any test that opens a real network connection.
+
+    The suite is meant to run offline and deterministically. Without this
+    guard a test can silently start depending on the network: four pipeline
+    tests passed locally only because the sandbox blocked RDAP, forcing the
+    WHOIS fallback their stubs covered, and then failed on CI where RDAP
+    actually resolved. A test that behaves differently depending on what the
+    network allows is not testing anything reliable.
+
+    Loopback stays permitted so a test can stand up a local listener.
+    Mark a test with @pytest.mark.allow_network to opt out.
+    """
+    if request.node.get_closest_marker('allow_network'):
+        return
+
+    import socket
+
+    real_connect = socket.socket.connect
+
+    def guarded_connect(self, address, *args, **kwargs):
+        host = address[0] if isinstance(address, tuple) else address
+        if isinstance(host, str) and host not in ('127.0.0.1', '::1', 'localhost'):
+            raise AssertionError(
+                f"Test attempted a real network connection to {host}. "
+                f"Stub the client instead, or mark the test with "
+                f"@pytest.mark.allow_network."
+            )
+        return real_connect(self, address, *args, **kwargs)
+
+    monkeypatch.setattr(socket.socket, 'connect', guarded_connect)
+
+
 @pytest.fixture
 def config(tmp_path):
     """A Config pointed at a temporary cache directory."""

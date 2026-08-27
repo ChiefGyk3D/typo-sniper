@@ -22,6 +22,49 @@ dnstwist_phash: false              # Enable perceptual hashing (requires ssdeep)
 # Output settings
 output_dir: results                # Default output directory
 
+# Registration data lookup
+# RDAP (RFC 7482) is tried first: it speaks HTTPS on 443 and returns structured
+# JSON. WHOIS needs TCP/43, which is blocked on many corporate networks and in
+# most CI sandboxes, where it fails as a silent timeout rather than a clear error.
+use_rdap: true
+rdap_timeout: 15
+whois_fallback: true               # Use WHOIS where a registry has no RDAP endpoint
+
+# Change detection
+# Each scan is diffed against the previous one so reports and alerts lead with
+# what changed rather than restating the same results every run.
+enable_diff: true
+state_dir: ~/.typo_sniper/state    # Scan history location
+history_retain: 30                 # Scans kept per monitored domain
+
+# Watch mode (--watch)
+watch_interval: 86400              # Seconds between scans; --interval accepts 6h, 30m
+
+# Notifications - fire on changes only, never on the full result set
+enable_notifications: false
+notify_channels: []                # any of: slack, discord, webhook, email
+notify_timeout: 20
+notify_min_changes: 1              # Suppress alerts below this many changes
+notify_on_no_changes: false        # Send a message even when nothing changed
+
+# Endpoints are secrets: prefer the environment or a secrets manager over this file.
+#   TYPO_SNIPER_SLACK_WEBHOOK_URL, TYPO_SNIPER_DISCORD_WEBHOOK_URL,
+#   TYPO_SNIPER_WEBHOOK_URL, TYPO_SNIPER_WEBHOOK_AUTH_HEADER,
+#   TYPO_SNIPER_SMTP_HOST / _USERNAME / _PASSWORD, TYPO_SNIPER_EMAIL_FROM / _TO
+slack_webhook_url: null
+discord_webhook_url: null
+webhook_url: null
+webhook_auth_header: null          # e.g. "Authorization: Bearer <token>"
+
+smtp_host: null
+smtp_port: 587
+smtp_username: null
+smtp_password: null
+smtp_use_tls: true
+smtp_use_ssl: false
+email_from: null
+email_to: null                     # Comma-separated
+
 # WHOIS settings
 # After 10 consecutive failures the scanner stops retrying for the rest of the
 # run, so a blocked port 43 fails fast instead of multiplying the timeout.

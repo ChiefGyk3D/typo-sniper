@@ -16,12 +16,14 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from typing import Any
 
+import aiohttp
 import dnstwist
 import whois
 
 from cache import Cache
 from config import Config
 from enhanced_detection import SoundAlikeDetector, generate_enhanced_permutations
+from rdap import RDAPClient
 from threat_intelligence import ThreatIntelligence, calculate_risk_score
 from utils import clean_dns_records, is_registered
 
@@ -54,6 +56,8 @@ class DomainScanner:
         # consecutive failures, fall back to a single attempt per domain.
         self._whois_consecutive_failures = 0
         self._whois_circuit_open = False
+        # Per-run counts of where registration data actually came from
+        self.lookup_sources = {'rdap': 0, 'whois': 0, 'none': 0}
 
     def close(self) -> None:
         """Shut down the worker thread pool."""
@@ -107,8 +111,23 @@ class DomainScanner:
 
         whois_before = self.whois_succeeded
 
-        # Enrich with WHOIS data
-        enriched = await self._enrich_with_whois(registered)
+        # Registration data: RDAP first (HTTPS, structured JSON), falling back
+        # to WHOIS only for registries that publish no RDAP endpoint.
+        needs_whois = registered
+        if self.config.use_rdap:
+            unresolved = await self._enrich_with_rdap(registered)
+            needs_whois = [p for p in registered if p['domain'] in unresolved]
+            if needs_whois and not self.config.whois_fallback:
+                self.logger.info(
+                    f"{len(needs_whois)} domains unresolved by RDAP; "
+                    f"WHOIS fallback is disabled"
+                )
+                needs_whois = []
+
+        if needs_whois:
+            await self._enrich_with_whois(needs_whois)
+
+        enriched = registered
 
         # Derive registration age from the WHOIS data. This must happen before
         # risk scoring, which weights recently registered domains most heavily.
@@ -148,7 +167,7 @@ class DomainScanner:
                 f"No WHOIS data could be retrieved for any of the {len(registered)} "
                 f"registered permutations of {domain}. Registration dates and "
                 f"recency scoring will be missing from this report. Check outbound "
-                f"access to WHOIS servers on TCP port 43."
+                f"access to RDAP endpoints (HTTPS) and WHOIS servers (TCP/43)."
             )
 
         return {
@@ -159,6 +178,7 @@ class DomainScanner:
             'filtered_count': len(enriched),
             'whois_succeeded': whois_ok,
             'whois_failed': len(registered) - whois_ok,
+            'lookup_sources': dict(self.lookup_sources),
             'permutations': enriched
         }
 
@@ -447,6 +467,69 @@ class DomainScanner:
         
         return permutations
 
+    async def _enrich_with_rdap(self, permutations: list[dict[str, Any]]) -> set:
+        """
+        Enrich permutations with RDAP registration data.
+
+        Args:
+            permutations: Permutation dictionaries, updated in place
+
+        Returns:
+            Set of domain names RDAP could not answer for, which the caller
+            may retry over WHOIS
+        """
+        unresolved: set = set()
+        if not permutations:
+            return unresolved
+
+        connector = aiohttp.TCPConnector(limit=max(4, self.config.max_workers * 2))
+        timeout = aiohttp.ClientTimeout(total=self.config.rdap_timeout + 10)
+
+        async with aiohttp.ClientSession(
+            connector=connector,
+            timeout=timeout,
+            headers={'User-Agent': self.config.user_agent},
+        ) as session:
+            client = RDAPClient(session, self.config, self.cache)
+            semaphore = asyncio.Semaphore(max(1, self.config.max_workers))
+
+            async def lookup_one(perm):
+                domain = perm['domain']
+
+                if self.config.use_cache:
+                    cached = self.cache.get(f"rdap:{domain}")
+                    if cached:
+                        perm.update(cached)
+                        return 'rdap'
+
+                async with semaphore:
+                    data = await client.lookup(domain)
+
+                if data:
+                    perm.update(data)
+                    if self.config.use_cache:
+                        self.cache.set(f"rdap:{domain}", data, ttl=self.config.cache_ttl)
+                    return 'rdap'
+                return None
+
+            results = await asyncio.gather(
+                *(lookup_one(p) for p in permutations), return_exceptions=True
+            )
+
+        resolved = 0
+        for perm, outcome in zip(permutations, results, strict=False):
+            if outcome == 'rdap':
+                resolved += 1
+                self.lookup_sources['rdap'] += 1
+                self.whois_succeeded += 1
+            else:
+                if isinstance(outcome, Exception):
+                    self.logger.debug(f"RDAP error for {perm['domain']}: {outcome}")
+                unresolved.add(perm['domain'])
+
+        self.logger.info(f"RDAP resolved {resolved}/{len(permutations)} domains")
+        return unresolved
+
     async def _enrich_with_whois(self, permutations: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """
         Enrich permutations with WHOIS data.
@@ -526,8 +609,11 @@ class DomainScanner:
 
             if whois_data:
                 self.whois_succeeded += 1
+                self.lookup_sources['whois'] += 1
+                whois_data.setdefault('registration_source', 'whois')
             else:
                 self.whois_failed += 1
+                self.lookup_sources['none'] += 1
 
             return whois_data
 

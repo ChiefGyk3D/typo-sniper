@@ -5,6 +5,54 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-24
+
+Turns a report generator into a monitoring tool. Scans are now diffed against
+the previous run, alerts fire on what changed, and registration data comes from
+RDAP instead of a port that half the world blocks.
+
+### Added
+
+- **Change detection.** Every scan is compared against the previous one and
+  reports lead with the delta: `NEW` registrations, `ESCALATED` risk, sites that
+  just went live or gained MX records or a certificate (`ACTIVATED`), ownership
+  and hosting `CHANGED`, and squats that `RESOLVED` away. A defender reading a
+  daily report wants to know what moved, not to re-read seventy unchanged rows.
+  The first scan of a domain establishes a baseline silently rather than
+  reporting everything as new.
+- **Alerting** to Slack, Discord, a generic JSON webhook, and email
+  (`--notify slack discord webhook email`). Alerts fire *only* on changes, so a
+  daily schedule stays worth reading. `notify_min_changes` suppresses trivial
+  drift. Endpoints are read from the environment as secrets.
+- **RDAP registration lookup** (RFC 7482), tried before WHOIS. WHOIS needs
+  TCP/43, which is blocked on many corporate networks and in most CI sandboxes,
+  where it fails as a silent timeout — during development of the previous
+  release every one of 67 lookups failed for exactly this reason. RDAP is HTTPS
+  on 443, returns structured JSON with unambiguous timestamps, and shares the
+  scanner's existing async session instead of occupying a worker thread. WHOIS
+  remains the fallback for registries that publish no RDAP endpoint, and reports
+  record which source answered.
+- **Watch mode**: `--watch --interval 6h` runs continuously instead of relying
+  on the compose file's scheduling comment, which never actually scheduled
+  anything. `--interval` accepts `30m`, `6h`, `2d`, or plain seconds.
+- `latest_changes.json` written alongside each report for downstream tooling.
+- Scan history under `state_dir`, retaining `history_retain` scans per domain.
+
+### Changed
+
+- The CLI summary now reports which lookup source answered, and flags notable
+  changes per domain as the scan runs.
+- `--no-rdap`, `--no-diff`, and `--notify-min-changes` added for control.
+
+### Security
+
+- Chat notifiers strip markup-significant characters from domain names,
+  registrant fields, and page titles, all of which are attacker-controlled — the
+  same class of issue fixed in the report exporters in 1.1.0. The JSON webhook
+  deliberately sends values verbatim, because a machine consumer correlates on
+  the exact domain and JSON encoding already prevents structural injection.
+- SMTP failures log the exception type only, never the message body.
+
 ## [1.1.0] - 2026-08-21
 
 A correctness and security release. Report output and risk scores from this
