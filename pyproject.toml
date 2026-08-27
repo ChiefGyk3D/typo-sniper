@@ -37,10 +37,15 @@ openai = ["openai>=1.50.0"]
 gemini = ["google-genai>=1.0.0"]
 # ollama needs no SDK: it is plain HTTP to a daemon you run
 ai-all = [
+    "scikit-learn>=1.3.0",
     "anthropic>=0.40.0",
     "openai>=1.50.0",
     "google-genai>=1.0.0",
 ]
+
+# Training the learned triage model. Scoring needs nothing: a trained model is
+# JSON, and the scorer is a dot product in pure Python.
+ml = ["scikit-learn>=1.3.0"]
 
 # Secrets backends. Doppler and HashiCorp Vault need nothing installed — both
 # are reached over HTTPS with the standard library — so they are absent here.

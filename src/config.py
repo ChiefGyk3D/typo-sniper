@@ -133,6 +133,13 @@ class Config:
     ai_min_risk_score: int = 30        # Skip AI on findings below this score
     ai_explain_changes: bool = True    # Also summarise what changed since last scan
 
+    # Learned triage. Ranks findings using the operator's own past decisions;
+    # it never replaces the deterministic risk score, which stays the number
+    # reported and cited in takedown requests.
+    enable_ml_ranking: bool = False
+    ml_min_labels: int = 30            # Refuse to train below this many labels
+    ml_explain_top: int = 3            # Feature contributions shown per finding
+
     # Combo-squatting keywords specific to your brand. Product names, campaign
     # names and support portals are far better bait than the generic list.
     custom_keywords: list = field(default_factory=list)

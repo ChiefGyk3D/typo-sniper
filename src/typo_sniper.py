@@ -31,6 +31,7 @@ from ai import AIAnalyzer  # noqa: E402
 from cache import Cache  # noqa: E402
 from config import Config  # noqa: E402
 from exporters import CSVExporter, ExcelExporter, HTMLExporter, JSONExporter  # noqa: E402
+from ml import LabelStore  # noqa: E402
 from notifiers import dispatch, write_delta_json  # noqa: E402
 from scanner import DomainScanner  # noqa: E402
 from state import ScanHistory, summarize  # noqa: E402
@@ -60,6 +61,13 @@ class TypoSniper:
         self.deltas: list = []
         self.analyzer = AIAnalyzer(config)
         self.ai_results: list = []
+
+        # Loaded once. A missing or stale model is not an error: ranking falls
+        # back to the deterministic risk score, which is the default anyway.
+        self.triage_model = None
+        if config.enable_ml_ranking:
+            import ml
+            self.triage_model = ml.load(config.state_dir)
 
     def close(self) -> None:
         """Release the scanner's worker threads."""
@@ -136,6 +144,7 @@ class TypoSniper:
             
             try:
                 result = await self.scanner.scan_domain(domain)
+                self._apply_ml_ranking(result)
                 self.results.append(result)
 
                 # Diff against the previous scan before recording this one,
@@ -210,6 +219,49 @@ class TypoSniper:
             except Exception as e:
                 self.logger.error(f"Error exporting to {format_name}: {e}", exc_info=True)
                 console.print(f"[red]✗[/red] Error exporting to {format_name}: {e}")
+
+    def _apply_ml_ranking(self, result: dict) -> None:
+        """
+        Reorder one domain's findings using the trained model.
+
+        Risk scores are left exactly as computed. Only the order changes, plus
+        two added fields recording what the model thought and why — so a report
+        that was reordered says so, rather than presenting a different order
+        with no explanation.
+
+        Args:
+            result: Scan result for one monitored domain, modified in place
+        """
+        if self.triage_model is None:
+            return
+
+        monitored = result.get('original_domain', '')
+        permutations = result.get('permutations') or []
+
+        for perm in permutations:
+            try:
+                perm['ml_rank'] = round(
+                    self.triage_model.score(perm, monitored), 4
+                )
+                perm['ml_explain'] = [
+                    {'feature': name, 'contribution': round(value, 3)}
+                    for name, value in self.triage_model.explain(
+                        perm, monitored, self.config.ml_explain_top
+                    )
+                ]
+            except Exception as e:
+                # A scoring failure must not cost the finding. The scan's own
+                # output is complete without it.
+                self.logger.warning(
+                    f'Could not rank {perm.get("domain")}: {type(e).__name__}'
+                )
+                perm['ml_rank'] = None
+
+        # Unranked findings sort last rather than to the top with a 0
+        permutations.sort(
+            key=lambda p: (p.get('ml_rank') is not None, p.get('ml_rank') or 0.0),
+            reverse=True,
+        )
 
     def print_summary(self) -> None:
         """Print a summary of scan results."""
@@ -587,6 +639,34 @@ Examples:
     )
 
     parser.add_argument(
+        '--label',
+        action='append',
+        metavar='DOMAIN=acted|dismissed',
+        default=None,
+        help='Record a judgement about a finding, then exit. Repeatable. '
+             "'acted' means worth acting on, 'dismissed' means reviewed and "
+             'not worth acting on; both are needed to train.'
+    )
+
+    parser.add_argument(
+        '--ml-train',
+        action='store_true',
+        help='Train the triage ranking model on labelled history, then exit'
+    )
+
+    parser.add_argument(
+        '--ml-status',
+        action='store_true',
+        help='Report label counts and the trained model, then exit'
+    )
+
+    parser.add_argument(
+        '--ml-rank',
+        action='store_true',
+        help='Order findings by the trained model. Risk scores are unchanged.'
+    )
+
+    parser.add_argument(
         '--secrets-check',
         action='store_true',
         help='Report which secrets backends are reachable and where each '
@@ -620,6 +700,187 @@ Examples:
     )
 
     return parser.parse_args()
+
+
+def apply_labels(config, specs: list[str]) -> int:
+    """
+    Record operator judgements about findings.
+
+    Args:
+        config: Configuration object
+        specs: Strings of the form ``domain=acted`` or ``domain=dismissed``
+
+    Returns:
+        Process exit code
+    """
+    from ml.labels import VALID_LABELS
+
+    store = LabelStore(config.state_dir)
+    failures = 0
+
+    for spec in specs:
+        domain, _, label = spec.partition('=')
+        domain, label = domain.strip(), label.strip().lower()
+
+        if not label:
+            console.print(
+                f"[red]✗[/red] '{spec}': expected DOMAIN=acted or DOMAIN=dismissed"
+            )
+            failures += 1
+            continue
+
+        try:
+            store.set(domain, label)
+        except ValueError as e:
+            console.print(f'[red]✗[/red] {e}')
+            failures += 1
+            continue
+
+        console.print(f'[green]✓[/green] {domain} labelled [bold]{label}[/bold]')
+
+    ready, reason = store.readiness()
+    marker = '[green]✓[/green]' if ready else '[yellow]•[/yellow]'
+    console.print(f'\n{marker} {reason}')
+    if not ready:
+        console.print(
+            f'[dim]Valid labels: {", ".join(VALID_LABELS)}. Both are needed — a '
+            f'model cannot learn a boundary from one side of it.[/dim]'
+        )
+    return 1 if failures else 0
+
+
+def print_ml_status(config, domains: list[str] | None = None) -> None:
+    """
+    Report what the learned-triage layer currently has to work with.
+
+    Args:
+        config: Configuration object
+        domains: Monitored domains whose history should be counted
+    """
+    import ml
+    from ml.model import model_path
+
+    store = LabelStore(config.state_dir)
+    counts = store.counts()
+    ready, reason = store.readiness()
+
+    console.print('\n[bold]Labels[/bold]')
+    console.print(f"  acted:     {counts.get('acted', 0)}")
+    console.print(f"  dismissed: {counts.get('dismissed', 0)}")
+    marker = '[green]✓[/green]' if ready else '[yellow]•[/yellow]'
+    console.print(f'  {marker} {reason}')
+
+    console.print('\n[bold]Model[/bold]')
+    model = ml.load(config.state_dir)
+    if model is None:
+        exists = model_path(config.state_dir).exists()
+        console.print(
+            '  [yellow]none trained[/yellow]'
+            if not exists else
+            '  [yellow]present but unusable — retrain with --ml-train[/yellow]'
+        )
+    else:
+        meta = model.metadata
+        auc = meta.get('cv_roc_auc')
+        console.print(f"  trained on {meta.get('samples', 0)} labels "
+                      f"({meta.get('acted', 0)} acted, {meta.get('dismissed', 0)} dismissed)")
+        if isinstance(auc, (int, float)) and auc == auc:  # not NaN
+            console.print(f"  cross-validated ROC AUC: {auc:.3f} "
+                          f"(±{meta.get('cv_roc_auc_std', 0):.3f}, "
+                          f"{meta.get('cv_folds', 0)} folds)")
+        console.print('  [bold]most influential features[/bold]')
+        for name, weight in model.influential_features(6):
+            console.print(f'    {name:<26} {weight:+.3f}')
+
+    if domains:
+        history = ScanHistory(config.state_dir, config.history_retain)
+        dataset = ml.build(history, store, domains)
+        console.print(f'\n[bold]Training set[/bold]\n  {len(dataset)} labelled '
+                      f'domain(s) matched to scan history')
+        if dataset.unmatched:
+            console.print(f'  [yellow]{len(dataset.unmatched)} labelled domain(s) '
+                          f'have no retained history and cannot be used[/yellow]')
+
+    console.print(
+        '\n[dim]The model ranks findings; it does not score them. Risk scores '
+        'stay deterministic so a takedown request can cite them.[/dim]\n'
+    )
+
+
+def run_ml_training(config, domains: list[str]) -> int:
+    """
+    Train the ranking model on labelled history.
+
+    Args:
+        config: Configuration object
+        domains: Monitored domains whose history holds the labelled findings
+
+    Returns:
+        Process exit code
+    """
+    import ml
+
+    if not ml.sklearn_available():
+        console.print(
+            '[red]✗[/red] Training needs scikit-learn, which is not installed.\n'
+            '  [dim]pip install -e ".[ml]"[/dim]\n'
+            '  [dim]Only training needs it. Scoring is pure Python, so hosts '
+            'that run scans do not.[/dim]'
+        )
+        return 1
+
+    store = LabelStore(config.state_dir)
+    ready, reason = store.readiness()
+    if not ready:
+        console.print(f'[yellow]•[/yellow] Not enough labelled data yet: {reason}')
+        return 1
+
+    history = ScanHistory(config.state_dir, config.history_retain)
+    dataset = ml.build(history, store, domains)
+
+    if len(dataset) < config.ml_min_labels:
+        console.print(
+            f'[yellow]•[/yellow] Only {len(dataset)} labelled domain(s) matched '
+            f'scan history, below the {config.ml_min_labels} required.'
+        )
+        if dataset.unmatched:
+            console.print(
+                f'  [dim]{len(dataset.unmatched)} label(s) refer to domains with '
+                f'no retained history.[/dim]'
+            )
+        return 1
+
+    counts = dataset.class_counts
+    if not counts['acted'] or not counts['dismissed']:
+        console.print(
+            '[yellow]•[/yellow] The matched labels are all one class. A model '
+            'needs examples of both to learn where the boundary is.'
+        )
+        return 1
+
+    console.print(f'\n[bold]Training on {len(dataset)} labelled findings[/bold] '
+                  f"({counts['acted']} acted, {counts['dismissed']} dismissed)")
+
+    report = ml.train(dataset, config.state_dir)
+
+    auc = report['cv_roc_auc']
+    console.print(f"[green]✓[/green] Model written to {report['path']}")
+    if auc == auc:  # not NaN
+        console.print(f"  cross-validated ROC AUC: {auc:.3f} "
+                      f"(±{report['cv_roc_auc_std']:.3f} over {report['cv_folds']} folds)")
+        if auc < 0.65:
+            console.print(
+                '  [yellow]That is close to guessing. More labels, or labels '
+                'that disagree with the risk score more often, would help.[/yellow]'
+            )
+    console.print('\n  [bold]most influential features[/bold]')
+    for name, weight in report['influential_features'][:8]:
+        console.print(f'    {name:<26} {weight:+.3f}')
+    console.print(
+        '\n[dim]Run a scan with --ml-rank to order findings by this model. '
+        'Risk scores are unaffected.[/dim]\n'
+    )
+    return 0
 
 
 def print_secrets_check(config) -> None:
@@ -744,6 +1005,15 @@ async def main():
         print_secrets_check(config)
         return
 
+    if args.ml_rank:
+        config.enable_ml_ranking = True
+
+    if args.label:
+        code = apply_labels(config, args.label)
+        if code:
+            sys.exit(code)
+        return
+
     # Override config with command-line arguments
     config.max_workers = args.max_workers
     config.cache_ttl = args.cache_ttl
@@ -788,6 +1058,18 @@ async def main():
             sniper.close()
             sys.exit(1)
 
+        if args.ml_status:
+            print_ml_status(config, domains)
+            sniper.close()
+            return
+
+        if args.ml_train:
+            code = run_ml_training(config, domains)
+            sniper.close()
+            if code:
+                sys.exit(code)
+            return
+
         console.print(f"[bold]Domains to scan:[/bold] {len(domains)}")
         console.print(f"[bold]Output formats:[/bold] {', '.join(args.format)}")
         console.print(f"[bold]Cache enabled:[/bold] {'Yes' if config.use_cache else 'No'}")
@@ -807,6 +1089,12 @@ async def main():
             console.print(
                 "[bold]AI triage:[/bold] "
                 + (config.ai_provider if ready else f"[yellow]unavailable ({reason})[/yellow]")
+            )
+        if config.enable_ml_ranking:
+            console.print(
+                '[bold]Ranking:[/bold] '
+                + ('learned triage model' if sniper.triage_model
+                   else '[yellow]no usable model; using risk score[/yellow]')
             )
         if args.months > 0:
             console.print(
