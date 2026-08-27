@@ -635,6 +635,8 @@ def print_secrets_check(config) -> None:
     """
     from rich.table import Table
 
+    from secrets_manager import BACKENDS
+
     backends = Table(title='Secrets backends', title_justify='left')
     backends.add_column('Backend')
     backends.add_column('Status')
@@ -642,6 +644,14 @@ def print_secrets_check(config) -> None:
         colour = {'ready': 'green', 'not configured': 'dim'}.get(entry['status'], 'red')
         backends.add_row(entry['backend'], f"[{colour}]{entry['status']}[/{colour}]")
     console.print(backends)
+
+    if config.secrets.unknown_backends:
+        # The offending value is deliberately not echoed here or in the log
+        console.print(
+            f"[yellow]{config.secrets.unknown_backends} entry in "
+            f"secrets_backends was not recognised and is being ignored. "
+            f"Valid names: {', '.join(BACKENDS)}.[/yellow]"
+        )
 
     credentials = Table(title='Credentials', title_justify='left')
     credentials.add_column('Name')

@@ -215,9 +215,17 @@ land in the `env` backend with no configuration.
 ## What is never logged
 
 - **No secret value is ever logged**, at any level, by any backend.
+- **No credential name is logged either.** Which credentials a host holds is
+  itself an inventory disclosure — "this box has an SMTP password" is useful to
+  an attacker reading a log aggregator. Sources are recorded in memory for
+  `--secrets-check` instead.
 - **Backend failures record only the exception type**, never its message. A
   store's error text can echo the request body, the token, or the secret itself.
-- **`--secrets-check` prints names and sources only.**
+- **A misconfigured backend name is not echoed back.** A typo is reported by
+  count, with the valid names listed, because a credential pasted into the
+  wrong config field must not end up in a log.
+- **`--secrets-check` prints names and sources only**, on demand, to your
+  terminal.
 
 ## Rotation
 

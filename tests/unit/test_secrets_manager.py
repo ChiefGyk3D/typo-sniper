@@ -89,7 +89,11 @@ class TestBackendOrdering:
     def test_unknown_backend_is_skipped(self, caplog):
         mgr = SecretsManager(backends=['env', 'nonesuch'])
         assert [b.name for b in mgr.backends] == ['env']
-        assert 'nonesuch' in caplog.text
+        assert mgr.unknown_backends == 1
+        # The valid names are named; the operator's own text is not echoed,
+        # because a credential pasted into the wrong field must not be logged.
+        assert 'nonesuch' not in caplog.text
+        assert 'doppler' in caplog.text
 
     def test_every_documented_backend_is_registered(self):
         assert set(BACKENDS) == {
@@ -504,6 +508,17 @@ class TestDiagnostics:
         statuses = {e['backend']: e['status'] for e in SecretsManager().describe()}
         assert statuses['vault'] == 'not configured'
         assert statuses['env'] == 'ready'
+
+    def test_resolution_logs_no_credential_names(self, monkeypatch, caplog):
+        """Which credentials a host holds is itself an inventory disclosure."""
+        import logging
+
+        caplog.set_level(logging.DEBUG)
+        monkeypatch.setenv('TYPO_SNIPER_SMTP_PASSWORD', 'hunter2')
+        mgr = SecretsManager()
+        assert mgr.get_secret('smtp_password') == 'hunter2'
+        assert 'hunter2' not in caplog.text
+        assert 'smtp_password' not in caplog.text
 
     def test_source_is_recorded_for_each_key(self, monkeypatch):
         monkeypatch.setenv('TYPO_SNIPER_URLSCAN_API_KEY', 'v')

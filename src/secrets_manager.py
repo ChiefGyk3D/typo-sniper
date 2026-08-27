@@ -463,9 +463,9 @@ class OnePasswordBackend(SecretBackend):
             capture_output=True, text=True, timeout=HTTP_TIMEOUT, check=False,
         )
         if result.returncode != 0:
-            # stderr can quote the reference but never the value; even so, only
-            # the fact of the failure is recorded.
-            self.logger.debug('op read did not resolve %s', key)
+            # Neither the value nor the item reference is recorded: stderr can
+            # quote the reference, and the reference names a credential.
+            self.logger.debug('op read did not resolve the requested field')
             return None
         return result.stdout.strip() or None
 
@@ -497,6 +497,7 @@ class SecretsManager:
         self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
         self.resolved_from: dict[str, str] = {}
+        self.unknown_backends = 0
 
         names = backends if backends is not None else list(DEFAULT_ORDER)
         if 'env' not in names:
@@ -508,9 +509,13 @@ class SecretsManager:
         for name in names:
             backend_cls = BACKENDS.get(name.strip().lower())
             if backend_cls is None:
+                # The configured value is not echoed. It is operator-supplied
+                # text, and a name pasted into the wrong field is exactly the
+                # kind of mistake that puts a credential in a log aggregator.
+                self.unknown_backends += 1
                 self.logger.warning(
-                    "Unknown secrets backend '%s'; expected one of %s",
-                    name, ', '.join(BACKENDS),
+                    'Ignoring an unrecognised secrets backend; valid names are %s',
+                    ', '.join(BACKENDS),
                 )
                 continue
             self.backends.append(backend_cls(config))
@@ -540,8 +545,10 @@ class SecretsManager:
                 continue
             value = backend.get(canonical)
             if value:
+                # Recorded for --secrets-check rather than logged. Which
+                # credentials a host holds is itself an inventory disclosure,
+                # and a debug log goes wherever the operator ships logs.
                 self.resolved_from[canonical] = backend.name
-                self.logger.debug('Resolved %s from %s', canonical, backend.name)
                 return value
 
             # A vendor-standard variable is still an environment lookup, so it
