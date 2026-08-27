@@ -165,7 +165,8 @@ typo-sniper/
 │   ├── enhanced_detection.py      # 🆕 Advanced detection algorithms
 │   ├── threat_intelligence.py     # 🆕 Threat intel integrations
 │   ├── secrets_manager.py         # 🆕 Secrets management
-│   ├── typo_sniper.py             # Main application & CLI
+│   └── typo_sniper/              # The installable package
+│       ├── cli.py                # Application & CLI entry point
 │   ├── utils.py                   # Utility functions
 │   └── monitored_domains.txt      # Example domain list
 ├── docker/                        # Docker-related files
@@ -327,7 +328,7 @@ source test-env/bin/activate
 pip install --upgrade dnstwist python-whois PyYAML openpyxl rich aiofiles
 
 # Test thoroughly before using in production
-python typo_sniper.py --help
+typo-sniper --help
 ```
 
 **Recommended practice:** Review the changelog and security advisories before upgrading any dependency.
@@ -661,7 +662,8 @@ typo-sniper/
 │   ├── config.py           # Configuration management
 │   ├── exporters.py        # Output format exporters
 │   ├── scanner.py          # Domain scanning & WHOIS enrichment
-│   ├── typo_sniper.py      # Main application & CLI
+│   └── typo_sniper/       # The installable package
+│       ├── cli.py         # Application & CLI entry point
 │   ├── utils.py            # Utility functions
 │   └── monitored_domains.txt # Domain list
 ├── docker/                 # Docker-related files
@@ -806,19 +808,19 @@ pip install -r requirements.txt
 **Issue: WHOIS lookups timing out**
 ```bash
 # Solution: Increase timeout or reduce workers
-python typo_sniper.py --whois-timeout 60 --max-workers 5
+typo-sniper --whois-timeout 60 --max-workers 5
 ```
 
 **Issue: Rate limiting errors**
 ```bash
 # Solution: Reduce concurrent workers and enable delays
-python typo_sniper.py --max-workers 5 --rate-limit-delay 2
+typo-sniper --max-workers 5 --rate-limit-delay 2
 ```
 
 **Issue: Cache directory permission errors**
 ```bash
 # Solution: Change cache directory
-python typo_sniper.py --config config.yaml
+typo-sniper --config config.yaml
 # Edit config.yaml and set cache_dir to writable location
 ```
 

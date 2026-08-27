@@ -10,13 +10,13 @@ Typo Sniper now includes a comprehensive `--debug` flag that provides detailed t
 
 ```bash
 # Normal mode (WARNING level logging)
-python3 src/typo_sniper.py -i domains.txt
+typo-sniper -i domains.txt
 
 # Verbose mode (INFO level logging)
-python3 src/typo_sniper.py -i domains.txt --verbose
+typo-sniper -i domains.txt --verbose
 
 # Debug mode (DEBUG level logging with enhanced tracing)
-python3 src/typo_sniper.py -i domains.txt --debug
+typo-sniper -i domains.txt --debug
 ```
 
 ## Logging Levels
@@ -83,7 +83,7 @@ DEBUG - No enhanced permutations generated for google.com
 
 **Answer:** Use `--debug` to see:
 ```bash
-python3 src/typo_sniper.py -i test_domains.txt --debug 2>&1 | grep "Enhanced detection"
+typo-sniper -i test_domains.txt --debug 2>&1 | grep "Enhanced detection"
 ```
 
 You'll see output like:
@@ -100,7 +100,7 @@ This confirms it's running, and the "0 total variations" is because features are
 
 **Answer:** Use `--debug` to see which features are enabled:
 ```bash
-python3 src/typo_sniper.py -i test_domains.txt --debug 2>&1 | grep "enable_"
+typo-sniper -i test_domains.txt --debug 2>&1 | grep "enable_"
 ```
 
 Output:
@@ -116,7 +116,7 @@ All are `False`, so you need to enable them in your config file.
 
 Use debug mode to see timing and performance details:
 ```bash
-python3 src/typo_sniper.py -i test_domains.txt --debug
+typo-sniper -i test_domains.txt --debug
 ```
 
 ## Configuration

@@ -211,7 +211,7 @@ doppler --version
        rm -rf /var/lib/apt/lists/*
    
    # Entrypoint with Doppler support
-   ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then doppler run -- python typo_sniper.py \"$@\"; else python typo_sniper.py \"$@\"; fi", "sh"]
+   ENTRYPOINT ["sh", "-c", "if [ -n \"$DOPPLER_TOKEN\" ]; then doppler run -- typo-sniper \"$@\"; else typo-sniper \"$@\"; fi", "sh"]
    ```
 
 ### Environment Variables Priority
