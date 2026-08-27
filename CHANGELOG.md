@@ -5,6 +5,77 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-08-27
+
+Learned triage: the tool starts using your own past decisions to order what it
+shows you.
+
+### Added
+
+- **Learned triage ranking (`--ml-rank`).** The risk score orders findings by a
+  formula that is identical for everyone, but teams differ in what they act on:
+  a bank cares most about mail capability, a consumer SaaS about a cloned login
+  page. This learns that difference from the operator's own judgements and
+  reorders accordingly.
+
+  **The model ranks; it never scores.** Risk scores are unchanged whether this
+  is on or off and remain the number cited in takedown requests — the same rule
+  the AI layer follows, for the same reason. A registrar can check "registered
+  nine days ago, valid SPF and DKIM, serving a login page." It cannot check
+  "our model put it first."
+
+- **Operator labelling (`--label DOMAIN=acted|dismissed`).** Records the
+  decisions that become training data. `dismissed` is treated as first-class
+  and training refuses without it: a model trained only on confirmed-bad
+  examples learns that everything is bad.
+
+- **`--ml-train` and `--ml-status`.** Training reports a cross-validated ROC
+  AUC rather than a training score, since on a forty-label set the difference
+  between those two numbers is the whole story. It refuses below 30 labels and
+  8 of each class, because below that a model fits noise, and a confidently
+  wrong ranking is worse than no ranking — it looks like signal.
+
+- **34 deterministic features**, all traceable to a field a human can look at:
+  lexical, relational (edit distance to the brand, scaled by brand length), DNS,
+  registration age, mail posture, TLS validity, page content, and the
+  deterministic risk score itself. The risk score is included as a feature
+  rather than replaced: it encodes expert judgement that forty labels cannot
+  rediscover, so the model starts from it and learns adjustments.
+
+### Security
+
+- **Model files are JSON and are never unpickled.** `pickle.load` on a model
+  file is arbitrary code execution, and model files get emailed between
+  colleagues and committed to repositories. The trained model is stored as
+  feature names, weights, intercept, and standardisation constants; scoring is
+  a dot product and a sigmoid in pure Python.
+
+  This is why the model is logistic regression rather than a boosted ensemble
+  that would likely score a point or two higher: an opaque model would trade
+  away both the explanation and the safety property, to reorder a list a human
+  reads either way.
+
+- **Training needs scikit-learn; scoring does not.** Hosts that run scans
+  install nothing. Only whoever trains needs `.[ml]`.
+
+### Fixed
+
+- **Training features come from the earliest snapshot of a domain, not the
+  newest.** A domain that was successfully taken down resolves nowhere today.
+  Matching labels to current state would have taught the model that dead
+  domains are the dangerous ones — an inversion of the truth, learned from
+  perfectly good labels, that would rank every parked domain above every live
+  one.
+
+- **The risk-score feature is clamped, not just scaled.** An out-of-range value
+  from a stale record would otherwise dominate every weight in a linear model.
+  Caught by a bounds test over the whole feature vector.
+
+- **A stale model is refused rather than used.** If features are added or
+  reordered after training, the stored model no longer matches the vector it
+  would be scoring; it is rejected with a message to retrain instead of
+  silently producing plausible nonsense.
+
 ## [1.4.0] - 2026-08-27
 
 AI-assisted triage, and secrets management that is actually wired in.

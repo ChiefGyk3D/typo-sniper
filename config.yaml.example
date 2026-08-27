@@ -187,3 +187,26 @@ gcp_project_id: ''
 # service account in CI. Values are read as op://<vault>/<item>/<field>.
 onepassword_vault: ''
 onepassword_item: ''
+
+# ---------------------------------------------------------------------------
+# Learned triage ranking (optional)
+# ---------------------------------------------------------------------------
+# Reorders findings using your own past decisions about what was worth acting
+# on. It ranks; it does not score. The deterministic risk score is unchanged
+# and stays the number reported and cited in takedown requests, because that
+# number has to be reproducible from evidence and a model fitted to one team's
+# judgements is not.
+#
+# Label findings as you triage them:
+#   python src/typo_sniper.py --label evil-example.com=acted
+#   python src/typo_sniper.py --label parked-example.com=dismissed
+#
+# Then, once there are enough of both:
+#   python src/typo_sniper.py -i domains.txt --ml-train    # needs .[ml]
+#   python src/typo_sniper.py -i domains.txt --ml-rank
+#
+# Check progress any time with --ml-status. Training needs scikit-learn;
+# scoring does not — a trained model is JSON and the scorer is pure Python.
+enable_ml_ranking: false
+ml_min_labels: 30                  # Refuse to train below this many labels
+ml_explain_top: 3                  # Feature contributions recorded per finding

@@ -56,6 +56,13 @@ python-dotenv==1.2.3
 # Google Cloud Secret Manager
 # google-cloud-secret-manager==2.24.0
 
+# Learned triage ranking (--ml-train)
+#
+# Only training needs this. Scoring a trained model is pure Python: the model
+# is JSON, so hosts that run scans install nothing.
+#
+# scikit-learn==1.9.0
+
 # AI providers for --ai triage
 #
 # Ollama needs no SDK: it is plain HTTP to a daemon you run, and no scan data

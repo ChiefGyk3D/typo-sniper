@@ -40,6 +40,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#-contributing)
 - [AI-Assisted Triage](#-ai-assisted-triage) 🤖
+- [Learned Triage Ranking](#-learned-triage-ranking) 🧠
 - [Secrets Management](#-secrets-management) 🔐
 - [Testing & Verification](#-testing-and-verification)
 
@@ -59,6 +60,7 @@ Detect and monitor typosquatting domains targeting your brand with powerful auto
 | **[Debug Mode Guide](docs/guides/DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
 | **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
 | **[AI Analysis](docs/guides/AI_ANALYSIS.md)** | 🤖 AI-assisted triage and its injection defences | Enabling `--ai`, choosing a provider |
+| **[ML Triage](docs/guides/ML_TRIAGE.md)** | 🧠 Learned ranking from your own decisions | Labelling findings, training a model |
 | **[Docker Guide](docker/DOCKER.md)** | 🐳 Docker deployment guide | Container deployment |
 | **[Project Structure](PROJECT_STRUCTURE.md)** | 📁 Project organization details | Contributing, understanding codebase |
 
@@ -938,6 +940,52 @@ worried about. For teams that cannot send that to a third party, a local model
 is the difference between using this feature and disabling it.
 
 See **[AI Analysis](docs/guides/AI_ANALYSIS.md)** for the full guide.
+
+**[⬆ Back to Top](#-table-of-contents)**
+
+---
+
+## 🧠 Learned Triage Ranking
+
+Optional, off by default, additive. The risk score orders findings by a formula
+that is the same for everyone — but teams differ in what they act on. A bank
+cares most about mail capability; a consumer SaaS cares most about a cloned
+login page. This learns that difference from your own decisions.
+
+```bash
+# Label as you triage — "dismissed" matters as much as "acted"
+python src/typo_sniper.py --label secure-example-login.com=acted
+python src/typo_sniper.py --label example-fanclub.com=dismissed
+
+python src/typo_sniper.py -i domains.txt --ml-status   # where am I?
+python src/typo_sniper.py -i domains.txt --ml-train    # needs .[ml]
+python src/typo_sniper.py -i domains.txt --ml-rank     # order by the model
+```
+
+**The model ranks. It does not score.** Risk scores are unchanged with this on,
+and remain the number cited in takedown requests — the same rule the AI layer
+follows, for the same reason: a registrar can check "registered nine days ago,
+valid SPF and DKIM, serving a login page." It cannot check "our model put it
+first."
+
+**Training needs scikit-learn. Scoring does not.** A trained model is JSON —
+feature names, weights, intercept, standardisation constants — and the scorer
+is a dot product in pure Python. So scanning hosts install nothing, the model
+is readable enough to audit ("`mail_posture` carries +1.2"), and **nothing is
+ever unpickled**. `pickle.load` on a model file is arbitrary code execution,
+and model files get emailed around. That is why this is logistic regression
+rather than a boosted ensemble that might score a point or two higher.
+
+**Training refuses below 30 labels and 8 of each class.** Below that a model
+fits noise, and a confidently wrong ranking is worse than none because it looks
+like signal.
+
+**Features come from the earliest snapshot of a domain, not the newest.** A
+domain you had taken down resolves nowhere today; training on its current state
+would teach the model that dead domains are the dangerous ones — an inversion
+learned from perfectly good labels.
+
+See **[ML Triage](docs/guides/ML_TRIAGE.md)** for the full guide.
 
 **[⬆ Back to Top](#-table-of-contents)**
 

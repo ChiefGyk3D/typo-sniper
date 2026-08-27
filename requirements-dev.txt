@@ -5,3 +5,8 @@ pytest==8.4.2
 pytest-asyncio==1.2.0
 pytest-cov==7.0.0
 ruff==0.14.4
+
+# Training the triage ranking model. Only training needs this — scoring is
+# pure Python, so hosts that run scans never install it. Present here so CI
+# exercises the training path rather than skipping it.
+scikit-learn==1.9.0
