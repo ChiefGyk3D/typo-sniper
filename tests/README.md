@@ -12,18 +12,29 @@ tests/
 ├── conftest.py                      # Shared pytest fixtures and sys.path setup
 │
 ├── unit/                            # Automated unit tests (no network access)
+│   ├── test_ai_prompts.py           # Prompt-injection defences, response validation
+│   ├── test_ai_providers.py         # Claude, OpenAI, Gemini, Ollama request shapes
 │   ├── test_cache.py                # WHOIS cache: TTL, corruption, stats
-│   ├── test_config.py               # Config loading, path expansion, env vars
+│   ├── test_cli.py                  # Argument parsing and CLI wiring
+│   ├── test_config.py               # Config loading, path expansion, secret resolution
+│   ├── test_dns_intel.py            # SPF/DKIM/DMARC parsing and mail posture
 │   ├── test_enhanced_detection.py   # Combo-squat, soundex, IDN homographs
 │   ├── test_exporters.py            # Report generation and output sanitisation
+│   ├── test_notifiers.py            # Slack, Discord, webhook, email delivery
+│   ├── test_rdap.py                 # RDAP bootstrap, jCard parsing, suffix matching
 │   ├── test_risk_scoring.py         # Risk model weighting and clamping
+│   ├── test_scan_pipeline.py        # End-to-end scan flow with stubbed lookups
 │   ├── test_scanner_logic.py        # Dedup, recency, date filter, circuit breaker
+│   ├── test_secrets_manager.py      # Every secrets backend, and what is never logged
+│   ├── test_state.py                # Scan history, change classification, summaries
 │   ├── test_threat_intelligence.py  # CT parsing, title extraction, validation
 │   └── test_utils.py                # Domain validation, DNS sentinels, escaping
 │
 ├── scripts/                         # Manual scripts (require network + API keys)
+│   ├── conftest.py                  # Excludes this directory from collection
 │   ├── test_threat_intel.sh         # Threat intelligence smoke test
 │   ├── test_debug_mode.py           # Debug mode walkthrough
+│   ├── test_final_precommit.py      # Pre-push functional walkthrough
 │   └── test_urlscan_api.py          # URLScan.io API key check
 │
 ├── test_data/                       # Test input files and configs
@@ -56,6 +67,17 @@ pytest -k "sentinel"
 
 Configuration lives in `pyproject.toml` (`[tool.pytest.ini_options]`), which
 puts `src/` on the path — there is no need to set `PYTHONPATH` yourself.
+
+`testpaths` is `tests/unit`, so a bare `pytest` runs exactly what CI runs. The
+scripts in `tests/scripts/` are walkthroughs meant to be run by hand: several
+need network access or an API key, and they report by printing rather than by
+asserting. They are named `test_*.py` for historical reasons, so a
+`tests/scripts/conftest.py` keeps them out of collection — `pytest tests/` and
+`pytest` therefore agree.
+
+Every automated test is hermetic. A fixture in `tests/conftest.py` fails any
+test that opens a socket to anything but localhost, because a test that quietly
+depends on the network passes on a developer's machine and fails in CI.
 
 ## Linting
 
