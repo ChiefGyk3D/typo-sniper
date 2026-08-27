@@ -46,9 +46,11 @@ coverage.xml
 htmlcov/
 requirements-dev.txt
 
-# Docker
+# Docker. The uploader is copied into the image by docker/Dockerfile, so it
+# has to survive this exclusion — see the pyproject.toml note above.
 .dockerignore
 docker/
+!docker/upload-results.py
 
 # Documentation and media. README.md is kept: pyproject.toml names it as the
 # package readme, so the build fails without it.

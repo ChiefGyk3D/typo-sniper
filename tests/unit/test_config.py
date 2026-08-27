@@ -176,3 +176,43 @@ class TestSecretResolution:
         config = Config()
         for attr, _aliases in Config.SECRET_FIELDS:
             assert hasattr(config, attr), attr
+
+
+class TestDirectoryOverrides:
+    """
+    Container deployments redirect these at runtime.
+
+    state_dir matters most: it holds the history every delta is computed
+    against. Point it at ephemeral storage and the scanner still runs, still
+    reports, and silently never detects a change again.
+    """
+
+    @pytest.fixture(autouse=True)
+    def clean_env(self, monkeypatch):
+        for key in ('TYPO_SNIPER_CACHE_DIR', 'TYPO_SNIPER_OUTPUT_DIR',
+                    'TYPO_SNIPER_STATE_DIR'):
+            monkeypatch.delenv(key, raising=False)
+
+    def test_state_dir_from_environment(self, monkeypatch):
+        monkeypatch.setenv('TYPO_SNIPER_STATE_DIR', '/mnt/efs/state')
+        assert Config().state_dir == Path('/mnt/efs/state')
+
+    def test_output_dir_from_environment(self, monkeypatch):
+        monkeypatch.setenv('TYPO_SNIPER_OUTPUT_DIR', '/app/results')
+        assert Config().output_dir == Path('/app/results')
+
+    def test_cache_dir_from_environment(self, monkeypatch):
+        monkeypatch.setenv('TYPO_SNIPER_CACHE_DIR', '/app/cache')
+        assert Config().cache_dir == Path('/app/cache')
+
+    def test_the_environment_wins_over_a_config_value(self, monkeypatch):
+        """A deployment-time override is the whole point of these."""
+        monkeypatch.setenv('TYPO_SNIPER_STATE_DIR', '/mnt/efs/state')
+        assert Config(state_dir=Path('/somewhere/else')).state_dir == Path('/mnt/efs/state')
+
+    def test_overrides_are_still_expanded(self, monkeypatch):
+        monkeypatch.setenv('TYPO_SNIPER_STATE_DIR', '~/from-env')
+        assert '~' not in str(Config().state_dir)
+
+    def test_defaults_are_unchanged_without_the_variables(self):
+        assert '.typo_sniper' in str(Config().state_dir)

@@ -4,4 +4,4 @@
 # Copyright (C) 2026 ChiefGyk3D
 # Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
