@@ -183,3 +183,37 @@ class TestJoinValues:
     ])
     def test_join(self, value, expected):
         assert join_values(value) == expected
+
+
+class TestListValuedWhoisFields:
+    def test_excel_survives_list_valued_registrant(self, config, tmp_path, sample_results):
+        """python-whois returns a list whenever a field matched more than one
+        value; a bare list used to abort the entire workbook."""
+        from typo_sniper.exporters import ExcelExporter
+
+        results = sample_results
+        perm = results[0]['permutations'][0]
+        perm['whois_registrant'] = ['Acme LLC', 'Acme Ltd']
+        perm['whois_org'] = ['Acme LLC']
+        perm['whois_registrar'] = ['R1', 'R2']
+        perm['whois_country'] = ['US', 'GB']
+
+        path = ExcelExporter(config).export(results, tmp_path)
+        assert path.exists()
+
+        from openpyxl import load_workbook
+
+        wb = load_workbook(path)
+        details = wb['Details']
+        cells = [str(c.value) for row in details.iter_rows() for c in row]
+        assert any('Acme LLC, Acme Ltd' in c for c in cells)
+
+    def test_html_joins_list_valued_registrant(self, config, tmp_path, sample_results):
+        from typo_sniper.exporters import HTMLExporter
+
+        results = sample_results
+        results[0]['permutations'][0]['whois_registrant'] = ['Acme LLC', 'Acme Ltd']
+        path = HTMLExporter(config).export(results, tmp_path)
+        content = path.read_text()
+        assert 'Acme LLC, Acme Ltd' in content
+        assert "['Acme LLC'" not in content

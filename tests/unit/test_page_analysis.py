@@ -196,3 +196,32 @@ class TestDescribe:
     def test_none_and_unparsed(self):
         assert describe(None) == ''
         assert describe({'parse_ok': False}) == ''
+
+
+class TestSelfClosingTags:
+    def test_self_closed_script_does_not_blank_later_text(self):
+        """A single <script/> used to increment the suppression counter with
+        no matching end tag, silencing every later brand mention — a
+        one-character evasion of the whole text analysis."""
+        from typo_sniper.page_analysis import analyse
+
+        page = (
+            '<html><head><script/></head><body>'
+            '<p>Welcome to Example Corp</p>'
+            '<form action="/login"><input type="text" name="user">'
+            '<input type="password" name="pass"></form>'
+            '</body></html>'
+        )
+        report = analyse(page, 'https://examp1e.com/', 'example.com')
+        assert report['brand_mentioned'] is True
+        assert report['is_credential_form'] is True
+
+    def test_normal_script_content_is_still_suppressed(self):
+        from typo_sniper.page_analysis import analyse
+
+        page = (
+            '<html><body><script>var x = "example brand text";</script>'
+            '<p>plain page</p></body></html>'
+        )
+        report = analyse(page, 'https://examp1e.com/', 'example.com')
+        assert report['brand_mentioned'] is False

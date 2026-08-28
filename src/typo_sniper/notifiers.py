@@ -158,10 +158,25 @@ class BaseNotifier(ABC):
                 )
                 return None
         except Exception as e:
-            # The message may quote the request; it never carries a token,
-            # which is sent as a header and not interpolated into the URL.
-            self.logger.error(f"{self.name} alert failed: {type(e).__name__}: {e}")
+            # Exception messages from aiohttp can quote the full request URL,
+            # and for Slack/Discord/webhook channels the URL *is* the secret.
+            # Log the exception type and a redacted rendering only.
+            self.logger.error(
+                f"{self.name} alert failed: {type(e).__name__}: "
+                f"{self._redact(str(e), url)}"
+            )
             return None
+
+    @staticmethod
+    def _redact(message: str, url: str) -> str:
+        """Strip a webhook URL (and its path, which carries the token) from an
+        error message before it reaches the log."""
+        if not url:
+            return message
+        for secret in (url, url.split('://', 1)[-1]):
+            if secret and secret in message:
+                message = message.replace(secret, '[webhook URL redacted]')
+        return message
 
 
 class SlackNotifier(BaseNotifier):
@@ -592,7 +607,11 @@ class WebhookNotifier(BaseNotifier):
                 self.logger.error(f'Webhook alert failed: HTTP {response.status}')
                 return False
         except Exception as e:
-            self.logger.error(f'Webhook alert failed: {e}')
+            # The exception can quote the URL, which may carry credentials
+            self.logger.error(
+                f'Webhook alert failed: {type(e).__name__}: '
+                f'{self._redact(str(e), url)}'
+            )
             return False
 
 

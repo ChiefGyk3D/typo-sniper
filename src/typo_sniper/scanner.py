@@ -721,8 +721,15 @@ class DomainScanner:
         Run a single WHOIS query, bounded by ``whois_timeout``.
 
         The underlying python-whois library exposes no timeout parameter, so
-        the socket default is set for the duration of the call. Without this a
-        silent WHOIS server can hang a worker thread indefinitely.
+        the process-wide socket default is used. Without this a silent WHOIS
+        server can hang a worker thread indefinitely.
+
+        The default is set once and deliberately not restored: these queries
+        run concurrently across worker threads, and a save/set/restore dance
+        here raced — one thread restoring the old value while another's
+        ``whois.whois()`` was still opening sockets stripped that lookup of
+        its timeout entirely, which is exactly the hang this exists to
+        prevent.
 
         Args:
             domain: Domain to lookup
@@ -733,46 +740,44 @@ class DomainScanner:
         Raises:
             Exception: Whatever the WHOIS lookup raised
         """
-        previous_timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(self.config.whois_timeout)
-        try:
-            w = whois.whois(domain)
+        if socket.getdefaulttimeout() != self.config.whois_timeout:
+            socket.setdefaulttimeout(self.config.whois_timeout)
 
-            # Parse creation dates
-            creation_dates = self._parse_dates(w.creation_date)
-            updated_dates = self._parse_dates(w.updated_date)
-            expiration_dates = self._parse_dates(w.expiration_date)
-            
-            # Parse emails
-            emails = []
-            if w.emails:
-                if isinstance(w.emails, list):
-                    emails = w.emails
-                elif isinstance(w.emails, str):
-                    emails = [w.emails]
-            
-            # Parse name servers
-            name_servers = []
-            if w.name_servers:
-                if isinstance(w.name_servers, list):
-                    name_servers = [ns.lower() for ns in w.name_servers]
-                elif isinstance(w.name_servers, str):
-                    name_servers = [w.name_servers.lower()]
-            
-            return {
-                'whois_created': creation_dates,
-                'whois_updated': updated_dates,
-                'whois_expires': expiration_dates,
-                'whois_registrant': w.name if w.name else None,
-                'whois_org': w.org if w.org else None,
-                'whois_registrar': w.registrar if w.registrar else None,
-                'whois_emails': emails,
-                'whois_name_servers': name_servers,
-                'whois_status': w.status if w.status else None,
-                'whois_country': w.country if hasattr(w, 'country') and w.country else None,
-            }
-        finally:
-            socket.setdefaulttimeout(previous_timeout)
+        w = whois.whois(domain)
+
+        # Parse creation dates
+        creation_dates = self._parse_dates(w.creation_date)
+        updated_dates = self._parse_dates(w.updated_date)
+        expiration_dates = self._parse_dates(w.expiration_date)
+
+        # Parse emails
+        emails = []
+        if w.emails:
+            if isinstance(w.emails, list):
+                emails = w.emails
+            elif isinstance(w.emails, str):
+                emails = [w.emails]
+
+        # Parse name servers
+        name_servers = []
+        if w.name_servers:
+            if isinstance(w.name_servers, list):
+                name_servers = [ns.lower() for ns in w.name_servers]
+            elif isinstance(w.name_servers, str):
+                name_servers = [w.name_servers.lower()]
+
+        return {
+            'whois_created': creation_dates,
+            'whois_updated': updated_dates,
+            'whois_expires': expiration_dates,
+            'whois_registrant': w.name if w.name else None,
+            'whois_org': w.org if w.org else None,
+            'whois_registrar': w.registrar if w.registrar else None,
+            'whois_emails': emails,
+            'whois_name_servers': name_servers,
+            'whois_status': w.status if w.status else None,
+            'whois_country': w.country if hasattr(w, 'country') and w.country else None,
+        }
 
     def _parse_dates(self, date_value: Any) -> list[str]:
         """

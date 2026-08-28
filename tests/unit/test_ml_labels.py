@@ -113,3 +113,28 @@ class TestReadiness:
     def test_counts(self, store):
         self._fill(store, 3, 2)
         assert store.counts() == {ACTED: 3, DISMISSED: 2}
+
+
+class TestConfigurableThreshold:
+    def test_lower_min_labels_is_honoured(self, store):
+        """ml_min_labels below the built-in 30 must actually lower the gate
+        (the per-class floor still applies)."""
+        for i in range(8):
+            store.set(f'acted{i}.com', 'acted')
+        for i in range(8):
+            store.set(f'dismissed{i}.com', 'dismissed')
+
+        ready_default, _ = store.readiness()
+        assert ready_default is False  # 16 < 30
+
+        ready_lowered, reason = store.readiness(min_labels=16)
+        assert ready_lowered is True, reason
+
+    def test_per_class_floor_survives_a_tiny_threshold(self, store):
+        for i in range(20):
+            store.set(f'acted{i}.com', 'acted')
+        store.set('lone.com', 'dismissed')
+
+        ready, reason = store.readiness(min_labels=5)
+        assert ready is False
+        assert 'each label' in reason

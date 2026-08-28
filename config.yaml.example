@@ -42,7 +42,7 @@ watch_interval: 86400              # Seconds between scans; --interval accepts 6
 
 # Notifications - fire on changes only, never on the full result set
 enable_notifications: false
-notify_channels: []                # any of: slack, discord, webhook, email
+notify_channels: []                # any of: slack, discord, teams, matrix, jira, webhook, email
 notify_timeout: 20
 notify_min_changes: 1              # Suppress alerts below this many changes
 notify_on_no_changes: false        # Send a message even when nothing changed
@@ -87,7 +87,11 @@ enable_idn_homograph: false        # Detect IDN/Unicode homograph attacks (SLOW)
 enable_urlscan: false              # Enable URLScan.io integration
 urlscan_api_key: null              # URLScan.io API key (required if enabled)
 urlscan_free_tier: true            # true = 30 search req/min (free), false = unlimited (paid)
-urlscan_visibility: public         # public, unlisted, or private
+urlscan_visibility: public         # public, unlisted, or private. NOTE: public
+                                   # submissions publish the domains you monitor
+                                   # (and therefore your brand list) to the
+                                   # URLScan public feed. Use 'unlisted' if that
+                                   # is more exposure than you want.
 urlscan_max_age_days: 7            # Submit new scan if existing scan is older than this (days)
 urlscan_wait_timeout: 90           # Max seconds to wait for new scan results
 
@@ -115,6 +119,12 @@ enable_http_probe: true            # Probe domains with HTTP/HTTPS
 http_timeout: 10                   # HTTP request timeout (seconds)
 http_max_bytes: 1048576            # Cap on probed response bodies (1 MiB)
 http_max_redirects: 5              # Maximum redirects to follow
+http_allow_private: false          # Refuse probes of hosts resolving to private,
+                                   # loopback, or reserved addresses. A lookalike's
+                                   # A record is attacker-controlled; probing an
+                                   # internal address from inside your network is
+                                   # exactly what this prevents. Enable only when
+                                   # deliberately scanning internal names.
 # Read what the fetched page appears built to collect: credential forms,
 # forms submitting to another domain, mentions of the brand. This costs no
 # extra request — the body is already in memory from the probe — and it is the
@@ -146,8 +156,8 @@ ai_model: ''                       # empty = the provider's default
 ai_base_url: ''                    # Ollama host, or an OpenAI-compatible gateway
 ai_max_tokens: 4096
 ai_timeout: 120
-ai_effort: medium                  # low | medium | high (Claude)
-ai_min_risk_score: 50              # Skip the request when nothing scores this high
+ai_effort: medium                  # Claude only: low | medium | high | xhigh | max
+ai_min_risk_score: 30              # Skip the request when nothing scores this high (default: 30)
 ai_explain_changes: true           # Also summarise what moved since the last scan
 # Never put an API key here. Set TYPO_SNIPER_AI_API_KEY, use the provider's own
 # variable (ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY), or store it in

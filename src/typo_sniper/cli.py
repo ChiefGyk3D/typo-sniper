@@ -502,6 +502,8 @@ class TypoSniper:
         self.results = []
         self.deltas = []
         self.ai_results = []
+        if self.analyzer is not None:
+            self.analyzer.reset_counters()
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -541,8 +543,8 @@ Examples:
     parser.add_argument(
         '-o', '--output',
         type=Path,
-        default=Path('results'),
-        help='Output directory for results (default: results/)'
+        default=None,
+        help='Output directory for results (default: output_dir from config, else results/)'
     )
 
     parser.add_argument(
@@ -556,7 +558,7 @@ Examples:
     parser.add_argument(
         '--months',
         type=int,
-        default=0,
+        default=None,
         help='Filter domains registered within the last N months (0 = no filter)'
     )
 
@@ -569,14 +571,14 @@ Examples:
     parser.add_argument(
         '--max-workers',
         type=int,
-        default=10,
+        default=None,
         help='Maximum number of concurrent workers (default: 10)'
     )
 
     parser.add_argument(
         '--cache-ttl',
         type=int,
-        default=86400,
+        default=None,
         help='Cache TTL in seconds (default: 86400 = 24 hours)'
     )
 
@@ -740,7 +742,7 @@ def apply_labels(config, specs: list[str]) -> int:
 
         console.print(f'[green]✓[/green] {domain} labelled [bold]{label}[/bold]')
 
-    ready, reason = store.readiness()
+    ready, reason = store.readiness(config.ml_min_labels)
     marker = '[green]✓[/green]' if ready else '[yellow]•[/yellow]'
     console.print(f'\n{marker} {reason}')
     if not ready:
@@ -764,7 +766,7 @@ def print_ml_status(config, domains: list[str] | None = None) -> None:
 
     store = LabelStore(config.state_dir)
     counts = store.counts()
-    ready, reason = store.readiness()
+    ready, reason = store.readiness(config.ml_min_labels)
 
     console.print('\n[bold]Labels[/bold]')
     console.print(f"  acted:     {counts.get('acted', 0)}")
@@ -832,7 +834,7 @@ def run_ml_training(config, domains: list[str]) -> int:
         return 1
 
     store = LabelStore(config.state_dir)
-    ready, reason = store.readiness()
+    ready, reason = store.readiness(config.ml_min_labels)
     if not ready:
         console.print(f'[yellow]•[/yellow] Not enough labelled data yet: {reason}')
         return 1
@@ -1016,11 +1018,19 @@ async def main():
             sys.exit(code)
         return
 
-    # Override config with command-line arguments
-    config.max_workers = args.max_workers
-    config.cache_ttl = args.cache_ttl
-    config.use_cache = not args.no_cache
-    config.months_filter = args.months
+    # Override config with command-line arguments, but only where a flag was
+    # actually given: the argparse defaults must not clobber values set in the
+    # config file or through the environment.
+    if args.max_workers is not None:
+        config.max_workers = args.max_workers
+    if args.cache_ttl is not None:
+        config.cache_ttl = args.cache_ttl
+    if args.no_cache:
+        config.use_cache = False
+    if args.months is not None:
+        config.months_filter = args.months
+    if args.output is None:
+        args.output = Path(config.output_dir)
     config.debug_mode = debug_mode
 
     if args.no_diff:
@@ -1098,9 +1108,9 @@ async def main():
                 + ('learned triage model' if sniper.triage_model
                    else '[yellow]no usable model; using risk score[/yellow]')
             )
-        if args.months > 0:
+        if config.months_filter > 0:
             console.print(
-                f"[bold]Filter:[/bold] Domains registered in last {args.months} months"
+                f"[bold]Filter:[/bold] Domains registered in last {config.months_filter} months"
             )
 
         if args.watch:

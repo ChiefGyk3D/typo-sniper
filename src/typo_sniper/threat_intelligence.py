@@ -7,15 +7,18 @@ Threat intelligence integrations for domain analysis.
 # Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
 
 import asyncio
+import ipaddress
 import json
 import logging
 import re
+import socket
 import ssl
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import quote
 
 import aiohttp
+from yarl import URL
 
 from . import page_analysis
 
@@ -54,8 +57,15 @@ class ThreatIntelligence:
             timeout=timeout,
             headers={'User-Agent': self.config.user_agent},
         )
-        # Validate API keys on startup
-        await self.validate_api_keys()
+        # Validate API keys on startup. If validation raises, the caller never
+        # enters the context, so __aexit__ will not run — close the session
+        # here or it leaks (one "Unclosed client session" per scanned domain).
+        try:
+            await self.validate_api_keys()
+        except BaseException:
+            await self.session.close()
+            self.session = None
+            raise
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -123,8 +133,13 @@ class ThreatIntelligence:
             return None
         
         try:
-            # First, check for existing scans
-            search_url = f"https://urlscan.io/api/v1/search/?q=domain:{domain}&size=1"
+            # First, check for existing scans. Encode the domain: IDN
+            # homograph permutations can carry characters that would
+            # otherwise alter the query.
+            search_url = (
+                "https://urlscan.io/api/v1/search/"
+                f"?q=domain:{quote(domain, safe='')}&size=1"
+            )
             headers = {"API-Key": self.config.urlscan_api_key}
             
             should_submit = False
@@ -422,6 +437,46 @@ class ThreatIntelligence:
 
         return results if (results['http_active'] or results['https_active']) else None
     
+    async def _host_is_public(self, host: str | None) -> bool:
+        """
+        Best-effort check that a hostname resolves only to global addresses.
+
+        The scanner typically runs inside the network it defends, and the
+        probe target's DNS is controlled by whoever registered the lookalike.
+        An A record pointing at 169.254.169.254 or an internal host would
+        otherwise have the probe fetch that address and put the response into
+        the report (and, with --ai, forward it to a model provider).
+
+        This is a check-then-connect test, so a DNS rebinding attacker with a
+        very low TTL can still race it; it removes the trivial static-record
+        case, which is the cheap and common one.
+
+        Args:
+            host: Hostname or IP literal from the URL being probed
+
+        Returns:
+            False when every resolved address is non-global; True otherwise
+            (including when resolution fails — the request itself will then
+            fail without contacting anything).
+        """
+        if not host:
+            return False
+        try:
+            return ipaddress.ip_address(host).is_global
+        except ValueError:
+            pass  # A hostname, not an IP literal
+        try:
+            loop = asyncio.get_running_loop()
+            infos = await loop.getaddrinfo(host, None, type=socket.SOCK_STREAM)
+        except (socket.gaierror, OSError):
+            return True
+        addresses = {info[4][0] for info in infos}
+        if not addresses:
+            return True
+        return all(
+            ipaddress.ip_address(addr.split('%')[0]).is_global for addr in addresses
+        )
+
     async def _probe_scheme(self, url: str) -> dict[str, Any] | None:
         """
         Fetch one URL and extract its status, final URL and page title.
@@ -429,6 +484,9 @@ class ThreatIntelligence:
         The response body is read in bounded chunks. These are hostile hosts by
         definition, and an unbounded ``response.text()`` would let one of them
         exhaust the scanner's memory by streaming an endless body.
+
+        Redirects are followed manually so that every hop — not just the first
+        URL — is refused if it points at a private or reserved address.
 
         Args:
             url: Absolute http(s) URL to probe
@@ -440,35 +498,58 @@ class ThreatIntelligence:
         # obstacle to work around: it is itself a finding, recorded below.
         timeout = aiohttp.ClientTimeout(total=self.config.http_timeout)
         is_https = url.startswith('https://')
+        current = URL(url)
 
         try:
-            async with self.session.get(
-                url,
-                timeout=timeout,
-                allow_redirects=True,
-                max_redirects=self.config.http_max_redirects,
-            ) as response:
-                result = {
-                    'status': response.status,
-                    'redirects_to': str(response.url) if response.history else None,
-                    'title': None,
-                    'tls_verified': True if is_https else None,
-                    'page': None,
-                }
+            for _hop in range(self.config.http_max_redirects + 1):
+                if not self.config.http_allow_private and not await self._host_is_public(
+                    current.host
+                ):
+                    self.logger.info(
+                        f"Refusing to probe {current}: it resolves to a private, "
+                        f"loopback, or reserved address (set http_allow_private "
+                        f"to override)"
+                    )
+                    return None
 
-                if response.status == 200:
-                    body = await self._read_body(response)
-                    if body:
-                        result['title'] = self._extract_title(body)
-                        if self.config.enable_page_analysis:
-                            # No extra request: the body is already in memory,
-                            # and what the page collects is the strongest
-                            # signal available about what it is for.
-                            result['page'] = page_analysis.analyse(
-                                body, str(response.url), self.monitored_domain
-                            )
+                async with self.session.get(
+                    current,
+                    timeout=timeout,
+                    allow_redirects=False,
+                ) as response:
+                    location = response.headers.get('Location')
+                    if response.status in (301, 302, 303, 307, 308) and location:
+                        target = current.join(URL(location))
+                        if target.scheme not in ('http', 'https'):
+                            return None
+                        current = target
+                        continue
 
-                return result
+                    result = {
+                        'status': response.status,
+                        'redirects_to': str(current) if str(current) != url else None,
+                        'title': None,
+                        'tls_verified': True if is_https else None,
+                        'page': None,
+                    }
+
+                    if response.status == 200:
+                        body = await self._read_body(response)
+                        if body:
+                            result['title'] = self._extract_title(body)
+                            if self.config.enable_page_analysis:
+                                # No extra request: the body is already in
+                                # memory, and what the page collects is the
+                                # strongest signal available about what it is
+                                # for.
+                                result['page'] = page_analysis.analyse(
+                                    body, str(current), self.monitored_domain
+                                )
+
+                    return result
+
+            # Redirect chain exceeded http_max_redirects
+            return None
 
         except (aiohttp.ClientConnectorCertificateError,
                 aiohttp.ClientConnectorSSLError,

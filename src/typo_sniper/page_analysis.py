@@ -28,6 +28,7 @@ cheap way to stall a scan.
 # Copyright (C) 2026 ChiefGyk3D
 # Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
 
+import functools
 import logging
 import re
 from html.parser import HTMLParser
@@ -97,7 +98,13 @@ class _PageParser(HTMLParser):
                 self._current_form['inputs'].append(field)
 
     def handle_startendtag(self, tag, attrs):
+        # A self-closed tag never gets a matching handle_endtag call. Routing
+        # it through handle_starttag alone would let a single ``<script/>``
+        # increment _suppress forever and blank out all later text analysis —
+        # a one-character evasion. A self-closed invisible tag contains no
+        # text, so balance the counter immediately.
         self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
 
     def handle_endtag(self, tag):
         if tag in _INVISIBLE and self._suppress:
@@ -130,13 +137,20 @@ def _registrable(host: str) -> str:
     if not host:
         return ''
     try:
-        from publicsuffixlist import PublicSuffixList
-
-        return PublicSuffixList().privatesuffix(host) or host
+        return _psl().privatesuffix(host) or host
     except Exception:
         # Never let suffix lookup failure cost the whole analysis
         parts = host.split('.')
         return '.'.join(parts[-2:]) if len(parts) >= 2 else host
+
+
+@functools.lru_cache(maxsize=1)
+def _psl():
+    """Parse the Public Suffix List once — it costs tens of milliseconds and
+    was previously paid on every probed page and every form action."""
+    from publicsuffixlist import PublicSuffixList
+
+    return PublicSuffixList()
 
 
 def _field_is_credential(field: dict[str, str]) -> bool:

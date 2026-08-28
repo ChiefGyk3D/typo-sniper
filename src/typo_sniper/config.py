@@ -6,6 +6,7 @@ Configuration management for Typo Sniper.
 # Copyright (C) 2026 ChiefGyk3D
 # Typo Sniper is dual-licensed; see COMMERCIAL.md for commercial terms.
 
+import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -171,6 +172,12 @@ class Config:
     http_timeout: int = 10
     http_max_bytes: int = 1_048_576  # Cap on probed response bodies (1 MiB)
     http_max_redirects: int = 5
+    # Refuse to probe hosts that resolve to private, loopback, or otherwise
+    # non-global addresses. A lookalike whose A record points at
+    # 169.254.169.254 or an internal host would otherwise turn the scanner —
+    # typically run inside the defended network — into a fetch-and-report
+    # proxy for whatever that address serves.
+    http_allow_private: bool = False
     # Read what the fetched page appears built to collect: credential forms,
     # off-site form actions, brand mentions. Costs no extra request; the body
     # is already in memory from the probe.
@@ -384,10 +391,17 @@ class Config:
         if 'state_dir' in data:
             data['state_dir'] = _expand_path(data['state_dir'])
         
-        # Filter only valid fields
+        # Filter only valid fields — and say so. A typo like `enable_url_scan:`
+        # silently running with defaults is how operators come to believe a
+        # feature is on when it is not.
         valid_fields = {f.name for f in cls.__dataclass_fields__.values()}
+        unknown = sorted(k for k in data if k not in valid_fields)
+        if unknown:
+            logging.getLogger(__name__).warning(
+                f"Ignoring unknown configuration key(s): {', '.join(unknown)}"
+            )
         filtered_data = {k: v for k, v in data.items() if k in valid_fields}
-        
+
         return cls(**filtered_data)
     
     def to_dict(self) -> dict[str, Any]:
@@ -428,6 +442,14 @@ class Config:
         
         # Create parent directory with validated path
         resolved_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
+        # Never write resolved credentials back to disk. By the time save()
+        # runs, resolve_secrets() may have pulled tokens out of Vault, AWS, or
+        # 1Password — persisting them in cleartext YAML would defeat the very
+        # point of using a secrets backend.
+        data = self.to_dict()
+        for attr, _aliases in self.SECRET_FIELDS:
+            data.pop(attr, None)
+
         with open(resolved_path, 'w') as f:
-            yaml.dump(self.to_dict(), f, default_flow_style=False)
+            yaml.dump(data, f, default_flow_style=False)

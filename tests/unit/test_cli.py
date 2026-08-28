@@ -66,9 +66,25 @@ class TestArgumentParsing:
         monkeypatch.setattr('sys.argv', ['typo_sniper.py'])
         args = parse_arguments()
         assert args.format == ['excel']
-        assert args.months == 0
-        assert args.max_workers == 10
+        # None, not the numeric defaults: an argparse default here would
+        # silently overwrite the same setting from a config file. The
+        # effective defaults live in Config.
+        assert args.months is None
+        assert args.max_workers is None
+        assert args.cache_ttl is None
+        assert args.output is None
         assert args.no_cache is False
+
+    def test_explicit_flags_are_kept(self, monkeypatch):
+        monkeypatch.setattr(
+            'sys.argv',
+            ['typo_sniper.py', '--months', '3', '--max-workers', '20',
+             '--cache-ttl', '60', '-o', 'out'])
+        args = parse_arguments()
+        assert args.months == 3
+        assert args.max_workers == 20
+        assert args.cache_ttl == 60
+        assert str(args.output) == 'out'
 
     def test_multiple_formats(self, monkeypatch):
         monkeypatch.setattr(

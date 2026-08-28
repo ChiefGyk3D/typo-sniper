@@ -316,11 +316,14 @@ class ExcelExporter(BaseExporter):
                     join_values(perm.get('whois_created')),
                     join_values(perm.get('whois_updated')),
                     join_values(perm.get('whois_expires')),
-                    perm.get('whois_registrant', ''),
-                    perm.get('whois_org', ''),
-                    perm.get('whois_registrar', ''),
+                    # python-whois returns a list whenever a field matched more
+                    # than one value, so even the "scalar" fields go through
+                    # join_values — a bare list aborts the whole workbook.
+                    join_values(perm.get('whois_registrant')),
+                    join_values(perm.get('whois_org')),
+                    join_values(perm.get('whois_registrar')),
                     join_values(perm.get('whois_emails')),
-                    perm.get('whois_country', ''),
+                    join_values(perm.get('whois_country')),
                     join_values(perm.get('whois_status')),
                     join_values(perm.get('whois_name_servers')),
                     join_values(perm.get('dns_a')),
@@ -498,11 +501,11 @@ class CSVExporter(BaseExporter):
                         join_values(perm.get('whois_created')),
                         join_values(perm.get('whois_updated')),
                         join_values(perm.get('whois_expires')),
-                        perm.get('whois_registrant', ''),
-                        perm.get('whois_org', ''),
-                        perm.get('whois_registrar', ''),
+                        join_values(perm.get('whois_registrant')),
+                        join_values(perm.get('whois_org')),
+                        join_values(perm.get('whois_registrar')),
                         join_values(perm.get('whois_emails')),
-                        perm.get('whois_country', ''),
+                        join_values(perm.get('whois_country')),
                         join_values(perm.get('whois_status')),
                         join_values(perm.get('whois_name_servers')),
                         join_values(perm.get('dns_a')),
@@ -765,8 +768,8 @@ class HTMLExporter(BaseExporter):
                         <td>{html.escape(intel['http'])}</td>
                         <td>{html.escape(intel['tls'])}</td>
                         <td>{html.escape(created)}</td>
-                        <td>{html.escape(str(perm.get('whois_registrant') or ''))}</td>
-                        <td>{html.escape(str(perm.get('whois_org') or ''))}</td>
+                        <td>{html.escape(join_values(perm.get('whois_registrant')))}</td>
+                        <td>{html.escape(join_values(perm.get('whois_org')))}</td>
                         <td>{html.escape(ip)}</td>
                     </tr>
 """

@@ -94,6 +94,8 @@ all = [
     "azure-keyvault-secrets>=4.8.0",
     "azure-identity>=1.17.0",
     "google-cloud-secret-manager>=2.20.0",
+    # Without this, "[all]" could not run --ml-train while "[ai-all]" could
+    "scikit-learn>=1.3.0",
 ]
 
 [tool.setuptools.packages.find]
