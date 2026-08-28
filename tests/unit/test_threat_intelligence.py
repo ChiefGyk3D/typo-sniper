@@ -275,3 +275,45 @@ class TestPrivateAddressGuard:
         # Reaches the (failing) request instead of being refused up front
         assert await ti._probe_scheme('https://127.0.0.1/') is None
         assert session.get.call_count == 1
+
+
+class TestHttpProbeMerging:
+    """Both schemes are probed concurrently; https results stay preferred."""
+
+    @pytest.mark.asyncio
+    async def test_https_results_preferred_over_http(self, intel):
+        async def fake(url, monitored_domain=None):
+            if url.startswith('https://'):
+                return {'status': 200, 'redirects_to': None, 'title': 'secure',
+                        'tls_verified': True, 'page': None}
+            return {'status': 200, 'redirects_to': 'http://elsewhere/',
+                    'title': 'plain', 'tls_verified': None, 'page': None}
+
+        intel._probe_scheme = fake
+        result = await intel.http_probe('x.com')
+        assert result['https_active'] is True
+        assert result['http_active'] is True
+        assert result['title'] == 'secure'      # https wins the merge
+        assert result['tls_verified'] is True
+        assert result['redirects_to'] == 'http://elsewhere/'  # filled from http
+
+    @pytest.mark.asyncio
+    async def test_one_scheme_failing_does_not_lose_the_other(self, intel):
+        async def fake(url, monitored_domain=None):
+            if url.startswith('https://'):
+                raise RuntimeError('boom')
+            return {'status': 200, 'redirects_to': None, 'title': 'plain',
+                    'tls_verified': None, 'page': None}
+
+        intel._probe_scheme = fake
+        result = await intel.http_probe('x.com')
+        assert result['https_active'] is False
+        assert result['http_active'] is True
+
+    @pytest.mark.asyncio
+    async def test_both_dead_returns_none(self, intel):
+        async def fake(url, monitored_domain=None):
+            return None
+
+        intel._probe_scheme = fake
+        assert await intel.http_probe('x.com') is None

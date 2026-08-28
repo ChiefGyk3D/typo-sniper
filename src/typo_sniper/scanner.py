@@ -59,6 +59,52 @@ class DomainScanner:
         self._whois_circuit_open = False
         # Per-run counts of where registration data actually came from
         self.lookup_sources = {'rdap': 0, 'whois': 0, 'none': 0}
+        # One HTTP session, RDAP client, and threat-intel context for the
+        # whole run. Building these per monitored domain re-did TCP and TLS
+        # handshakes to the same registry and intel endpoints once per
+        # domain, and re-fetched the RDAP bootstrap on --no-cache runs.
+        self._session: aiohttp.ClientSession | None = None
+        self._rdap_client: RDAPClient | None = None
+        self._threat_intel: ThreatIntelligence | None = None
+        self._dns_resolver = None
+        self._dns_semaphore: asyncio.Semaphore | None = None
+
+    async def _get_session(self) -> aiohttp.ClientSession:
+        """Return the run-wide aiohttp session, creating it on first use."""
+        if self._session is None or self._session.closed:
+            connector = aiohttp.TCPConnector(
+                limit=max(20, self.config.max_workers * 2),
+                limit_per_host=30,
+                ttl_dns_cache=300,
+            )
+            # Requests that need different bounds (RDAP, probes) pass their
+            # own per-request timeouts; this is the ceiling for the rest.
+            timeout = aiohttp.ClientTimeout(total=30, connect=10)
+            self._session = aiohttp.ClientSession(
+                connector=connector,
+                timeout=timeout,
+                headers={'User-Agent': self.config.user_agent},
+            )
+        return self._session
+
+    async def _get_threat_intel(self) -> ThreatIntelligence:
+        """Return the run-wide ThreatIntelligence, entering it on first use
+        (which validates API keys exactly once per run)."""
+        if self._threat_intel is None:
+            ti = ThreatIntelligence(self.config, session=await self._get_session())
+            await ti.__aenter__()
+            self._threat_intel = ti
+        return self._threat_intel
+
+    async def aclose(self) -> None:
+        """Close the shared HTTP session and threat-intel context."""
+        if self._threat_intel is not None:
+            await self._threat_intel.__aexit__(None, None, None)
+            self._threat_intel = None
+        self._rdap_client = None
+        if self._session is not None and not self._session.closed:
+            await self._session.close()
+        self._session = None
 
     def close(self) -> None:
         """Shut down the worker thread pool."""
@@ -109,8 +155,6 @@ class DomainScanner:
             f"Found {len(registered)} registered permutations for {domain} "
             f"({len(permutations)} from dnstwist, {len(enhanced_perms)} from enhanced detection)"
         )
-
-        whois_before = self.whois_succeeded
 
         # Registration data: RDAP first (HTTPS, structured JSON), falling back
         # to WHOIS only for registries that publish no RDAP endpoint.
@@ -167,7 +211,14 @@ class DomainScanner:
             # Sort by risk score (highest first)
             enriched.sort(key=lambda x: x.get('risk_score', 0), reverse=True)
 
-        whois_ok = self.whois_succeeded - whois_before
+        # Counted from the data itself rather than by diffing the shared
+        # run-wide counters, which would misattribute lookups when several
+        # monitored domains are scanned concurrently.
+        whois_ok = sum(
+            1 for p in registered
+            if p.get('whois_created') or p.get('whois_registrar')
+            or p.get('whois_expires') or p.get('whois_name_servers')
+        )
         if registered and whois_ok == 0:
             self.logger.warning(
                 f"No WHOIS data could be retrieved for any of the {len(registered)} "
@@ -404,14 +455,35 @@ class DomainScanner:
         Returns:
             The resolved IPv4 address, or None if the domain does not resolve
         """
-        loop = asyncio.get_event_loop()
         try:
-            return await loop.run_in_executor(
-                self.executor,
-                socket.gethostbyname,
-                domain
+            import dns.asyncresolver
+            import dns.exception
+        except ImportError:  # pragma: no cover - dnspython is a hard dep
+            loop = asyncio.get_event_loop()
+            try:
+                return await loop.run_in_executor(
+                    self.executor, socket.gethostbyname, domain
+                )
+            except (TimeoutError, socket.gaierror, UnicodeError, OSError):
+                return None
+
+        # A real async resolver instead of gethostbyname on the thread pool:
+        # enhanced detection can generate hundreds of candidates per domain,
+        # and each blocking call held a worker thread for up to its timeout.
+        if self._dns_resolver is None:
+            self._dns_resolver = dns.asyncresolver.Resolver()
+            self._dns_resolver.lifetime = 5.0
+        if self._dns_semaphore is None:
+            self._dns_semaphore = asyncio.Semaphore(
+                max(10, self.config.max_workers * 2)
             )
-        except (TimeoutError, socket.gaierror, UnicodeError, OSError):
+        try:
+            async with self._dns_semaphore:
+                answer = await self._dns_resolver.resolve(domain, 'A')
+            for rdata in answer:
+                return rdata.address
+            return None
+        except (dns.exception.DNSException, UnicodeError, OSError):
             return None
     
     async def _add_threat_intelligence(
@@ -435,48 +507,48 @@ class DomainScanner:
             return permutations
         
         self.logger.info(f"Gathering threat intelligence for {len(permutations)} domains")
-        
-        async with ThreatIntelligence(self.config) as threat_intel:
-            # So page analysis can tell whether a page names the brand it is
-            # imitating, which a generic parked page never does.
-            threat_intel.monitored_domain = monitored_domain
 
-            tasks = []
-            for perm in permutations:
-                task = threat_intel.analyze_domain(perm['domain'])
-                tasks.append(task)
-            
-            # Calculate batch size and delay based on API tier limits
-            # URLScan free: 30 req/min = ~2 seconds per request
-            
-            if self.config.enable_urlscan and self.config.urlscan_free_tier:
-                # URLScan free tier: 30 requests/min = ~2 seconds per request
-                batch_size = min(30, self.config.max_workers)
-                batch_delay = 2.0
-                self.logger.info("Using URLScan free tier limits (30 requests/min)")
+        threat_intel = await self._get_threat_intel()
+
+        # monitored_domain travels with each call rather than being set on the
+        # shared instance, so concurrent scans of different monitored domains
+        # cannot cross their brand-mention analysis.
+        tasks = []
+        for perm in permutations:
+            task = threat_intel.analyze_domain(perm['domain'], monitored_domain)
+            tasks.append(task)
+
+        # Calculate batch size and delay based on API tier limits
+        # URLScan free: 30 req/min = ~2 seconds per request
+
+        if self.config.enable_urlscan and self.config.urlscan_free_tier:
+            # URLScan free tier: 30 requests/min = ~2 seconds per request
+            batch_size = min(30, self.config.max_workers)
+            batch_delay = 2.0
+            self.logger.info("Using URLScan free tier limits (30 requests/min)")
+        else:
+            # Paid tier or no API limits - use normal batching
+            batch_size = self.config.max_workers
+            batch_delay = 0.5
+
+        # Execute threat intelligence checks in batches
+        threat_results = []
+        for i in range(0, len(tasks), batch_size):
+            batch = tasks[i:i + batch_size]
+            batch_results = await asyncio.gather(*batch, return_exceptions=True)
+            threat_results.extend(batch_results)
+
+            # Rate limiting between batches
+            if i + batch_size < len(tasks):
+                await asyncio.sleep(batch_delay)
+
+        # Add threat intelligence to permutations
+        for perm, threat_data in zip(permutations, threat_results, strict=False):
+            if isinstance(threat_data, Exception):
+                self.logger.error(f"Threat intel error for {perm['domain']}: {threat_data}")
             else:
-                # Paid tier or no API limits - use normal batching
-                batch_size = self.config.max_workers
-                batch_delay = 0.5
-            
-            # Execute threat intelligence checks in batches
-            threat_results = []
-            for i in range(0, len(tasks), batch_size):
-                batch = tasks[i:i + batch_size]
-                batch_results = await asyncio.gather(*batch, return_exceptions=True)
-                threat_results.extend(batch_results)
-                
-                # Rate limiting between batches
-                if i + batch_size < len(tasks):
-                    await asyncio.sleep(batch_delay)
-            
-            # Add threat intelligence to permutations
-            for perm, threat_data in zip(permutations, threat_results, strict=False):
-                if isinstance(threat_data, Exception):
-                    self.logger.error(f"Threat intel error for {perm['domain']}: {threat_data}")
-                else:
-                    perm['threat_intel'] = threat_data
-        
+                perm['threat_intel'] = threat_data
+
         return permutations
 
     async def _add_mail_intelligence(self, permutations: list[dict[str, Any]]) -> None:
@@ -534,39 +606,38 @@ class DomainScanner:
         if not permutations:
             return unresolved
 
-        connector = aiohttp.TCPConnector(limit=max(4, self.config.max_workers * 2))
-        timeout = aiohttp.ClientTimeout(total=self.config.rdap_timeout + 10)
+        # The session, client, and its in-memory RDAP bootstrap live for the
+        # whole run: registries repeat across domains (every .com permutation
+        # hits the same endpoint), so connections and the bootstrap are reused
+        # instead of being rebuilt per monitored domain.
+        session = await self._get_session()
+        if self._rdap_client is None:
+            self._rdap_client = RDAPClient(session, self.config, self.cache)
+        client = self._rdap_client
+        semaphore = asyncio.Semaphore(max(1, self.config.max_workers))
 
-        async with aiohttp.ClientSession(
-            connector=connector,
-            timeout=timeout,
-            headers={'User-Agent': self.config.user_agent},
-        ) as session:
-            client = RDAPClient(session, self.config, self.cache)
-            semaphore = asyncio.Semaphore(max(1, self.config.max_workers))
+        async def lookup_one(perm):
+            domain = perm['domain']
 
-            async def lookup_one(perm):
-                domain = perm['domain']
-
-                if self.config.use_cache:
-                    cached = self.cache.get(f"rdap:{domain}")
-                    if cached:
-                        perm.update(cached)
-                        return 'rdap'
-
-                async with semaphore:
-                    data = await client.lookup(domain)
-
-                if data:
-                    perm.update(data)
-                    if self.config.use_cache:
-                        self.cache.set(f"rdap:{domain}", data, ttl=self.config.cache_ttl)
+            if self.config.use_cache:
+                cached = self.cache.get(f"rdap:{domain}")
+                if cached:
+                    perm.update(cached)
                     return 'rdap'
-                return None
 
-            results = await asyncio.gather(
-                *(lookup_one(p) for p in permutations), return_exceptions=True
-            )
+            async with semaphore:
+                data = await client.lookup(domain)
+
+            if data:
+                perm.update(data)
+                if self.config.use_cache:
+                    self.cache.set(f"rdap:{domain}", data, ttl=self.config.cache_ttl)
+                return 'rdap'
+            return None
+
+        results = await asyncio.gather(
+            *(lookup_one(p) for p in permutations), return_exceptions=True
+        )
 
         resolved = 0
         for perm, outcome in zip(permutations, results, strict=False):

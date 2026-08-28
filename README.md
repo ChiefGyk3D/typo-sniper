@@ -3,7 +3,7 @@
 
 <div align="center">
 
-<img src="media/screen1.png" alt="HTML Report Example" width="700" style="border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 8px #aaa; margin-bottom:16px;" />
+<img src="media/report.png" alt="HTML Report Example" width="700" style="border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 8px #aaa; margin-bottom:16px;" />
 
 **Advanced Domain Typosquatting Detection Tool**
 
@@ -87,7 +87,6 @@ a legitimate result worth reporting.
 
 | Document | Description | When to Use |
 |----------|-------------|-------------|
-
 | **[Quick Start Guide](docs/guides/QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
 | **[README.md](README.md)** | 📖 **You are here.** Complete overview and reference | Understanding features, basic usage |
 | **[Understanding Results](docs/guides/REPORTS.md)** | 📊 Every report column, the risk score, and what to act on | Reading your first report, triage |
@@ -381,11 +380,11 @@ See [docker/DOCKER.md](docker/DOCKER.md) for comprehensive Docker usage guide.
 
 ### Standard Installation
 
-### Prerequisites
+#### Prerequisites
 - Python 3.10 or higher
 - pip package manager
 
-### Quick Install
+#### Quick Install
 
 ```bash
 # Clone the repository
@@ -396,7 +395,7 @@ cd typo-sniper
 pip install -r requirements.txt
 ```
 
-### Security Note: Pinned Dependencies
+#### Security Note: Pinned Dependencies
 
 All dependencies are **pinned to specific versions** in `requirements.txt` to protect against supply chain attacks like [Shai-Hulud](https://www.crowdstrike.com/blog/shai-hulud-suspicious-pypi-packages/) and other compromised library incidents. These versions have been verified as secure at the time of release.
 
@@ -421,7 +420,7 @@ typo-sniper --help
 
 **Recommended practice:** Review the changelog and security advisories before upgrading any dependency.
 
-### Using Virtual Environment (Recommended)
+#### Using Virtual Environment (Recommended)
 
 ```bash
 # Create virtual environment
@@ -575,7 +574,8 @@ cp config.yaml.example config.yaml
 
 ```yaml
 # Performance settings
-max_workers: 10                    # Concurrent workers
+max_workers: 10                    # Concurrent workers (per monitored domain)
+concurrent_domains: 3              # Monitored domains scanned at once (1 = sequential)
 rate_limit_delay: 1.0              # Delay between batches (seconds)
 
 # Cache settings
@@ -593,6 +593,7 @@ dnstwist_phash: false              # Perceptual hashing (requires ssdeep)
 
 # Output settings
 output_dir: results                # Output directory
+results_retain: 0                  # Watch mode: keep newest N scans' files (0 = all)
 
 # WHOIS settings
 whois_timeout: 30                  # Query timeout
@@ -777,7 +778,7 @@ produces. Regenerate them (and the screenshot below) with
 
 **HTML Report Screenshot:**
 
-![HTML Report Example](media/screen1.png)
+![HTML Report Example](media/report.png)
 *Interactive HTML report showing domain permutations, WHOIS data, and summary statistics*
 
 **[⬆ Back to Top](#-table-of-contents)**
@@ -1012,57 +1013,6 @@ regenerate the committed samples and the README screenshot with
 screenshot is a function screenshot and must always show current behaviour.
 
 This project is committed to remaining open source under the GNU AGPL v3, so the core stays free and improvements to it stay public.
-
----
-
-## License
-
-This project is dual-licensed:
-
-- **[GNU AGPL v3](LICENSE)** for everyone — free to use, modify, and run.
-- **[Commercial licence](COMMERCIAL.md)** for organisations embedding Typo Sniper
-  in a proprietary product or offering it as a hosted service without publishing
-  their modifications.
-
-**Why AGPL v3?** Using Typo Sniper is unrestricted: run it, modify it, and keep
-those changes private, in any organisation, commercially, for as long as you like.
-The obligation only applies if you *distribute* it or offer a *modified version to
-others over a network* — the one case a permissive licence would give away, since
-the most likely commercial use of brand-protection tooling is wrapping it in a
-hosted service. Security teams monitoring their own brands are unaffected. If the
-AGPL does not fit your situation, a [commercial licence](COMMERCIAL.md) is available.
-
----
-
-## Acknowledgments
-
-- **[dnstwist](https://github.com/elceef/dnstwist)** - The excellent typosquatting detection engine
-- **[python-whois](https://github.com/richardpenman/whois)** - WHOIS parsing library
-- **[Rich](https://github.com/Textualize/rich)** - Beautiful terminal formatting
-- **[OpenPyXL](https://openpyxl.readthedocs.io/)** - Excel file generation
-
----
-
-## Contact
-
-**Author:** chiefgyk3d
-
-**Version:** see [CHANGELOG.md](CHANGELOG.md) — the badge at the top tracks
-the latest release
-
-**Repository:** https://github.com/chiefgyk3d/typo-sniper
-
----
-
-<div align="center">
-
-Made for brand protection and security research
-
-**[Back to Top](#typo-sniper)**
-
-</div>
-
-**[⬆ Back to Top](#-table-of-contents)**
 
 ---
 
@@ -1590,7 +1540,7 @@ mv config.yaml ~/.typo_sniper/
 
 ---
 
-## Migration Guide
+### Migration Guide
 
 **From Config Files to Environment Variables:**
 ```bash
@@ -1642,7 +1592,7 @@ export AWS_SECRET_NAME="typo-sniper/prod"
 
 ---
 
-## Troubleshooting Secrets
+### Troubleshooting Secrets
 
 **Secret Not Found:**
 ```bash
@@ -1925,3 +1875,52 @@ Once basic functionality is confirmed, you can:
 4. Export IOCs for SIEM ingestion
 
 **[⬆ Back to Top](#-table-of-contents)**
+
+---
+
+## License
+
+This project is dual-licensed:
+
+- **[GNU AGPL v3](LICENSE)** for everyone — free to use, modify, and run.
+- **[Commercial licence](COMMERCIAL.md)** for organisations embedding Typo Sniper
+  in a proprietary product or offering it as a hosted service without publishing
+  their modifications.
+
+**Why AGPL v3?** Using Typo Sniper is unrestricted: run it, modify it, and keep
+those changes private, in any organisation, commercially, for as long as you like.
+The obligation only applies if you *distribute* it or offer a *modified version to
+others over a network* — the one case a permissive licence would give away, since
+the most likely commercial use of brand-protection tooling is wrapping it in a
+hosted service. Security teams monitoring their own brands are unaffected. If the
+AGPL does not fit your situation, a [commercial licence](COMMERCIAL.md) is available.
+
+---
+
+## Acknowledgments
+
+- **[dnstwist](https://github.com/elceef/dnstwist)** - The excellent typosquatting detection engine
+- **[python-whois](https://github.com/richardpenman/whois)** - WHOIS parsing library
+- **[Rich](https://github.com/Textualize/rich)** - Beautiful terminal formatting
+- **[OpenPyXL](https://openpyxl.readthedocs.io/)** - Excel file generation
+
+---
+
+## Contact
+
+**Author:** chiefgyk3d
+
+**Version:** see [CHANGELOG.md](CHANGELOG.md) — the badge at the top tracks
+the latest release
+
+**Repository:** https://github.com/chiefgyk3d/typo-sniper
+
+---
+
+<div align="center">
+
+Made for brand protection and security research
+
+**[Back to Top](#typo-sniper)**
+
+</div>

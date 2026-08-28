@@ -139,42 +139,64 @@ class TypoSniper:
         if progress:
             task_id = progress.add_task("[cyan]Scanning domains...", total=len(domains))
 
-        for domain in domains:
-            console.print(f"\n[bold blue]🎯 Scanning: {domain}[/bold blue]")
-            
-            try:
-                result = await self.scanner.scan_domain(domain)
-                self._apply_ml_ranking(result)
-                self.results.append(result)
+        # Monitored domains are scanned concurrently up to concurrent_domains
+        # (1 restores the old strictly sequential behaviour). History files
+        # are per monitored domain, so diff/record from concurrent tasks
+        # never touch the same file. Results are re-ordered to match the
+        # input list before being appended, keeping reports deterministic.
+        semaphore = asyncio.Semaphore(max(1, self.config.concurrent_domains))
+        outcomes: dict[int, dict] = {}
 
-                # Diff against the previous scan before recording this one,
-                # otherwise the new scan becomes its own baseline.
-                if self.config.enable_diff:
-                    delta = self.history.diff(result)
-                    self.deltas.append(delta)
-                    result['delta'] = delta
-                    self.history.record(result)
-                
-                if result['permutations']:
-                    console.print(f"[green]✓[/green] Found {len(result['permutations'])} registered permutations")
-                    delta = result.get('delta')
-                    if delta and not delta.get('first_run'):
-                        counts = delta.get('counts', {})
-                        notable = counts.get('new', 0) + counts.get('escalated', 0) + counts.get('activated', 0)
-                        if notable:
-                            console.print(
-                                f"[bold yellow]  ↳ {notable} notable change(s) "
-                                f"since {delta.get('baseline')}[/bold yellow]"
-                            )
-                else:
-                    console.print("[yellow]○[/yellow] No registered permutations found")
-                
-            except Exception as e:
-                self.logger.error(f"Error scanning {domain}: {e}", exc_info=True)
-                console.print(f"[red]✗[/red] Error scanning {domain}: {e}")
-            
-            if progress and task_id is not None:
-                progress.update(task_id, advance=1)
+        async def scan_one(index: int, domain: str) -> None:
+            async with semaphore:
+                console.print(f"\n[bold blue]🎯 Scanning: {domain}[/bold blue]")
+                try:
+                    result = await self.scanner.scan_domain(domain)
+                    self._apply_ml_ranking(result)
+
+                    # Diff against the previous scan before recording this
+                    # one, otherwise the new scan becomes its own baseline.
+                    if self.config.enable_diff:
+                        delta = self.history.diff(result)
+                        result['delta'] = delta
+                        self.history.record(result)
+
+                    outcomes[index] = result
+
+                    if result['permutations']:
+                        console.print(
+                            f"[green]✓[/green] {domain}: "
+                            f"{len(result['permutations'])} registered permutations"
+                        )
+                        delta = result.get('delta')
+                        if delta and not delta.get('first_run'):
+                            counts = delta.get('counts', {})
+                            notable = (counts.get('new', 0) + counts.get('escalated', 0)
+                                       + counts.get('activated', 0))
+                            if notable:
+                                console.print(
+                                    f"[bold yellow]  ↳ {domain}: {notable} notable "
+                                    f"change(s) since {delta.get('baseline')}[/bold yellow]"
+                                )
+                    else:
+                        console.print(
+                            f"[yellow]○[/yellow] {domain}: no registered permutations found"
+                        )
+
+                except Exception as e:
+                    self.logger.error(f"Error scanning {domain}: {e}", exc_info=True)
+                    console.print(f"[red]✗[/red] Error scanning {domain}: {e}")
+
+                if progress and task_id is not None:
+                    progress.update(task_id, advance=1)
+
+        await asyncio.gather(*(scan_one(i, d) for i, d in enumerate(domains)))
+
+        for index in sorted(outcomes):
+            result = outcomes[index]
+            self.results.append(result)
+            if self.config.enable_diff and 'delta' in result:
+                self.deltas.append(result['delta'])
 
     def export_results(self, output_formats: list[str], output_dir: Path) -> None:
         """
@@ -219,6 +241,35 @@ class TypoSniper:
             except Exception as e:
                 self.logger.error(f"Error exporting to {format_name}: {e}", exc_info=True)
                 console.print(f"[red]✗[/red] Error exporting to {format_name}: {e}")
+
+        self._prune_old_results(output_dir)
+
+    def _prune_old_results(self, output_dir: Path) -> None:
+        """
+        Enforce ``results_retain``: keep only the newest N scans' report files.
+
+        Watch mode writes a new timestamped file per format every cycle, so a
+        long-running watch grows the results directory without bound. Only
+        files matching this tool's own ``typo_sniper_results_<timestamp>``
+        pattern are ever considered; anything else in the directory is left
+        alone. 0 (the default) keeps everything.
+        """
+        retain = getattr(self.config, 'results_retain', 0)
+        if retain <= 0:
+            return
+        try:
+            files = list(Path(output_dir).glob('typo_sniper_results_*.*'))
+            # Group by the timestamp embedded in the name, so one scan's
+            # formats are kept or dropped together
+            stamps = sorted({f.stem.rsplit('typo_sniper_results_', 1)[-1]
+                             for f in files}, reverse=True)
+            keep = set(stamps[:retain])
+            for f in files:
+                if f.stem.rsplit('typo_sniper_results_', 1)[-1] not in keep:
+                    f.unlink(missing_ok=True)
+                    self.logger.debug(f"Pruned old report {f.name}")
+        except OSError as e:
+            self.logger.warning(f"Could not prune old results: {e}")
 
     def _apply_ml_ranking(self, result: dict) -> None:
         """
@@ -306,6 +357,16 @@ class TypoSniper:
             f"[bold]Recently Registered (<= {self.config.recent_days} days):[/bold] {total_recent}"
         )
         console.print(f"[bold]High Risk (score >= 70):[/bold] {total_high_risk}")
+
+        # Where registration data actually came from. "RDAP 4, WHOIS 0,
+        # none 66" says port 43 is blocked far faster than a thin report does.
+        sources = self.scanner.lookup_sources
+        if any(sources.values()):
+            console.print(
+                f"[bold]Registration data via:[/bold] "
+                f"RDAP {sources.get('rdap', 0)}, WHOIS {sources.get('whois', 0)}, "
+                f"unresolved {sources.get('none', 0)}"
+            )
 
         # A wholly failed WHOIS stage previously looked identical to a clean
         # scan with no recent registrations. Say so explicitly.
@@ -496,6 +557,12 @@ class TypoSniper:
         except Exception as e:
             self.logger.error(f"Notification dispatch failed: {e}", exc_info=True)
             console.print(f"[red]✗[/red] Notification dispatch failed: {e}")
+
+    async def aclose(self) -> None:
+        """Async teardown: close the scanner's shared HTTP session, then the
+        thread pool. Use this instead of close() from async context."""
+        await self.scanner.aclose()
+        self.close()
 
     def reset(self) -> None:
         """Clear per-scan results so the instance can run again in watch mode."""
@@ -1145,7 +1212,7 @@ async def main():
         console.print(f"\n[bold red]✗ Fatal error: {e}[/bold red]\n")
         exit_code = 1
     finally:
-        sniper.close()
+        await sniper.aclose()
 
     if exit_code:
         sys.exit(exit_code)

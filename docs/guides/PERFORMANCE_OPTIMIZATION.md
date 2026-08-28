@@ -73,6 +73,24 @@ if not any([self.config.enable_combosquatting, self.config.enable_idn_homograph]
 - **5 domains**: ~25-50+ minutes ⚠️⚠️
 - **Variations checked**: ~400-600 per domain
 
+## Run-Wide Optimisations (v2.3.0)
+
+Beyond enhanced detection, the scan pipeline itself was restructured:
+
+- **One HTTP session per run.** RDAP and threat-intelligence requests share
+  a single connection pool across all monitored domains instead of
+  re-handshaking per domain, and the URLScan key is validated once.
+- **`concurrent_domains`** (default 3) scans several monitored domains at
+  once; each still bounds its own lookups by `max_workers`, so total
+  outbound concurrency is roughly `concurrent_domains x max_workers`. Set
+  it to 1 for strictly sequential scanning on constrained networks.
+- **HTTP and HTTPS probes run concurrently** per domain — a dead host costs
+  one timeout, not two in sequence.
+- **DNS checks are fully async** (dnspython resolver) rather than blocking
+  thread-pool calls.
+- **`results_retain`** stops watch mode from growing the results directory
+  without bound: keep only the newest N scans' report files.
+
 ## Recommendations
 
 ### For Routine Monitoring

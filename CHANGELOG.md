@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.3.0] - 2026-08-28
 
-A hardening and correctness release driven by a full adversarial review of the
-codebase, plus a documentation and sample refresh. 28 new regression tests
-cover every fix (662 total).
+A hardening, correctness, and performance release driven by a full
+adversarial review of the codebase, plus a documentation and sample refresh.
+40 new regression tests cover every change (674 total).
 
 ### Security
 
@@ -79,8 +79,43 @@ cover every fix (662 total).
   pinned one version while requirements-dev.txt pinned another; the pin now
   has a single source.
 
+### Performance
+
+- **One HTTP session for the whole run.** Every monitored domain previously
+  built and tore down its own aiohttp sessions for RDAP and threat
+  intelligence, re-doing TCP and TLS handshakes to the same registry and
+  intel endpoints once per domain — and re-validating the URLScan key each
+  time. The scanner now holds a single shared session, one RDAP client
+  (whose bootstrap registry survives the run in memory), and one
+  threat-intelligence context, all closed together at run teardown.
+- **Monitored domains are scanned concurrently**, bounded by the new
+  `concurrent_domains` setting (default 3; 1 restores strictly sequential
+  scanning). Per-domain history files make change detection safe under
+  concurrency, and reports keep the input order regardless of completion
+  order.
+- **Enhanced-detection DNS checks use dnspython's async resolver** instead
+  of `gethostbyname` on the thread pool, where each blocking call held a
+  worker thread for up to its timeout across hundreds of candidates.
+- **Watch mode can cap disk growth**: `results_retain: N` keeps only the
+  newest N scans' report files (all formats of a scan kept or dropped
+  together; default keeps everything).
+- The summary now reports **where registration data came from** ("RDAP 68,
+  WHOIS 2, unresolved 0"), so a blocked RDAP endpoint or port 43 shows up
+  as a diagnosis instead of a mysteriously thin report.
+
 ### Changed
 
+- **HTTP and HTTPS are probed concurrently** instead of sequentially, so a
+  host that answers neither no longer costs two full timeouts back to back.
+  HTTPS results are still preferred in the merge.
+- **The README hero screenshot moved to `media/report.png`**, rendered at 2x
+  device scale for high-DPI displays. The new filename also busts GitHub's
+  image CDN cache, which kept serving the old screenshot from the old URL.
+- **Restructured the README** so the document no longer ends in the middle:
+  License, Acknowledgments, and Contact now close the file after the feature
+  sections, matching the table of contents; fixed a broken table in the
+  Documentation Guide and normalised heading levels. Wording and images are
+  unchanged.
 - **Version strings are no longer hardcoded where they can go stale.** The
   Docker guides and compose files tag local builds `typo-sniper:latest`, and
   the stale `org.opencontainers.image.version="1.1.0"` labels are gone — the

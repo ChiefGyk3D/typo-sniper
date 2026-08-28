@@ -178,6 +178,14 @@ class Config:
     # typically run inside the defended network — into a fetch-and-report
     # proxy for whatever that address serves.
     http_allow_private: bool = False
+    # How many monitored domains to scan at once. Each domain already
+    # parallelises its own lookups up to max_workers, so total outbound
+    # concurrency is bounded by roughly this times max_workers. 1 restores
+    # strictly sequential scanning.
+    concurrent_domains: int = 3
+    # In watch mode every cycle writes a new timestamped report per format.
+    # Keep only the newest N scans' files (0 = keep everything).
+    results_retain: int = 0
     # Read what the fetched page appears built to collect: credential forms,
     # off-site form actions, brand mentions. Costs no extra request; the body
     # is already in memory from the probe.
