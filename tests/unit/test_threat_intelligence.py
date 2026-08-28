@@ -282,7 +282,7 @@ class TestHttpProbeMerging:
 
     @pytest.mark.asyncio
     async def test_https_results_preferred_over_http(self, intel):
-        async def fake(url):
+        async def fake(url, monitored_domain=None):
             if url.startswith('https://'):
                 return {'status': 200, 'redirects_to': None, 'title': 'secure',
                         'tls_verified': True, 'page': None}
@@ -299,7 +299,7 @@ class TestHttpProbeMerging:
 
     @pytest.mark.asyncio
     async def test_one_scheme_failing_does_not_lose_the_other(self, intel):
-        async def fake(url):
+        async def fake(url, monitored_domain=None):
             if url.startswith('https://'):
                 raise RuntimeError('boom')
             return {'status': 200, 'redirects_to': None, 'title': 'plain',
@@ -312,7 +312,7 @@ class TestHttpProbeMerging:
 
     @pytest.mark.asyncio
     async def test_both_dead_returns_none(self, intel):
-        async def fake(url):
+        async def fake(url, monitored_domain=None):
             return None
 
         intel._probe_scheme = fake

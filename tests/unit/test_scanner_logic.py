@@ -129,3 +129,62 @@ class TestWhoisCircuitBreaker:
         assert scanner._whois_lookup('good.com') == {'whois_org': 'ok'}
         assert scanner._whois_circuit_open is False
         assert scanner._whois_consecutive_failures == 0
+
+
+class TestSharedClients:
+    """One HTTP session, RDAP client, and threat-intel context per run."""
+
+    @pytest.mark.asyncio
+    async def test_session_and_threat_intel_are_reused(self, scanner):
+        s1 = await scanner._get_session()
+        s2 = await scanner._get_session()
+        assert s1 is s2
+
+        t1 = await scanner._get_threat_intel()
+        t2 = await scanner._get_threat_intel()
+        assert t1 is t2
+        assert t1.session is s1  # shares the scanner's session
+
+        await scanner.aclose()
+        assert s1.closed
+
+    @pytest.mark.asyncio
+    async def test_aclose_leaves_threat_intel_session_to_the_owner(self, scanner):
+        ti = await scanner._get_threat_intel()
+        session = ti.session
+        # TI must not close a session it does not own…
+        await ti.__aexit__(None, None, None)
+        assert not session.closed
+        # …the scanner does, at run teardown
+        await scanner.aclose()
+        assert session.closed
+
+
+class TestAsyncDnsCheck:
+    @pytest.mark.asyncio
+    async def test_uses_the_async_resolver(self, scanner):
+        class FakeRdata:
+            address = '203.0.113.7'
+
+        class FakeResolver:
+            lifetime = 5.0
+
+            async def resolve(self, domain, rdtype):
+                assert rdtype == 'A'
+                return [FakeRdata()]
+
+        scanner._dns_resolver = FakeResolver()
+        assert await scanner._check_dns_async('examp1e.com') == '203.0.113.7'
+
+    @pytest.mark.asyncio
+    async def test_resolution_failure_returns_none(self, scanner):
+        import dns.resolver
+
+        class FailingResolver:
+            lifetime = 5.0
+
+            async def resolve(self, domain, rdtype):
+                raise dns.resolver.NXDOMAIN()
+
+        scanner._dns_resolver = FailingResolver()
+        assert await scanner._check_dns_async('does-not-exist.example') is None

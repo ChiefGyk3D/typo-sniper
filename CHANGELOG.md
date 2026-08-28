@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.3.0] - 2026-08-28
 
-A hardening and correctness release driven by a full adversarial review of the
-codebase, plus a documentation and sample refresh. 31 new regression tests
-cover every fix (665 total).
+A hardening, correctness, and performance release driven by a full
+adversarial review of the codebase, plus a documentation and sample refresh.
+40 new regression tests cover every change (674 total).
 
 ### Security
 
@@ -78,6 +78,30 @@ cover every fix (665 total).
 - **CI lints with the same ruff version developers install.** The workflow
   pinned one version while requirements-dev.txt pinned another; the pin now
   has a single source.
+
+### Performance
+
+- **One HTTP session for the whole run.** Every monitored domain previously
+  built and tore down its own aiohttp sessions for RDAP and threat
+  intelligence, re-doing TCP and TLS handshakes to the same registry and
+  intel endpoints once per domain — and re-validating the URLScan key each
+  time. The scanner now holds a single shared session, one RDAP client
+  (whose bootstrap registry survives the run in memory), and one
+  threat-intelligence context, all closed together at run teardown.
+- **Monitored domains are scanned concurrently**, bounded by the new
+  `concurrent_domains` setting (default 3; 1 restores strictly sequential
+  scanning). Per-domain history files make change detection safe under
+  concurrency, and reports keep the input order regardless of completion
+  order.
+- **Enhanced-detection DNS checks use dnspython's async resolver** instead
+  of `gethostbyname` on the thread pool, where each blocking call held a
+  worker thread for up to its timeout across hundreds of candidates.
+- **Watch mode can cap disk growth**: `results_retain: N` keeps only the
+  newest N scans' report files (all formats of a scan kept or dropped
+  together; default keeps everything).
+- The summary now reports **where registration data came from** ("RDAP 68,
+  WHOIS 2, unresolved 0"), so a blocked RDAP endpoint or port 43 shows up
+  as a diagnosis instead of a mysteriously thin report.
 
 ### Changed
 

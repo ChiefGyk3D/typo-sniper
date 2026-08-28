@@ -34,43 +34,59 @@ class ThreatIntelligence:
     # domain, so without this a 50-domain run burns 50 requests on validation.
     _validated_keys = set()
 
-    def __init__(self, config):
-        """Initialize threat intelligence."""
+    def __init__(self, config, session: aiohttp.ClientSession | None = None):
+        """
+        Initialize threat intelligence.
+
+        Args:
+            config: Configuration object
+            session: Optional externally owned aiohttp session. When given,
+                it is reused across every check and never closed here — the
+                scanner shares one session (and its connection pool) across
+                all monitored domains instead of re-handshaking to the same
+                endpoints once per domain.
+        """
         self.config = config
         self.logger = logging.getLogger(__name__)
-        self.session = None
-        # Set per scan so page analysis can count mentions of the brand being
+        self.session = session
+        self._owns_session = session is None
+        # Fallback used when a caller does not pass monitored_domain per
+        # call, so page analysis can count mentions of the brand being
         # defended. A lookalike that names its target is imitating it.
         self.monitored_domain = ''
-    
+
     async def __aenter__(self):
         """Async context manager entry."""
-        # Create session with connection pooling limits for better performance
-        connector = aiohttp.TCPConnector(
-            limit=100,  # Max total connections
-            limit_per_host=30,  # Max connections per host
-            ttl_dns_cache=300  # Cache DNS for 5 minutes
-        )
-        timeout = aiohttp.ClientTimeout(total=30, connect=10)
-        self.session = aiohttp.ClientSession(
-            connector=connector,
-            timeout=timeout,
-            headers={'User-Agent': self.config.user_agent},
-        )
+        if self.session is None:
+            # Create session with connection pooling limits for better performance
+            connector = aiohttp.TCPConnector(
+                limit=100,  # Max total connections
+                limit_per_host=30,  # Max connections per host
+                ttl_dns_cache=300  # Cache DNS for 5 minutes
+            )
+            timeout = aiohttp.ClientTimeout(total=30, connect=10)
+            self.session = aiohttp.ClientSession(
+                connector=connector,
+                timeout=timeout,
+                headers={'User-Agent': self.config.user_agent},
+            )
+            self._owns_session = True
         # Validate API keys on startup. If validation raises, the caller never
         # enters the context, so __aexit__ will not run — close the session
         # here or it leaks (one "Unclosed client session" per scanned domain).
+        # An externally owned session is left alone; its owner closes it.
         try:
             await self.validate_api_keys()
         except BaseException:
-            await self.session.close()
-            self.session = None
+            if self._owns_session:
+                await self.session.close()
+                self.session = None
             raise
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
-        if self.session:
+        if self.session and self._owns_session:
             await self.session.close()
     
     async def validate_api_keys(self):
@@ -390,13 +406,16 @@ class ThreatIntelligence:
             self.logger.debug(f"CT log parse failed for {domain}: {e}")
             return {'certificates_found': 0, 'status': 'error'}
     
-    async def http_probe(self, domain: str) -> dict[str, Any] | None:
+    async def http_probe(
+        self, domain: str, monitored_domain: str | None = None
+    ) -> dict[str, Any] | None:
         """
         Probe domain with HTTP/HTTPS to check if it's active.
-        
+
         Args:
             domain: Domain to probe
-            
+            monitored_domain: Brand domain for page analysis, per call
+
         Returns:
             HTTP probe results or None
         """
@@ -419,8 +438,8 @@ class ThreatIntelligence:
         # still preferred: the gather returns in argument order, so the merge
         # below sees https first regardless of which probe finished first.
         probes = await asyncio.gather(
-            self._probe_scheme(f"https://{domain}"),
-            self._probe_scheme(f"http://{domain}"),
+            self._probe_scheme(f"https://{domain}", monitored_domain),
+            self._probe_scheme(f"http://{domain}", monitored_domain),
             return_exceptions=True,
         )
         for scheme, probe in zip(('https', 'http'), probes, strict=True):
@@ -487,7 +506,9 @@ class ThreatIntelligence:
             ipaddress.ip_address(addr.split('%')[0]).is_global for addr in addresses
         )
 
-    async def _probe_scheme(self, url: str) -> dict[str, Any] | None:
+    async def _probe_scheme(
+        self, url: str, monitored_domain: str | None = None
+    ) -> dict[str, Any] | None:
         """
         Fetch one URL and extract its status, final URL and page title.
 
@@ -552,8 +573,13 @@ class ThreatIntelligence:
                                 # memory, and what the page collects is the
                                 # strongest signal available about what it is
                                 # for.
+                                brand = (
+                                    monitored_domain
+                                    if monitored_domain is not None
+                                    else self.monitored_domain
+                                )
                                 result['page'] = page_analysis.analyse(
-                                    body, str(current), self.monitored_domain
+                                    body, str(current), brand
                                 )
 
                     return result
@@ -621,13 +647,19 @@ class ThreatIntelligence:
             return ' '.join(match.group(1).split())[:200]
         return None
 
-    async def analyze_domain(self, domain: str) -> dict[str, Any]:
+    async def analyze_domain(
+        self, domain: str, monitored_domain: str | None = None
+    ) -> dict[str, Any]:
         """
         Perform comprehensive threat intelligence analysis on domain.
-        
+
         Args:
             domain: Domain to analyze
-            
+            monitored_domain: The brand domain this permutation imitates,
+                passed per call so one shared instance can serve concurrent
+                scans of different monitored domains. Falls back to
+                ``self.monitored_domain`` when omitted.
+
         Returns:
             Threat intelligence report
         """
@@ -649,7 +681,7 @@ class ThreatIntelligence:
             tasks.append(('certificate_transparency', self.check_certificate_transparency(domain)))
         
         if self.config.enable_http_probe:
-            tasks.append(('http_probe', self.http_probe(domain)))
+            tasks.append(('http_probe', self.http_probe(domain, monitored_domain)))
         
         # Execute all tasks
         if tasks:

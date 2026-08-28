@@ -574,7 +574,8 @@ cp config.yaml.example config.yaml
 
 ```yaml
 # Performance settings
-max_workers: 10                    # Concurrent workers
+max_workers: 10                    # Concurrent workers (per monitored domain)
+concurrent_domains: 3              # Monitored domains scanned at once (1 = sequential)
 rate_limit_delay: 1.0              # Delay between batches (seconds)
 
 # Cache settings
@@ -592,6 +593,7 @@ dnstwist_phash: false              # Perceptual hashing (requires ssdeep)
 
 # Output settings
 output_dir: results                # Output directory
+results_retain: 0                  # Watch mode: keep newest N scans' files (0 = all)
 
 # WHOIS settings
 whois_timeout: 30                  # Query timeout

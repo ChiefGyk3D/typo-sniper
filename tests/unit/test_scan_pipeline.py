@@ -30,7 +30,7 @@ WHOIS_DATA = {
 
 
 @pytest.fixture
-def scanner(config, tmp_path, monkeypatch):
+async def scanner(config, tmp_path, monkeypatch):
     config.enable_urlscan = False
     config.enable_certificate_transparency = False
     config.enable_http_probe = False
@@ -49,6 +49,9 @@ def scanner(config, tmp_path, monkeypatch):
     monkeypatch.setattr(s, '_enrich_with_rdap', no_rdap)
 
     yield s
+    # The scanner holds one shared aiohttp session for the whole run now;
+    # close it on the same event loop the test created it on.
+    await s.aclose()
     s.close()
 
 
@@ -139,11 +142,12 @@ class TestRegistrationSourceSelection:
     """RDAP is tried first; WHOIS covers registries that publish no endpoint."""
 
     @pytest.fixture
-    def scanner(self, config, tmp_path, monkeypatch):
+    async def scanner(self, config, tmp_path, monkeypatch):
         s = DomainScanner(config, Cache(tmp_path / 'cache'))
         monkeypatch.setattr(s, '_run_dnstwist',
                             lambda domain: copy.deepcopy(DNSTWIST_OUTPUT))
         yield s
+        await s.aclose()
         s.close()
 
     @pytest.mark.asyncio

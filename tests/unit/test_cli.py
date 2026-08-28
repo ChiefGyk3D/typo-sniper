@@ -133,3 +133,88 @@ class TestPrintSummary:
         sniper.results = sample_results
         sniper.print_summary()
         assert 'WHOIS data unavailable' in capsys.readouterr().out
+
+
+class TestConcurrentScanning:
+    @pytest.mark.asyncio
+    async def test_results_keep_input_order_under_concurrency(self, sniper):
+        """Domains finish out of order; reports must not."""
+        import asyncio
+
+        sniper.config.enable_diff = False
+        sniper.config.concurrent_domains = 3
+        delays = {'a.com': 0.05, 'b.com': 0.0, 'c.com': 0.02}
+        completion_order = []
+
+        async def fake_scan(domain):
+            await asyncio.sleep(delays[domain])
+            completion_order.append(domain)
+            return {'original_domain': domain, 'permutations': []}
+
+        sniper.scanner.scan_domain = fake_scan
+        await sniper.scan_domains(['a.com', 'b.com', 'c.com'])
+
+        assert completion_order != ['a.com', 'b.com', 'c.com']  # really concurrent
+        assert [r['original_domain'] for r in sniper.results] == [
+            'a.com', 'b.com', 'c.com'
+        ]
+
+    @pytest.mark.asyncio
+    async def test_one_failing_domain_does_not_stop_the_rest(self, sniper):
+        sniper.config.enable_diff = False
+        sniper.config.concurrent_domains = 2
+
+        async def fake_scan(domain):
+            if domain == 'boom.com':
+                raise RuntimeError('scan exploded')
+            return {'original_domain': domain, 'permutations': []}
+
+        sniper.scanner.scan_domain = fake_scan
+        await sniper.scan_domains(['ok1.com', 'boom.com', 'ok2.com'])
+
+        assert [r['original_domain'] for r in sniper.results] == ['ok1.com', 'ok2.com']
+
+    @pytest.mark.asyncio
+    async def test_concurrency_of_one_is_sequential(self, sniper):
+        import asyncio
+
+        sniper.config.enable_diff = False
+        sniper.config.concurrent_domains = 1
+        active = 0
+        peak = 0
+
+        async def fake_scan(domain):
+            nonlocal active, peak
+            active += 1
+            peak = max(peak, active)
+            await asyncio.sleep(0.01)
+            active -= 1
+            return {'original_domain': domain, 'permutations': []}
+
+        sniper.scanner.scan_domain = fake_scan
+        await sniper.scan_domains(['a.com', 'b.com', 'c.com'])
+        assert peak == 1
+
+
+class TestResultRetention:
+    def test_prunes_oldest_scans_keeping_formats_together(self, sniper, tmp_path):
+        sniper.config.results_retain = 2
+        stamps = ['20260101_010101', '20260102_020202', '20260103_030303']
+        for stamp in stamps:
+            for ext in ('json', 'html'):
+                (tmp_path / f'typo_sniper_results_{stamp}.{ext}').write_text('x')
+        (tmp_path / 'unrelated.json').write_text('leave me')
+
+        sniper._prune_old_results(tmp_path)
+
+        remaining = sorted(p.name for p in tmp_path.iterdir())
+        assert 'unrelated.json' in remaining
+        assert not any(stamps[0] in name for name in remaining)
+        assert sum(stamps[1] in name for name in remaining) == 2
+        assert sum(stamps[2] in name for name in remaining) == 2
+
+    def test_zero_keeps_everything(self, sniper, tmp_path):
+        sniper.config.results_retain = 0
+        (tmp_path / 'typo_sniper_results_20260101_010101.json').write_text('x')
+        sniper._prune_old_results(tmp_path)
+        assert (tmp_path / 'typo_sniper_results_20260101_010101.json').exists()
