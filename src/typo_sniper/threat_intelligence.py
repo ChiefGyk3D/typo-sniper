@@ -414,9 +414,19 @@ class ThreatIntelligence:
             'page': None,
         }
 
-        # HTTPS first: a typosquat with a valid certificate is the higher signal
-        for scheme in ('https', 'http'):
-            probe = await self._probe_scheme(f"{scheme}://{domain}")
+        # Both schemes are probed concurrently — a host that answers neither
+        # would otherwise cost two full sequential timeouts. HTTPS results are
+        # still preferred: the gather returns in argument order, so the merge
+        # below sees https first regardless of which probe finished first.
+        probes = await asyncio.gather(
+            self._probe_scheme(f"https://{domain}"),
+            self._probe_scheme(f"http://{domain}"),
+            return_exceptions=True,
+        )
+        for scheme, probe in zip(('https', 'http'), probes, strict=True):
+            if isinstance(probe, BaseException):
+                self.logger.debug(f"Probe failed for {scheme}://{domain}: {probe}")
+                continue
             if probe is None:
                 continue
 

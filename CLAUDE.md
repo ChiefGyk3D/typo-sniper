@@ -89,7 +89,7 @@ plain HTTPS (no SDK); AWS/Azure/GCP/1Password import lazily.
 
 ## Screenshots and sample outputs — refresh policy
 
-`media/screen1.png` (the README hero image) is a **function screenshot** of
+`media/report.png` (the README hero image) is a **function screenshot** of
 the HTML report, and `results/sample.{json,csv,html,xlsx}` are committed real
 scan outputs. Whenever a change alters report output in any visible way (new
 columns, layout, scoring display), regenerate both **after confirming the
@@ -97,7 +97,7 @@ feature works** and commit them with the change:
 
 ```bash
 scripts/refresh_samples.sh          # scans eff.org, rewrites samples,
-                                    # re-renders media/screen1.png (1400x953)
+                                    # re-renders media/report.png (1400x953 at 2x)
 ```
 
 Requires unrestricted outbound network and a Chromium binary. Never replace

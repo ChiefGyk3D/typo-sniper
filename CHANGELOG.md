@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3.0] - 2026-08-28
 
 A hardening and correctness release driven by a full adversarial review of the
-codebase, plus a documentation and sample refresh. 28 new regression tests
-cover every fix (662 total).
+codebase, plus a documentation and sample refresh. 31 new regression tests
+cover every fix (665 total).
 
 ### Security
 
@@ -81,6 +81,17 @@ cover every fix (662 total).
 
 ### Changed
 
+- **HTTP and HTTPS are probed concurrently** instead of sequentially, so a
+  host that answers neither no longer costs two full timeouts back to back.
+  HTTPS results are still preferred in the merge.
+- **The README hero screenshot moved to `media/report.png`**, rendered at 2x
+  device scale for high-DPI displays. The new filename also busts GitHub's
+  image CDN cache, which kept serving the old screenshot from the old URL.
+- **Restructured the README** so the document no longer ends in the middle:
+  License, Acknowledgments, and Contact now close the file after the feature
+  sections, matching the table of contents; fixed a broken table in the
+  Documentation Guide and normalised heading levels. Wording and images are
+  unchanged.
 - **Version strings are no longer hardcoded where they can go stale.** The
   Docker guides and compose files tag local builds `typo-sniper:latest`, and
   the stale `org.opencontainers.image.version="1.1.0"` labels are gone — the

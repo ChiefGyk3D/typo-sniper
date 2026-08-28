@@ -2,7 +2,7 @@
 # Regenerate the committed sample reports and the README screenshot.
 #
 # Run this whenever report output changes in any visible way (new columns,
-# layout, scoring display) so results/sample.* and media/screen1.png keep
+# layout, scoring display) so results/sample.* and media/report.png keep
 # showing what the tool actually produces. The README screenshot is a
 # function screenshot — it must always match current behaviour.
 #
@@ -50,17 +50,17 @@ for ext in json csv html xlsx; do
     echo "    results/sample.$ext"
 done
 
-echo "==> Rendering media/screen1.png (1400x953, top of the HTML report)"
+echo "==> Rendering media/report.png (1400x953 at 2x scale, top of the HTML report)"
 CHROME="${CHROME:-$(command -v chromium || command -v chromium-browser || command -v google-chrome || true)}"
 if [ -z "$CHROME" ]; then
     echo "!! No Chromium/Chrome found; skipping the screenshot." >&2
-    echo "   Set CHROME=/path/to/chrome and re-run to regenerate media/screen1.png" >&2
+    echo "   Set CHROME=/path/to/chrome and re-run to regenerate media/report.png" >&2
     exit 1
 fi
 
 "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars \
-    --window-size=1400,953 \
-    --screenshot="media/screen1.png" \
+    --window-size=1400,953 --force-device-scale-factor=2 \
+    --screenshot="media/report.png" \
     "file://$REPO_ROOT/results/sample.html"
 
-echo "==> Done. Review the diff, then commit results/sample.* and media/screen1.png"
+echo "==> Done. Review the diff, then commit results/sample.* and media/report.png"
