@@ -330,3 +330,43 @@ class TestCredentialFormTransitions:
         delta = history.diff(result(permutations=[perm('quiet.com')]))
         assert not [c for c in delta['changes']
                     if 'form' in (c.get('detail') or '')]
+
+
+class TestSnapshotPageSignals:
+    def test_page_analysis_fields_survive_the_snapshot(self, history):
+        """Training vectors are built from snapshots; any page signal missing
+        here trains as a constant zero while scoring sees real values."""
+        p = perm('examp1e.com', threat_intel={
+            'http_probe': {
+                'http_active': True,
+                'page': {
+                    'is_credential_form': True,
+                    'external_form_action': True,
+                    'has_password_input': True,
+                    'form_count': 2,
+                    'brand_mentioned': True,
+                },
+            },
+        })
+        snap = ScanHistory._snapshot_permutation(p)
+        assert snap['is_credential_form'] is True
+        assert snap['external_form_action'] is True
+        assert snap['has_password_input'] is True
+        assert snap['form_count'] == 2
+        assert snap['brand_mentioned'] is True
+
+    def test_snapshot_defaults_without_page_data(self, history):
+        snap = ScanHistory._snapshot_permutation(perm('x.com'))
+        assert snap['has_password_input'] is False
+        assert snap['form_count'] == 0
+        assert snap['brand_mentioned'] is False
+
+
+class TestAtomicWrites:
+    def test_no_temp_file_is_left_behind(self, history, tmp_path):
+        history.record(result(permutations=[perm('a.com')]))
+        state_dir = tmp_path / 'state'
+        leftovers = list(state_dir.glob('*.tmp'))
+        assert leftovers == []
+        # And the written history loads back
+        assert len(history.load('example.com')) == 1

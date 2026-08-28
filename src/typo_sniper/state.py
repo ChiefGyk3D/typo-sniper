@@ -14,6 +14,7 @@ restating the steady state.
 
 import json
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -115,8 +116,14 @@ class ScanHistory:
 
         path = self._path_for(domain)
         try:
-            with open(path, 'w', encoding='utf-8') as f:
+            # Write-then-rename so a crash mid-write (very reachable in watch
+            # mode) cannot truncate the history. A truncated file loads as
+            # empty, silently re-baselines the diff, and change detection then
+            # reports nothing for this domain forever after.
+            tmp = path.with_suffix(path.suffix + '.tmp')
+            with open(tmp, 'w', encoding='utf-8') as f:
                 json.dump({'domain': domain, 'scans': scans}, f, indent=2)
+            os.replace(tmp, path)
         except OSError as e:
             self.logger.warning(f"Could not write scan history for {domain}: {e}")
 
@@ -150,6 +157,13 @@ class ScanHistory:
             # moment a watched lookalike becomes an active threat.
             'is_credential_form': bool((http.get('page') or {}).get('is_credential_form')),
             'external_form_action': bool((http.get('page') or {}).get('external_form_action')),
+            # Persisted for the learned-ranking features: training vectors are
+            # built from these snapshots, and any page signal missing here
+            # trains as a constant zero while scoring sees real values —
+            # silent train/serve skew.
+            'has_password_input': bool((http.get('page') or {}).get('has_password_input')),
+            'form_count': int((http.get('page') or {}).get('form_count') or 0),
+            'brand_mentioned': bool((http.get('page') or {}).get('brand_mentioned')),
         }
 
     # -- diffing -----------------------------------------------------------

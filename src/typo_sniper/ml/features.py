@@ -270,12 +270,18 @@ def extract(perm: dict[str, Any], monitored_domain: str) -> list[float]:
         'has_credential_form': float(bool(
             page.get('is_credential_form') or perm.get('is_credential_form')
         )),
-        'has_password_input': float(bool(page.get('has_password_input'))),
+        'has_password_input': float(bool(
+            page.get('has_password_input') or perm.get('has_password_input')
+        )),
         'external_form_action': float(bool(
             page.get('external_form_action') or perm.get('external_form_action')
         )),
-        'form_count': min(float(page.get('form_count') or 0), 5.0) / 5.0,
-        'brand_mentioned_on_page': float(bool(page.get('brand_mentioned'))),
+        'form_count': min(
+            float(page.get('form_count') or perm.get('form_count') or 0), 5.0
+        ) / 5.0,
+        'brand_mentioned_on_page': float(bool(
+            page.get('brand_mentioned') or perm.get('brand_mentioned')
+        )),
     }
 
     return [float(values[fname]) for fname in FEATURE_NAMES]

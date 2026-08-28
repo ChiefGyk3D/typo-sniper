@@ -5,6 +5,95 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-08-28
+
+A hardening and correctness release driven by a full adversarial review of the
+codebase, plus a documentation and sample refresh. 28 new regression tests
+cover every fix (662 total).
+
+### Security
+
+- **The HTTP probe now refuses private and reserved addresses.** A lookalike's
+  A record is controlled by whoever registered it. Pointing it at
+  `169.254.169.254` or an internal host would previously have the scanner —
+  typically run inside the defended network — fetch that address and put the
+  response into the report (and, with `--ai`, forward it to a model provider).
+  Every redirect hop is now resolved and checked, not just the first URL.
+  Operators deliberately scanning internal names can set
+  `http_allow_private: true`.
+- **Webhook URLs no longer leak into logs.** For Slack, Discord, and the
+  generic webhook channel the URL *is* the credential, and aiohttp exception
+  messages can quote the full request URL. Delivery errors now log the
+  exception type with the URL redacted.
+- **`Config.save()` no longer persists resolved secrets.** By the time it
+  runs, `resolve_secrets()` may have pulled tokens out of Vault, AWS, or
+  1Password; writing them back out as cleartext YAML defeated the point of
+  using a secrets backend. All `SECRET_FIELDS` are now excluded.
+- **URLScan search queries are URL-encoded**, closing the gap where an IDN
+  permutation could alter the query string. The CT lookup already did this.
+
+### Fixed
+
+- **Config file settings are no longer silently overwritten by CLI defaults.**
+  `max_workers`, `cache_ttl`, `use_cache`, `months_filter`, and `output_dir`
+  set in a YAML config (or via `TYPO_SNIPER_*` environment variables) were
+  discarded because the argparse defaults unconditionally replaced them. CLI
+  flags now override only when actually passed, and `output_dir` — documented
+  since it existed but never read — now works.
+- **A scan no longer fails on every domain when URLScan is enabled without an
+  API key.** Validation raising inside `__aenter__` meant `__aexit__` never
+  ran, leaking one aiohttp session per scanned domain on top of the failure.
+- **The Excel export no longer aborts on multi-valued WHOIS fields.**
+  python-whois returns a list whenever a field matches more than one value
+  (routine when registry and registrar responses are concatenated); a bare
+  list in registrant/org/registrar/country cells raised and cost the whole
+  workbook.
+- **A self-closing `<script/>` no longer blanks page-text analysis.** The
+  suppression counter was incremented with no matching end tag, so a
+  one-character addition to a phishing page silenced brand-mention detection
+  for the rest of the document.
+- **WHOIS lookups no longer race on the global socket timeout.** The
+  save/set/restore pattern around each query could strip a concurrent
+  lookup's timeout entirely — exactly the indefinite hang it existed to
+  prevent. The timeout is now set once, process-wide.
+- **Scan history and training labels are written atomically**
+  (write-then-rename). A crash mid-write — very reachable in watch mode —
+  used to truncate the file, silently re-baseline the diff, and suppress
+  change detection for that domain forever after.
+- **Learned-ranking features are no longer skewed between training and
+  scoring.** `has_password_input`, `form_count`, and `brand_mentioned` were
+  never persisted in history snapshots, so training always saw zeros for
+  them while live scoring saw real values. Snapshots now carry all page
+  signals.
+- **`ml_min_labels` is honoured in both directions.** Setting it below 30
+  previously did nothing: the hardcoded floor was checked first. The
+  per-class minimum of 8 still applies.
+- **Watch-mode AI token accounting is per-cycle.** The "AI tokens" line
+  reported the run-to-date total as if it were the current scan's spend.
+- **Unknown configuration keys are now reported** instead of silently
+  ignored, so a typo like `enable_url_scan:` no longer runs the scan with
+  defaults while the operator believes the feature is on.
+- **`pip install "typo-sniper[all]"` can now train the ranking model** —
+  the `all` extra was missing scikit-learn while `ai-all` had it.
+- **CI lints with the same ruff version developers install.** The workflow
+  pinned one version while requirements-dev.txt pinned another; the pin now
+  has a single source.
+
+### Changed
+
+- **Version strings are no longer hardcoded where they can go stale.** The
+  Docker guides and compose files tag local builds `typo-sniper:latest`, and
+  the stale `org.opencontainers.image.version="1.1.0"` labels are gone — the
+  release workflow stamps the real version from the git tag.
+- `config.yaml.example` corrected: `notify_channels` lists all seven
+  channels, `ai_min_risk_score` documents the real default (30), `ai_effort`
+  documents `xhigh`/`max`, and `urlscan_visibility` now warns that `public`
+  submissions publish your monitored brand list to the URLScan feed.
+- **Refreshed the sample reports and README screenshot** to the current
+  14-column format (mail posture, page analysis, TLS, age), regenerated
+  through the current exporters. `scripts/refresh_samples.sh` now documents
+  and automates the process; regenerate whenever report output changes.
+
 ## [2.2.1] - 2026-08-27
 
 Documentation catch-up. The feature list had not been touched since 1.1.0 while

@@ -656,3 +656,29 @@ class TestJiraNotifier:
         expected = base64.b64encode(b'security@acme.test:token').decode()
         assert call.kwargs['headers']['Authorization'] == f'Basic {expected}'
         assert 'token' not in call.args[1]
+
+
+class TestLogRedaction:
+    def test_webhook_url_is_stripped_from_error_messages(self):
+        """For Slack/Discord/webhook channels the URL *is* the secret, and
+        aiohttp exception messages can quote the full request URL."""
+        from typo_sniper.notifiers import BaseNotifier
+
+        url = 'https://hooks.slack.com/services/T000/B000/tokentokentoken'
+        message = f'Cannot connect to {url} ssl:default'
+        redacted = BaseNotifier._redact(message, url)
+        assert 'tokentokentoken' not in redacted
+        assert '[webhook URL redacted]' in redacted
+
+    def test_scheme_stripped_variant_is_also_redacted(self):
+        from typo_sniper.notifiers import BaseNotifier
+
+        url = 'https://hooks.slack.com/services/T000/B000/tok'
+        message = 'ftp://hooks.slack.com/services/T000/B000/tok is not http'
+        assert 'tok' not in BaseNotifier._redact(message, url).replace(
+            '[webhook URL redacted]', '')
+
+    def test_empty_url_leaves_message_alone(self):
+        from typo_sniper.notifiers import BaseNotifier
+
+        assert BaseNotifier._redact('boom', '') == 'boom'

@@ -24,6 +24,7 @@ thirty scans have run since.
 
 import json
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -75,8 +76,12 @@ class LabelStore:
     def _save(self) -> bool:
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.path, 'w', encoding='utf-8') as handle:
+            # Write-then-rename: labels are training data an operator entered
+            # by hand, and a crash mid-write must not truncate them.
+            tmp = self.path.with_suffix(self.path.suffix + '.tmp')
+            with open(tmp, 'w', encoding='utf-8') as handle:
                 json.dump({'version': 1, 'labels': self._labels}, handle, indent=2)
+            os.replace(tmp, self.path)
             return True
         except OSError as e:
             self.logger.error(f'Could not write labels: {type(e).__name__}')
@@ -150,20 +155,27 @@ class LabelStore:
             result[entry['label']] = result.get(entry['label'], 0) + 1
         return result
 
-    def readiness(self) -> tuple[bool, str]:
+    def readiness(self, min_labels: int | None = None) -> tuple[bool, str]:
         """
         Whether there is enough labelled data to train.
+
+        Args:
+            min_labels: Total-label threshold. Defaults to
+                MIN_LABELS_TO_TRAIN; the configurable ``ml_min_labels`` is
+                passed through here so the setting is honoured in both
+                directions, but the per-class floor always applies.
 
         Returns:
             Tuple of (ready, an explanation an operator can act on)
         """
+        threshold = MIN_LABELS_TO_TRAIN if min_labels is None else max(int(min_labels), 1)
         counts = self.counts()
         total = sum(counts.values())
         acted, dismissed = counts.get(ACTED, 0), counts.get(DISMISSED, 0)
 
-        if total < MIN_LABELS_TO_TRAIN:
+        if total < threshold:
             return False, (
-                f'{total} of {MIN_LABELS_TO_TRAIN} labels needed to train. '
+                f'{total} of {threshold} labels needed to train. '
                 f'Label findings with --label <domain>=acted|dismissed.'
             )
         if acted < MIN_PER_CLASS or dismissed < MIN_PER_CLASS:

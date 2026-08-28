@@ -149,6 +149,7 @@ class TestCertificateHandling:
         session = MagicMock()
         session.get = MagicMock(side_effect=lambda *a, **k: (calls.append(k), ctx)[1])
         intel.session = session
+        intel._host_is_public = AsyncMock(return_value=True)
 
         result = await intel._probe_scheme('https://evil.com')
 
@@ -166,6 +167,7 @@ class TestCertificateHandling:
         session = MagicMock()
         session.get = MagicMock(return_value=ctx)
         intel.session = session
+        intel._host_is_public = AsyncMock(return_value=True)
 
         assert await intel._probe_scheme('https://evil.com') is None
 
@@ -181,7 +183,95 @@ class TestCertificateHandling:
         session = MagicMock()
         session.get = MagicMock(return_value=ctx)
         intel.session = session
+        intel._host_is_public = AsyncMock(return_value=True)
         intel._read_title = AsyncMock(return_value=None)
 
         result = await intel._probe_scheme('http://evil.com')
         assert result['tls_verified'] is None
+
+
+class TestSessionLifetime:
+    @pytest.mark.asyncio
+    async def test_failed_validation_does_not_leak_the_session(self, config):
+        """__aexit__ never runs when __aenter__ raises, so the session must be
+        closed before the exception escapes."""
+        config.enable_urlscan = True
+        config.urlscan_api_key = None
+
+        ti = ThreatIntelligence(config)
+        with pytest.raises(ValueError, match='API key is not set'):
+            async with ti:
+                pass  # pragma: no cover - never entered
+
+        assert ti.session is None
+
+
+class TestPrivateAddressGuard:
+    """The probe target's DNS is attacker-controlled; hosts resolving to
+    private or reserved addresses are never fetched."""
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize('host', [
+        '127.0.0.1',          # loopback
+        '10.1.2.3',           # RFC1918
+        '172.16.0.1',         # RFC1918
+        '192.168.1.1',        # RFC1918
+        '169.254.169.254',    # link-local: the cloud metadata endpoint
+        '::1',                # IPv6 loopback
+        'fd00::1',            # IPv6 ULA
+    ])
+    async def test_non_global_literals_are_refused(self, intel, host):
+        assert await intel._host_is_public(host) is False
+
+    @pytest.mark.asyncio
+    async def test_global_literal_is_allowed(self, intel):
+        assert await intel._host_is_public('93.184.216.34') is True
+
+    @pytest.mark.asyncio
+    async def test_probe_refuses_private_target_without_any_request(self, config):
+        """The refusal must happen before the session is touched — session is
+        None here, so any attempted request would raise, not return None."""
+        ti = ThreatIntelligence(config)
+        assert await ti._probe_scheme('https://127.0.0.1/login') is None
+
+    @pytest.mark.asyncio
+    async def test_redirect_to_private_address_is_refused(self, intel):
+        """Every hop is checked, not just the first URL."""
+        response = MagicMock()
+        response.status = 302
+        response.headers = {'Location': 'http://169.254.169.254/latest/meta-data/'}
+        ctx = MagicMock()
+        ctx.__aenter__ = AsyncMock(return_value=response)
+        ctx.__aexit__ = AsyncMock(return_value=False)
+        session = MagicMock()
+        session.get = MagicMock(return_value=ctx)
+        intel.session = session
+
+        first_hop_checked = []
+
+        async def guard(host):
+            first_hop_checked.append(host)
+            # First hop is fine; the redirect target is the metadata service
+            return host not in ('169.254.169.254',)
+
+        intel._host_is_public = guard
+
+        assert await intel._probe_scheme('https://8.8.8.8/') is None
+        assert first_hop_checked[-1] == '169.254.169.254'
+        assert session.get.call_count == 1  # the redirect target was never fetched
+
+    @pytest.mark.asyncio
+    async def test_allow_private_config_bypasses_the_guard(self, config):
+        """Operators deliberately scanning internal names can opt out."""
+        config.http_allow_private = True
+        ti = ThreatIntelligence(config)
+        ctx = MagicMock()
+        ctx.__aenter__ = AsyncMock(side_effect=OSError('connection refused'))
+        ctx.__aexit__ = AsyncMock(return_value=False)
+        session = MagicMock()
+        session.get = MagicMock(return_value=ctx)
+        ti.session = session
+
+        # Reaches the (failing) request instead of being refused up front
+        assert await ti._probe_scheme('https://127.0.0.1/') is None
+        assert session.get.call_count == 1

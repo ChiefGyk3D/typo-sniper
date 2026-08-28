@@ -216,3 +216,52 @@ class TestDirectoryOverrides:
 
     def test_defaults_are_unchanged_without_the_variables(self):
         assert '.typo_sniper' in str(Config().state_dir)
+
+
+class TestUnknownKeys:
+    def test_unknown_keys_are_reported(self, caplog):
+        """A typo like `enable_url_scan:` must not silently run with defaults."""
+        import logging
+
+        from typo_sniper.config import Config
+
+        with caplog.at_level(logging.WARNING):
+            Config.from_dict({'enable_url_scan': True, 'max_workers': 5})
+
+        assert any('enable_url_scan' in r.message for r in caplog.records)
+
+    def test_known_keys_stay_quiet(self, caplog):
+        import logging
+
+        from typo_sniper.config import Config
+
+        with caplog.at_level(logging.WARNING):
+            cfg = Config.from_dict({'max_workers': 5})
+
+        assert cfg.max_workers == 5
+        assert not [r for r in caplog.records if 'unknown configuration' in r.message.lower()]
+
+
+class TestSaveNeverPersistsSecrets:
+    def test_resolved_credentials_are_not_written(self, tmp_path):
+        """By the time save() runs, resolve_secrets() may have pulled tokens
+        out of a vault; they must never land in cleartext YAML."""
+        import yaml
+
+        from typo_sniper.config import Config
+
+        cfg = Config()
+        cfg.urlscan_api_key = 'sekret-key'
+        cfg.smtp_password = 'sekret-password'
+        cfg.slack_webhook_url = 'https://hooks.slack.com/services/T0/B0/sekret'
+
+        path = tmp_path / 'saved.yaml'
+        cfg.save(path)
+        raw = path.read_text()
+        assert 'sekret' not in raw
+
+        data = yaml.safe_load(raw)
+        assert 'urlscan_api_key' not in data
+        assert 'smtp_password' not in data
+        # Non-secret settings still round-trip
+        assert data['max_workers'] == cfg.max_workers

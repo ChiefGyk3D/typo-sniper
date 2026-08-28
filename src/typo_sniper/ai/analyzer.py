@@ -35,6 +35,13 @@ class AIAnalyzer:
         self.total_output_tokens = 0
         self.injection_attempts: list[str] = []
 
+    def reset_counters(self) -> None:
+        """Zero the per-scan accounting so watch-mode cycles report their own
+        spend rather than the run-to-date total."""
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.injection_attempts = []
+
     def status(self) -> tuple[bool, str]:
         """
         Report whether AI analysis can run.
