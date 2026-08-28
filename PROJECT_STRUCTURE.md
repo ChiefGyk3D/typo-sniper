@@ -8,6 +8,7 @@ Typo Sniper/
 ├── COMMERCIAL.md                   # Dual-licence / commercial terms
 ├── CONTRIBUTING.md                 # Contribution + relicensing terms
 ├── README.md                       # Main project documentation
+├── CLAUDE.md                       # Conventions for AI assistants and contributors
 ├── TESTING.md                      # Testing guide
 ├── requirements.txt                # Python dependencies (pinned)
 ├── requirements-dev.txt            # Test and lint dependencies
@@ -89,6 +90,7 @@ Typo Sniper/
 ### Entry Points
 - **`src/typo_sniper.py`** - Main CLI application
 - **`scripts/setup_api_keys.sh`** - Setup wizard for API keys
+- **`scripts/refresh_samples.sh`** - Regenerate `results/sample.*` and the README screenshot after report changes
 
 ### Core Modules
 - **`src/scanner.py`** - Domain scanning with dnstwist
@@ -115,6 +117,7 @@ pytest
 ## Documentation
 
 - **Getting Started**: `docs/guides/QUICKSTART.md`
+- **Understanding Results**: `docs/guides/REPORTS.md`
 - **API Keys**: `docs/guides/API_KEYS_SETUP.md`
 - **Testing**: `tests/README.md`
 - **Docker**: `docker/DOCKER.md`

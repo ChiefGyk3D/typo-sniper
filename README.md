@@ -11,7 +11,7 @@
 [![CI](https://github.com/ChiefGyk3D/typo-sniper/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiefGyk3D/typo-sniper/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial licence available](https://img.shields.io/badge/Commercial-available-green.svg)](COMMERCIAL.md)
-[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](https://github.com/chiefgyk3d/typo-sniper)
+[![Version](https://img.shields.io/badge/version-2.3.0-green.svg)](CHANGELOG.md)
 
 Detect and monitor typosquatting domains targeting your brand with powerful automation, threat intelligence, and beautiful reporting.
 
@@ -90,6 +90,7 @@ a legitimate result worth reporting.
 
 | **[Quick Start Guide](docs/guides/QUICKSTART.md)** | 🚀 **Start here!** 10-minute guide to get running | First time setup, testing features |
 | **[README.md](README.md)** | 📖 **You are here.** Complete overview and reference | Understanding features, basic usage |
+| **[Understanding Results](docs/guides/REPORTS.md)** | 📊 Every report column, the risk score, and what to act on | Reading your first report, triage |
 | **[Testing Guide](TESTING.md)** | 🧪 Comprehensive testing guide with API setup | Setting up APIs, troubleshooting |
 | **[Debug Mode Guide](docs/guides/DEBUG_MODE.md)** | 🐛 Debug mode and troubleshooting guide | Troubleshooting, understanding what's running |
 | **[Secrets Management](docs/guides/SECRETS_MANAGEMENT.md)** | 🔐 Complete secrets management guide | Choosing secrets solution, security |
@@ -321,7 +322,9 @@ the operator rather than the £8 it costs to register a name.
 - **Certificate Transparency** — certificate issuance history. No API key.
   `enable_certificate_transparency`
 - **HTTP probing** — whether the domain serves content, and what that content
-  is built to collect. `enable_http_probe`, `enable_page_analysis`
+  is built to collect. Hosts resolving to private or reserved addresses are
+  refused (a lookalike's DNS is attacker-controlled), on every redirect hop.
+  `enable_http_probe`, `enable_page_analysis`, `http_allow_private`
 - **Risk scoring** — deterministic 0–100 from all of the above. Colour-coded in
   Excel. `enable_risk_scoring`
 
@@ -360,13 +363,16 @@ cd typo-sniper
 
 
 # Build the Docker image
-docker build -f docker/Dockerfile -t typo-sniper:1.1.0 .
+docker build -f docker/Dockerfile -t typo-sniper:latest .
+
+# Or pull the published image instead of building
+docker pull ghcr.io/chiefgyk3d/typo-sniper:latest
 
 # Run a scan
 docker run --rm \
   -v "$(pwd)/src/typo_sniper/monitored_domains.txt:/app/data/domains.txt:ro" \
   -v "$(pwd)/results:/app/results" \
-  typo-sniper:1.1.0 \
+  typo-sniper:latest \
   -i /app/data/domains.txt \
   --format excel json
 ```
@@ -376,7 +382,7 @@ See [docker/DOCKER.md](docker/DOCKER.md) for comprehensive Docker usage guide.
 ### Standard Installation
 
 ### Prerequisites
-- Python 3.8 or higher
+- Python 3.10 or higher
 - pip package manager
 
 ### Quick Install
@@ -407,7 +413,7 @@ python3 -m venv test-env
 source test-env/bin/activate
 
 # Install with newer versions (at your own risk)
-pip install --upgrade dnstwist python-whois PyYAML openpyxl rich aiofiles
+pip install --upgrade dnstwist python-whois PyYAML openpyxl rich aiohttp dnspython
 
 # Test thoroughly before using in production
 typo-sniper --help
@@ -703,11 +709,19 @@ Results include:
 enable_risk_scoring: true
 ```
 
-Risk scores (0-100) are calculated based on:
-- URLScan malicious verdict (+25 points)
-- Recent registration (+15 points)
-- Active HTTP endpoint (+10 points)
-- Certificate transparency presence (+5 points)
+Risk scores (0-100) are deterministic. The main components, strongest first:
+- Credential form on the page (+30), or a bare password field (+20), plus
+  a form posting off-site (+15) and brand mention alongside collection (+10)
+- URLScan malicious verdict (+35, plus up to +25 scaled from URLScan's score)
+- Registration recency: under 30 days (+25), under 90 (+15), under 180 (+5)
+- Mail capability from the SPF/DKIM/DMARC assessment (up to +20), or MX
+  records alone (+15)
+- Live content: HTTPS (+12) or HTTP only (+8), redirect (+5), valid TLS (+5)
+- Certificate Transparency presence (+8), sound-alike match (+5),
+  base score for being registered (+5)
+
+The total is capped at 100. The full weighting rationale lives in
+`calculate_risk_score` in `src/typo_sniper/threat_intelligence.py`.
 
 **Excel Color Coding:**
 - 🔴 Red (70-100): High risk - immediate investigation
@@ -752,12 +766,14 @@ Risk scores (0-100) are calculated based on:
 ### Sample Output Files
 
 The repository includes sample output files in the `results/` directory:
-- `sample.json` - JSON format example (121KB, 71 domain permutations)
-- `sample.csv` - CSV format example (29KB)
-- `sample.html` - HTML report example (28KB) - see screenshot below
-- `sample.xlsx` - Excel workbook example (18KB)
+- `sample.json` - JSON format example (70 registered permutations)
+- `sample.csv` - CSV format example
+- `sample.html` - HTML report example - see screenshot below
+- `sample.xlsx` - Excel workbook example
 
-These samples were generated from scanning `eff.org` and show what a typical scan produces.
+These samples come from scanning `eff.org` and show what a typical scan
+produces. Regenerate them (and the screenshot below) with
+`scripts/refresh_samples.sh` whenever report output changes.
 
 **HTML Report Screenshot:**
 
@@ -770,42 +786,27 @@ These samples were generated from scanning `eff.org` and show what a typical sca
 
 ## 🏗️ Architecture
 
-Typo Sniper follows a modular architecture:
-
-```
-typo-sniper/
-├── src/                    # Core Python source code
-│   ├── __init__.py         # Package initialization
-│   ├── cache.py            # Caching system
-│   ├── config.py           # Configuration management
-│   ├── exporters.py        # Output format exporters
-│   ├── scanner.py          # Domain scanning & WHOIS enrichment
-│   └── typo_sniper/       # The installable package
-│       ├── cli.py         # Application & CLI entry point
-│   ├── utils.py            # Utility functions
-│   └── monitored_domains.txt # Domain list
-├── docker/                 # Docker-related files
-│   ├── Dockerfile          # Docker image definition
-│   ├── docker-compose.yml  # Docker Compose configuration
-│   ├── .dockerignore       # Docker build exclusions
-│   └── DOCKER.md           # Docker usage guide
-├── tests/                  # Unit tests
-│   └── __init__.py         # Test package initialization
-├── docs/                   # Documentation
-│   ├── LICENSE             # GNU AGPL v3
-│   └── config.yaml.example # Example configuration
-├── requirements.txt        # Python dependencies
-├── .gitignore              # Git ignore rules
-└── README.md               # Main project README
-```
+The full module layout is in [Project Structure](#project-structure) above and
+in [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md). The pieces worth knowing:
 
 ### Key Components
 
-- **TypoSniper** - Main orchestrator class
-- **DomainScanner** - Handles domain permutation and WHOIS lookups
-- **Cache** - File-based caching system with TTL
-- **Exporters** - Pluggable export system (Excel, JSON, CSV, HTML)
-- **Config** - YAML-based configuration with dataclasses
+- **TypoSniper** (`cli.py`) - Orchestrator: scan cycles, change detection,
+  exporting, alert dispatch, watch mode
+- **DomainScanner** (`scanner.py`) - dnstwist permutations, DNS resolution,
+  RDAP/WHOIS enrichment with a circuit breaker, mail-posture assessment
+- **ThreatIntelligence** (`threat_intelligence.py`) - URLScan, Certificate
+  Transparency, HTTP/TLS probing, page analysis, deterministic risk scoring
+- **ScanHistory** (`state.py`) - Persisted snapshots and the diff engine
+  behind change detection
+- **Notifiers** (`notifiers.py`) - Slack, Discord, Teams, Matrix, Jira,
+  webhook, email
+- **Exporters** (`exporters.py`) - Excel, JSON, CSV, HTML from one shared
+  formatting layer
+- **SecretsManager** (`secrets_manager.py`) - env, Doppler, AWS, Vault,
+  Azure, GCP, 1Password resolution chain
+- **Config** (`config.py`) - YAML + environment configuration and secret
+  resolution
 
 ---
 
@@ -870,18 +871,18 @@ Monitor for typosquatting domains that could:
 ### Integration with Other Tools
 
 ```python
-# Use as a Python module
-import sys
-sys.path.append('/path/to/typo-sniper/src')
-
-from typo_sniper import Config, DomainScanner, Cache
+# Use as a Python module (pip install typo-sniper puts it on the path)
 import asyncio
+
+from typo_sniper.cache import Cache
+from typo_sniper.config import Config
+from typo_sniper.scanner import DomainScanner
 
 async def scan_domain(domain):
     config = Config()
     cache = Cache(config.cache_dir)
     scanner = DomainScanner(config, cache)
-    
+
     result = await scanner.scan_domain(domain)
     return result
 
@@ -893,8 +894,9 @@ print(f"Found {len(result['permutations'])} registered permutations")
 ### Cache Management
 
 ```python
-from cache import Cache
 from pathlib import Path
+
+from typo_sniper.cache import Cache
 
 cache = Cache(Path.home() / '.typo_sniper' / 'cache')
 
@@ -925,14 +927,26 @@ pip install -r requirements.txt
 
 **Issue: WHOIS lookups timing out**
 ```bash
-# Solution: Increase timeout or reduce workers
-typo-sniper --whois-timeout 60 --max-workers 5
+# Reduce concurrency from the CLI…
+typo-sniper --max-workers 5
 ```
+```yaml
+# …and raise the timeout in config.yaml (there is no CLI flag for it)
+whois_timeout: 60
+whois_retry_count: 3
+```
+Also worth knowing: RDAP is tried first and rarely times out; WHOIS only
+runs as a fallback. If port 43 is blocked entirely, the built-in circuit
+breaker stops retrying after repeated failures.
 
 **Issue: Rate limiting errors**
 ```bash
-# Solution: Reduce concurrent workers and enable delays
-typo-sniper --max-workers 5 --rate-limit-delay 2
+# Reduce concurrent workers from the CLI
+typo-sniper --max-workers 5
+```
+```yaml
+# And add a delay between batches in config.yaml
+rate_limit_delay: 2.0
 ```
 
 **Issue: Cache directory permission errors**
@@ -948,22 +962,35 @@ typo-sniper --config config.yaml
 
 ## 🚀 Future Enhancements
 
-The following features are planned for future releases:
+Shipped since this list was first written: Terraform modules for ECS Fargate
+and EKS, scheduled scanning (watch mode + infrastructure), S3/EFS result
+storage, and structured JSON output a SIEM can ingest via the `webhook`
+channel. What remains on the radar:
 
-### Serverless Deployment
-- **AWS Lambda Integration** - Deploy as serverless function with Terraform
-- **Automated IOC Export** - Direct integration with threat intelligence platforms
-- **Scheduled Scanning** - Automated periodic domain monitoring via cloud events
+### Detection
+- **Additional permutation engines.** [urlinsane](https://github.com/rangertaha/urlinsane)
+  implements 24 typosquatting algorithms with multilingual keyboard layouts
+  (Spanish, Russian, Arabic, Persian, and more) — dnstwist and the built-in
+  enhanced detection are English-keyboard-centric, so porting the
+  multilingual adjacency tables natively (no Go binary required) would widen
+  coverage for international brands.
+- **Bulk availability pre-screening.** Tools like
+  [domain-check](https://github.com/saidutt46/domain-check) do fast RDAP-based
+  availability checks; today registered-ness comes from DNS resolution, which
+  is cheaper, but an availability pass could catch registered-but-unresolved
+  domains.
 
 ### Enterprise Integration
 - **CrowdStrike Foundry Module** - Native integration when CrowdStrike is available
 - **IOC Feed Generation** - Export results as structured IOCs for SIEM/EDR ingestion
 - **API Endpoints** - RESTful API for programmatic access and automation
+- **Takedown evidence bundles** - A per-domain packet (registrar abuse
+  contact from RDAP, evidence lines, score breakdown) ready to attach to a
+  takedown request
 
-### Infrastructure as Code
-- **Terraform Modules** - Complete AWS deployment automation
-- **CloudWatch Integration** - Alerting and monitoring capabilities
-- **S3 Result Storage** - Scalable cloud-based result archival
+### Serverless Deployment
+- **AWS Lambda Integration** - Deploy as serverless function with Terraform
+- **Automated IOC Export** - Direct integration with threat intelligence platforms
 
 Contributions and feedback on these planned features are welcome!
 
@@ -978,6 +1005,11 @@ Contributions are welcome! Please feel free to:
 - Suggest features
 - Submit pull requests
 - Improve documentation
+
+**If your change alters report output** (columns, layout, scoring display),
+regenerate the committed samples and the README screenshot with
+`scripts/refresh_samples.sh` and include them in the same pull request — the
+screenshot is a function screenshot and must always show current behaviour.
 
 This project is committed to remaining open source under the GNU AGPL v3, so the core stays free and improvements to it stay public.
 
@@ -1015,7 +1047,8 @@ AGPL does not fit your situation, a [commercial licence](COMMERCIAL.md) is avail
 
 **Author:** chiefgyk3d
 
-**Version:** 1.1.0
+**Version:** see [CHANGELOG.md](CHANGELOG.md) — the badge at the top tracks
+the latest release
 
 **Repository:** https://github.com/chiefgyk3d/typo-sniper
 
@@ -1247,13 +1280,20 @@ Typo Sniper supports multiple methods for managing API keys and secrets. Choose 
 
 ### Priority Order
 
-When multiple secrets sources are configured, Typo Sniper checks them in this order:
+When multiple secrets sources are configured, Typo Sniper consults backends
+in this order (first hit wins; a config-file value is the last resort):
 
-1. **Environment Variables** (`TYPO_SNIPER_*` prefix)
-2. **Doppler** (if `DOPPLER_TOKEN` set)
-3. **AWS Secrets Manager** (if `AWS_SECRET_NAME` set)
-4. **Alternate Environment Variables** (no prefix)
-5. **Config File** (YAML)
+1. **Environment variables** (`TYPO_SNIPER_*` prefix, always on)
+2. **Doppler** (via `doppler run` injection or the REST API)
+3. **AWS Secrets Manager** (one JSON secret holding many keys)
+4. **HashiCorp Vault** (KV v2 over the REST API — nothing to install)
+5. **Azure Key Vault**
+6. **Google Cloud Secret Manager**
+7. **1Password** (via the `op` CLI)
+8. **Config file** (YAML — development only)
+
+`typo-sniper --secrets-check` shows exactly which backend answered for each
+credential, without printing any value.
 
 ### Detailed Comparison
 
@@ -1695,7 +1735,8 @@ pip install dnspython
 ```bash
 typo-sniper --version
 ```
-Expected output: `Typo Sniper v1.1.0`
+Expected output: `Typo Sniper v<current version>` (see the badge above or
+[CHANGELOG.md](CHANGELOG.md))
 
 #### 2. View Help
 ```bash
@@ -1807,14 +1848,14 @@ xdg-open results/sample.html
 
 Check all modules are working:
 ```bash
-python -c "import dnstwist, whois, yaml, openpyxl, rich, aiofiles; print('All modules OK!')"
+python -c "import dnstwist, whois, yaml, openpyxl, rich, aiohttp, dns; print('All modules OK!')"
 ```
 
 ### Cache Management
 
 View cache stats:
 ```bash
-python -c "import sys; sys.path.append('src'); from cache import Cache; from pathlib import Path; c = Cache(Path.home() / '.typo_sniper' / 'cache'); print(c.get_stats())"
+python -c "from typo_sniper.cache import Cache; from pathlib import Path; c = Cache(Path.home() / '.typo_sniper' / 'cache'); print(c.get_stats())"
 ```
 
 Clear cache:

@@ -3,7 +3,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    image: typo-sniper:1.1.0
+    image: typo-sniper:latest
     container_name: typo-sniper
     volumes:
       # Mount your domain list
@@ -21,7 +21,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    image: typo-sniper:1.1.0
+    image: typo-sniper:latest
     container_name: typo-sniper-scheduled
     profiles:
       - scheduled

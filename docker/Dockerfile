@@ -20,7 +20,6 @@ FROM python:3.13-slim
 LABEL maintainer="chiefgyk3d"
 LABEL org.opencontainers.image.title="Typo Sniper"
 LABEL org.opencontainers.image.description="Advanced Domain Typosquatting Detection Tool"
-LABEL org.opencontainers.image.version="1.1.0"
 LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 LABEL org.opencontainers.image.source="https://github.com/ChiefGyk3D/typo-sniper"
 

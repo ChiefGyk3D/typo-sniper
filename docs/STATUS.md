@@ -32,6 +32,8 @@ Exercised end to end, against real data, with no external account required.
 | Report exports (Excel, JSON, CSV, HTML) | 1.0 | Generated and opened |
 | Packaging: build, install, console script | 2.0.0 | Built and installed into clean 3.10 / 3.11 venvs |
 | Prompt-injection defences | 1.4.0 | Adversarial fixtures; 0 markers escaped |
+| HTTP probe private-address guard (SSRF) | 2.3.0 | Unit tests over loopback/RFC1918/link-local literals and redirect hops |
+| Config-file precedence over CLI defaults | 2.3.0 | Regression tests; real scan with a file-configured run |
 
 ---
 

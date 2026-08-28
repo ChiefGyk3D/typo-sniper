@@ -11,6 +11,7 @@ Comprehensive documentation for Typo Sniper.
 - **[STATUS.md](STATUS.md)** - 🧪 What is verified, what needs your testing, what to report
 
 ### Guides
+- **[REPORTS.md](guides/REPORTS.md)** - Understanding scan results: every column, the risk score, and what to act on
 - **[API_KEYS_SETUP.md](guides/API_KEYS_SETUP.md)** - Setting up URLScan.io API keys
 - **[SECRETS_MANAGEMENT.md](guides/SECRETS_MANAGEMENT.md)** - Doppler, AWS, Vault, Azure, GCP, 1Password
 - **[AI_ANALYSIS.md](guides/AI_ANALYSIS.md)** - AI-assisted triage with Claude, OpenAI, Gemini, or Ollama

@@ -67,7 +67,7 @@ ai_base_url: ''              # Ollama host, or an OpenAI-compatible gateway
 ai_max_tokens: 4096
 ai_timeout: 120
 ai_effort: medium            # low | medium | high (Claude)
-ai_min_risk_score: 50        # No request is made when nothing scores this high
+ai_min_risk_score: 30        # No request is made when nothing scores this high
 ai_explain_changes: true     # Also summarise what moved since the last scan
 ```
 
