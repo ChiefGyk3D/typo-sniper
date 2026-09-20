@@ -19,7 +19,9 @@ Typo Sniper/
 │   ├── dependabot.yml
 │   └── workflows/
 │       ├── ci.yml                 # Lint, tests, CLI smoke, Docker build
-│       └── security.yml           # pip-audit + CodeQL
+│       ├── release.yml            # PyPI (Trusted Publishing) + signed container
+│       └── security.yml           # CodeQL, gitleaks, pip-audit, dependency review
+│                                  # (all callers of ChiefGyk3D/git-your-ship-together)
 │
 ├── src/                            # Source code
 │   ├── __init__.py

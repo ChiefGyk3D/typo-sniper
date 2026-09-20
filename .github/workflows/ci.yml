@@ -1,3 +1,6 @@
+# Lint, tests on Python 3.10-3.13, CLI smoke test, example-config load check,
+# Docker build. The jobs live in ChiefGyk3D/git-your-ship-together; this file only
+# says what is specific to Typo Sniper.
 name: CI
 
 on:
@@ -14,109 +17,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.13'
-          cache: pip
-
+  ci:
+    uses: ChiefGyk3D/git-your-ship-together/.github/workflows/python-ci.yml@main
+    permissions:
+      contents: read
+      id-token: write   # Doppler OIDC (see the reusable workflow's README)
+    secrets: inherit
+    with:
+      python-versions: '["3.10", "3.11", "3.12", "3.13"]'
+      coverage-python-version: "3.13"
+      install-command: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+      test-command: pytest --cov=src --cov-report=term-missing --cov-report=xml
       # Take the pin from requirements-dev.txt so local lint and CI lint can
-      # never disagree about the ruff version.
-      - name: Install ruff
-        run: pip install "$(grep -E '^ruff==' requirements-dev.txt)"
-
-      - name: Lint
-        run: ruff check src/ tests/
-
-      - name: Check formatting
-        run: ruff format --check --diff src/ tests/
-        continue-on-error: true
-
-  test:
-    name: Test (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-
-      - name: Run tests
-        run: pytest --cov=src --cov-report=term-missing --cov-report=xml
-
-      - name: Upload coverage
-        if: matrix.python-version == '3.13'
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage
-          path: coverage.xml
-          retention-days: 7
-
-  smoke:
-    name: CLI smoke test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.13'
-          cache: pip
-
-      - name: Install the package
-        run: pip install .
-
-      - name: CLI responds
-        run: |
-          python -m typo_sniper --version
-          python -m typo_sniper --help
-          typo-sniper --version
-
-      - name: Example config is loadable
-        run: |
-          python -c "
-          from typo_sniper.config import Config
-          cfg = Config.from_file(__import__('pathlib').Path('config.yaml.example'))
-          assert '~' not in str(cfg.cache_dir), cfg.cache_dir
-          print('config.yaml.example loads cleanly')
-          "
-
-  docker:
-    name: Docker build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: docker/setup-buildx-action@v4
-
-      - name: Build image
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: false
-          load: true
-          tags: typo-sniper:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Image runs and is unprivileged
-        run: |
-          docker run --rm typo-sniper:ci --version
-          test "$(docker run --rm --entrypoint id typo-sniper:ci -u)" != "0"
+      # never disagree about the ruff version. Formatting stays advisory.
+      lint-install-command: pip install "$(grep -E '^ruff==' requirements-dev.txt)"
+      lint-command: |
+        ruff check src/ tests/
+        ruff format --check --diff src/ tests/ || echo "::warning title=ruff format::formatting drift (advisory)"
+      smoke-command: |
+        python -m typo_sniper --version
+        python -m typo_sniper --help
+        typo-sniper --version
+        python -c "
+        from typo_sniper.config import Config
+        cfg = Config.from_file(__import__('pathlib').Path('config.yaml.example'))
+        assert '~' not in str(cfg.cache_dir), cfg.cache_dir
+        print('config.yaml.example loads cleanly')
+        "
+      dockerfile: docker/Dockerfile
+      docker-test-command: |
+        docker run --rm "$IMAGE" --version
+        test "$(docker run --rm --entrypoint id "$IMAGE" -u)" != "0"
+      doppler-project: typo-sniper
+      doppler-config: ci
+      doppler-identity-id: ${{ vars.DOPPLER_IDENTITY_ID }}
