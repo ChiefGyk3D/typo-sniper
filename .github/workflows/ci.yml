@@ -51,6 +51,6 @@ jobs:
       docker-test-command: |
         docker run --rm "$IMAGE" --version
         test "$(docker run --rm --entrypoint id "$IMAGE" -u)" != "0"
-      doppler-project: typo-sniper
+      doppler-project: ci
       doppler-config: ci
       doppler-identity-id: ${{ vars.DOPPLER_IDENTITY_ID }}
