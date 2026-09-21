@@ -31,9 +31,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install --require-hashes -r requirements-dev.txt
       test-command: pytest --cov=src --cov-report=term-missing --cov-report=xml
-      # Take the pin from requirements-dev.txt so local lint and CI lint can
-      # never disagree about the ruff version. Formatting stays advisory.
-      lint-install-command: pip install "$(grep -E '^ruff==' requirements-dev.txt)"
+      # Take the pin from requirements-dev.in so local lint and CI lint can
+      # never disagree about the ruff version (the .txt is a hash lock, where
+      # the line continues onto its hashes). Formatting stays advisory.
+      lint-install-command: pip install "$(grep -E '^ruff==' requirements-dev.in)"
       lint-command: |
         ruff check src/ tests/
         ruff format --check --diff src/ tests/ || echo "::warning title=ruff format::formatting drift (advisory)"

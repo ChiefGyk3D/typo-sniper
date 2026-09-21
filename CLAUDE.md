@@ -52,7 +52,7 @@ typo-sniper --version             # smoke test
 
 CI (`.github/workflows/ci.yml`): lint, tests on Python 3.10–3.13, CLI smoke
 test, config.yaml.example load check, Docker build. The ruff version comes
-from `requirements-dev.txt` — that file is the single source for the pin.
+from `requirements-dev.in` — that file is the single source for the pin.
 The three workflows (`ci.yml`, `release.yml`, `security.yml`) are thin
 callers of `ChiefGyk3D/git-your-ship-together`; everything Typo-Sniper-specific
 is a `with:` input, everything shared (steps, pinned action SHAs, cosign
