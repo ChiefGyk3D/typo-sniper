@@ -51,6 +51,31 @@ jobs:
       docker-test-command: |
         docker run --rm "$IMAGE" --version
         test "$(docker run --rm --entrypoint id "$IMAGE" -u)" != "0"
+      egress-policy: block
+      allowed-endpoints: |
+        api.doppler.com:443
+        api.github.com:443
+        auth.docker.io:443
+        cli.codecov.io:443
+        d3fo0g5hm7lbuv.cloudfront.net:443
+        deb.debian.org:80
+        files.pythonhosted.org:443
+        ghcr.io:443
+        github.com:443
+        ingest.codecov.io:443
+        keybase.io:443
+        packagecloud.io:443
+        pkg-containers.githubusercontent.com:443
+        production.cloudfront.docker.com:443
+        pypi.org:443
+        raw.githubusercontent.com:443
+        registry-1.docker.io:443
+        registry.npmjs.org:443
+        release-assets.githubusercontent.com:443
+        storage.googleapis.com:443
+        *.actions.githubusercontent.com:443
+        *.blob.core.windows.net:443
+        *.githubapp.com:443
       doppler-project: ci
       doppler-config: ci
       doppler-identity-id: ${{ vars.DOPPLER_IDENTITY_ID }}
