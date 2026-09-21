@@ -5,6 +5,22 @@ All notable changes to Typo Sniper are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **CI, release and security workflows are now callers of
+  `ChiefGyk3D/git-your-ship-together`.** The jobs are unchanged in substance
+  (same lint, matrix, smoke test, Docker build, CodeQL with `tests/` ignored,
+  pip-audit) and now shared with the other Python repositories. New on a
+  release: the container image is signed with cosign (keyless), carries a
+  syft SPDX SBOM as a cosign attestation and a workflow artifact, and has SLSA
+  provenance recorded as a GitHub Artifact Attestation. PyPI Trusted
+  Publishing is unchanged.
+- **gitleaks and dependency review** run on every pull request.
+- CI secrets (none are needed today) come from Doppler over OIDC, never from
+  GitHub's encrypted secrets.
+
 ## [2.3.0] - 2026-08-28
 
 A hardening, correctness, and performance release driven by a full

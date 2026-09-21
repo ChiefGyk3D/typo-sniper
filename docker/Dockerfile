@@ -1,7 +1,9 @@
 # Typo Sniper - Dockerfile
 # Licensed under the GNU AGPL v3. Commercial licensing: see COMMERCIAL.md
 
-FROM python:3.13-slim AS builder
+# The base image is pinned by digest so a rebuild is reproducible and a
+# retagged upstream image cannot slip in; Dependabot moves the digest.
+FROM python:3.13-slim@sha256:8d9d0b8bcf6506481eae4907c18f5e3e7902e629f5f6d684f9e7c32e85e3ddf0 AS builder
 
 WORKDIR /build
 
@@ -15,7 +17,7 @@ COPY requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 
-FROM python:3.13-slim
+FROM python:3.13-slim@sha256:8d9d0b8bcf6506481eae4907c18f5e3e7902e629f5f6d684f9e7c32e85e3ddf0
 
 LABEL maintainer="chiefgyk3d"
 LABEL org.opencontainers.image.title="Typo Sniper"
