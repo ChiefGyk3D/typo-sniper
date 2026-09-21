@@ -52,7 +52,7 @@ typo-sniper --version             # smoke test
 
 CI (`.github/workflows/ci.yml`): lint, tests on Python 3.10–3.13, CLI smoke
 test, config.yaml.example load check, Docker build. The ruff version comes
-from `requirements-dev.txt` — that file is the single source for the pin.
+from `requirements-dev.in` — that file is the single source for the pin.
 The three workflows (`ci.yml`, `release.yml`, `security.yml`) are thin
 callers of `ChiefGyk3D/git-your-ship-together`; everything Typo-Sniper-specific
 is a `with:` input, everything shared (steps, pinned action SHAs, cosign
@@ -115,7 +115,10 @@ them alone.
 
 - `dnspython` is a hard requirement even though imports of it are indirect:
   without it dnstwist silently degrades (no MX/NS records, mxcheck no-ops).
-- `requirements.txt` pins exact versions (Docker/CI reproducibility);
+- `requirements.in` lists the direct dependencies; `requirements.txt`,
+  `requirements-dev.txt` and `requirements-image.txt` are generated locks with
+  every hash pinned (the command is in each `.in` header) and are installed
+  with `--require-hashes` in CI and the Dockerfiles. Never hand-edit a lock;
   `pyproject.toml` uses ranges (PyPI coexistence). Keep both in sync when
   adding a dependency.
 - scikit-learn is needed only to *train* the ranking model; scoring is pure

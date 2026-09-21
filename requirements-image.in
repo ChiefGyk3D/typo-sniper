@@ -1,0 +1,7 @@
+# What docker/Dockerfile installs: the runtime dependencies plus boto3, which
+# docker/upload-results.py needs (the `aws` extra). Constrained to the versions
+# requirements.txt pins so the image and a plain install never disagree:
+#
+#   uv pip compile requirements-image.in --universal --generate-hashes --python-version 3.10 -c requirements.txt -o requirements-image.txt
+-r requirements.in
+boto3>=1.35.0

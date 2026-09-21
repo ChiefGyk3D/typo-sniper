@@ -10,8 +10,12 @@ Typo Sniper/
 ├── README.md                       # Main project documentation
 ├── CLAUDE.md                       # Conventions for AI assistants and contributors
 ├── TESTING.md                      # Testing guide
-├── requirements.txt                # Python dependencies (pinned)
-├── requirements-dev.txt            # Test and lint dependencies
+├── requirements.in                 # Direct Python dependencies
+├── requirements.txt                # Generated lock: every dependency pinned with hashes
+├── requirements-dev.in             # Test and lint dependencies
+├── requirements-dev.txt            # Generated lock for development
+├── requirements-image.in           # What the container installs (runtime + boto3)
+├── requirements-image.txt          # Generated lock for the container
 ├── pyproject.toml                  # Tooling config (pytest, ruff)
 ├── CHANGELOG.md                    # Release history
 │
