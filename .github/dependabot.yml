@@ -4,6 +4,10 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # A release that turns out to be malicious is usually pulled within days;
+    # waiting a week before proposing it costs nothing.
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 5
     groups:
       python-dependencies:
@@ -13,8 +17,16 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # A release that turns out to be malicious is usually pulled within days;
+    # waiting a week before proposing it costs nothing.
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: docker
     directory: /docker
     schedule:
       interval: weekly
+    # A release that turns out to be malicious is usually pulled within days;
+    # waiting a week before proposing it costs nothing.
+    cooldown:
+      default-days: 7
