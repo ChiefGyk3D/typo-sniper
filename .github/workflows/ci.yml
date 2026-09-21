@@ -52,7 +52,7 @@ jobs:
         docker run --rm "$IMAGE" --version
         test "$(docker run --rm --entrypoint id "$IMAGE" -u)" != "0"
       egress-policy: block
-      allowed-endpoints: |
+      allowed-endpoints: >
         api.doppler.com:443
         api.github.com:443
         auth.docker.io:443
