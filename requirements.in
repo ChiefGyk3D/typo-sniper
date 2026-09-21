@@ -1,0 +1,81 @@
+# Direct dependencies. requirements.txt is generated from this file with every transitive
+# dependency pinned and hashed; regenerate it after editing here:
+#
+#   pip install uv
+#   uv pip compile requirements.in --universal --generate-hashes --python-version 3.10 -o requirements.txt
+#
+# pip enters hash-checking mode by itself when it reads requirements.txt, so
+# `pip install -r requirements.txt` verifies every download against the lock.
+# Typo Sniper Requirements
+# Python 3.10+
+#
+# SECURITY NOTE: All versions are pinned to protect against supply chain attacks
+# (e.g. Shai-Hulud and similar compromised library incidents). These versions
+# have been verified as secure and working correctly together.
+#
+# Feel free to experiment with newer versions in a test environment, but always
+# review security advisories and changelogs before upgrading in production.
+
+# Core dependencies
+dnstwist==20250130
+python-whois==0.9.6
+PyYAML==6.0.3
+
+# Required by dnstwist for DNS resolution. Without it dnstwist silently falls
+# back to socket lookups: no MX or NS records are collected, mxcheck becomes a
+# no-op, and more permutations come back as unresolvable error sentinels.
+dnspython==2.8.0
+
+# Public Suffix List for correct registrable-domain splitting. Bundles its data
+# offline (no network at runtime) and is released on the PSL's own cadence, so
+# newly delegated TLDs are handled without a code change. MPL-2.0.
+publicsuffixlist==1.0.2.20260921
+
+# Excel support
+openpyxl==3.1.5
+
+# Rich console output
+rich==15.0.0
+
+# Async HTTP for threat intelligence lookups
+aiohttp==3.14.3
+
+# Local environment variables
+python-dotenv==1.2.3
+
+# ---------------------------------------------------------------------------
+# Optional extras. None of these are needed for a scan: detection, risk
+# scoring, and reporting are deterministic and run with the core set alone.
+# Install with pip install -e ".[claude]" etc., or uncomment below.
+# ---------------------------------------------------------------------------
+
+# Secrets backends
+#
+# Doppler and HashiCorp Vault need nothing installed — both are reached over
+# HTTPS with the standard library. 1Password uses the `op` CLI.
+#
+# AWS Secrets Manager (https://aws.amazon.com/secrets-manager/)
+# boto3==1.40.56
+#
+# Azure Key Vault
+# azure-keyvault-secrets==4.10.0
+# azure-identity==1.25.0
+#
+# Google Cloud Secret Manager
+# google-cloud-secret-manager==2.24.0
+
+# Learned triage ranking (--ml-train)
+#
+# Only training needs this. Scoring a trained model is pure Python: the model
+# is JSON, so hosts that run scans install nothing.
+#
+# scikit-learn==1.7.2  # 1.8+ requires Python 3.11
+
+# AI providers for --ai triage
+#
+# Ollama needs no SDK: it is plain HTTP to a daemon you run, and no scan data
+# leaves your host.
+#
+# anthropic==0.75.0
+# openai==2.6.1
+# google-genai==1.46.0

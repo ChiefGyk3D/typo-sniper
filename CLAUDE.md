@@ -115,7 +115,10 @@ them alone.
 
 - `dnspython` is a hard requirement even though imports of it are indirect:
   without it dnstwist silently degrades (no MX/NS records, mxcheck no-ops).
-- `requirements.txt` pins exact versions (Docker/CI reproducibility);
+- `requirements.in` lists the direct dependencies; `requirements.txt`,
+  `requirements-dev.txt` and `requirements-image.txt` are generated locks with
+  every hash pinned (the command is in each `.in` header) and are installed
+  with `--require-hashes` in CI and the Dockerfiles. Never hand-edit a lock;
   `pyproject.toml` uses ranges (PyPI coexistence). Keep both in sync when
   adding a dependency.
 - scikit-learn is needed only to *train* the ranking model; scoring is pure

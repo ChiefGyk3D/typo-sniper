@@ -397,7 +397,7 @@ pip install -r requirements.txt
 
 #### Security Note: Pinned Dependencies
 
-All dependencies are **pinned to specific versions** in `requirements.txt` to protect against supply chain attacks like [Shai-Hulud](https://www.crowdstrike.com/blog/shai-hulud-suspicious-pypi-packages/) and other compromised library incidents. These versions have been verified as secure at the time of release.
+All dependencies, transitive ones included, are **pinned to specific versions with their SHA-256 hashes** in `requirements.txt` to protect against supply chain attacks like [Shai-Hulud](https://www.crowdstrike.com/blog/shai-hulud-suspicious-pypi-packages/) and other compromised library incidents. pip verifies every download against the lock, so a package re-uploaded under the same version fails to install. The direct dependencies live in `requirements.in`; the lock is generated from it (the command is in that file's header) and Dependabot keeps both moving.
 
 **Why we pin versions:**
 - Prevents automatic installation of potentially compromised newer versions

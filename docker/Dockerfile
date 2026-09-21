@@ -7,14 +7,18 @@ FROM python:3.13-slim@sha256:8d9d0b8bcf6506481eae4907c18f5e3e7902e629f5f6d684f9e
 
 WORKDIR /build
 
-# Build wheels in a throwaway stage so no compiler ends up in the final image
+# Install into a virtualenv in a throwaway stage so no compiler ends up in the
+# final image. requirements-image.txt is the runtime lock plus boto3 (below),
+# every download verified against its pinned hash; a package that had to be
+# built from source here is verified as the source archive it came from.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+COPY requirements-image.txt .
+RUN python -m venv /opt/venv \
+    && /opt/venv/bin/pip install --no-cache-dir --require-hashes -r requirements-image.txt
 
 
 FROM python:3.13-slim@sha256:8d9d0b8bcf6506481eae4907c18f5e3e7902e629f5f6d684f9e7c32e85e3ddf0
@@ -27,27 +31,23 @@ LABEL org.opencontainers.image.source="https://github.com/ChiefGyk3D/typo-sniper
 
 WORKDIR /app
 
-COPY --from=builder /wheels /wheels
-COPY requirements.txt .
-RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
-    && rm -rf /wheels
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Install the package itself, so the image runs the same console script an
 # operator gets from PyPI rather than a loose copy of the modules. --no-deps
-# because the pinned requirements are already installed from the wheel stage
+# because the pinned requirements are already installed in the virtualenv
 # above; this step is only here to place the package and its entry point.
 COPY pyproject.toml README.md LICENSE ./
 COPY src/ ./src/
 RUN pip install --no-cache-dir --no-deps .
 
-# boto3, for the AWS Secrets Manager backend and for shipping reports to S3.
-#
-# It is in the image rather than left to an extra because the container is how
-# people run this on AWS, and there the omission is silent: without boto3 the
-# documented AWS secrets backend resolves nothing and the scan runs with no API
-# keys at all, reporting no error. Weighing ~90MB against a scanner that
-# quietly runs unauthenticated, the megabytes lose.
-RUN pip install --no-cache-dir "boto3>=1.35.0"
+# boto3, for the AWS Secrets Manager backend and for shipping reports to S3,
+# is in requirements-image.txt rather than left to an extra because the
+# container is how people run this on AWS, and there the omission is silent:
+# without boto3 the documented AWS secrets backend resolves nothing and the
+# scan runs with no API keys at all, reporting no error. Weighing ~90MB against
+# a scanner that quietly runs unauthenticated, the megabytes lose.
 
 # Ships scan reports to S3 after a run. Used by the Terraform modules in
 # infra/; harmless and inert when RESULTS_BUCKET is unset.
