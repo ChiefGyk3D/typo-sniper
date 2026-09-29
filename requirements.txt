@@ -129,7 +129,7 @@ aiosignal==1.4.0 \
     --hash=sha256:053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e \
     --hash=sha256:f47eecd9468083c2029cc99945502cb7708b082c232f9aca65da147157b251c7
     # via aiohttp
-async-timeout==5.0.1 ; python_full_version < '3.11' \
+async-timeout==5.0.1 \
     --hash=sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c \
     --hash=sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3
     # via aiohttp
@@ -616,9 +616,9 @@ propcache==0.5.4 \
     # via
     #   aiohttp
     #   yarl
-publicsuffixlist==1.0.2.20260921 \
-    --hash=sha256:323d43a336091c4455e07fc9943d703834bd62d557d29b29fbcc32d3c704cda2 \
-    --hash=sha256:717e56a708f1bf48c557f76a10a1c92102e36b50c04f6be75e138a4921b599c3
+publicsuffixlist==1.0.2.20260922 \
+    --hash=sha256:49b2e687205d4ee63791a2bce89d6f3e186dcf9049438de5c654e41466393eae \
+    --hash=sha256:f471784adb84337d9b96e9d237faa7f0bf9497bd7f44cc4fe52140a834fd0035
     # via -r requirements.in
 pygments==2.21.0 \
     --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
@@ -719,7 +719,7 @@ six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
     # via python-dateutil
-typing-extensions==4.16.0 ; python_full_version < '3.13' \
+typing-extensions==4.16.0 \
     --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
     --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
     # via
