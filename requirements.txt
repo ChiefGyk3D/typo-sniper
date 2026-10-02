@@ -616,9 +616,9 @@ propcache==0.5.4 \
     # via
     #   aiohttp
     #   yarl
-publicsuffixlist==1.0.2.20260921 \
-    --hash=sha256:323d43a336091c4455e07fc9943d703834bd62d557d29b29fbcc32d3c704cda2 \
-    --hash=sha256:717e56a708f1bf48c557f76a10a1c92102e36b50c04f6be75e138a4921b599c3
+publicsuffixlist==1.0.2.20260922 \
+    --hash=sha256:49b2e687205d4ee63791a2bce89d6f3e186dcf9049438de5c654e41466393eae \
+    --hash=sha256:f471784adb84337d9b96e9d237faa7f0bf9497bd7f44cc4fe52140a834fd0035
     # via -r requirements.in
 pygments==2.21.0 \
     --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
