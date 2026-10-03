@@ -120,7 +120,7 @@ class SecretBackend(ABC):
             # Only the exception type. A backend's message can echo the request
             # body, the token, or the secret itself into the log.
             self._error = type(e).__name__
-            self.logger.warning(
+            self.logger.warning(  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure  # logs backend name and exception type only, never a value
                 'Secrets backend %s failed (%s); continuing without it',
                 self.name, self._error,
             )
@@ -168,7 +168,7 @@ class MappingBackend(SecretBackend):
                 _canonical(k): v for k, v in self._load().items()
                 if isinstance(v, str)
             }
-            self.logger.debug(
+            self.logger.debug(  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure  # logs a count and the backend name only, never a value
                 'Loaded %d secret(s) from %s', len(self._secrets), self.name
             )
         return self._secrets.get(key)
@@ -513,7 +513,7 @@ class SecretsManager:
                 # text, and a name pasted into the wrong field is exactly the
                 # kind of mistake that puts a credential in a log aggregator.
                 self.unknown_backends += 1
-                self.logger.warning(
+                self.logger.warning(  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure  # logs the fixed list of valid backend names, not the configured value
                     'Ignoring an unrecognised secrets backend; valid names are %s',
                     ', '.join(BACKENDS),
                 )
