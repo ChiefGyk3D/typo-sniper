@@ -137,9 +137,9 @@ attrs==26.1.0 \
     --hash=sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309 \
     --hash=sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32
     # via aiohttp
-boto3==1.43.102 \
-    --hash=sha256:440bdd9fbf88d57809b68839fb690f19e4db65fa5539e60cc803ebd7b9e5e8fc \
-    --hash=sha256:b2a06cbbcb2cb0484f126172eab0881252f01007e8f7e0607ecac131cff9f744
+boto3==1.43.104 \
+    --hash=sha256:d26ad9b8f6066e9be90c78c1f8f0cdd82e33e0a363a1ccc5ab01008b0e48c7fd \
+    --hash=sha256:dc0c4b5c217fa38792d6b2e3c89b0d26220fd938dc173e48adab45d2d05e6977
     # via -r requirements-image.in
 botocore==1.43.107 \
     --hash=sha256:23cbe854e815dbaccf097f7fd32b461c9e1d2ed7e0c7dcc5658218704509d840 \
@@ -632,9 +632,9 @@ propcache==0.5.4 \
     # via
     #   aiohttp
     #   yarl
-publicsuffixlist==1.0.2.20260922 \
-    --hash=sha256:49b2e687205d4ee63791a2bce89d6f3e186dcf9049438de5c654e41466393eae \
-    --hash=sha256:f471784adb84337d9b96e9d237faa7f0bf9497bd7f44cc4fe52140a834fd0035
+publicsuffixlist==1.0.2.20260925 \
+    --hash=sha256:2bacd61c8b361ff3faa11f984a3554f2a3047327909467cb9cbd3a129d8065f8 \
+    --hash=sha256:f99c707b3f2fdc386b64e01fc4eca3a12631a677c43b62283aa0255fa7ea0412
     # via -r requirements.in
 pygments==2.21.0 \
     --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
