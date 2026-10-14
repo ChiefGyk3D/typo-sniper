@@ -29,7 +29,7 @@ dnspython==2.8.0
 # Public Suffix List for correct registrable-domain splitting. Bundles its data
 # offline (no network at runtime) and is released on the PSL's own cadence, so
 # newly delegated TLDs are handled without a code change. MPL-2.0.
-publicsuffixlist==1.0.2.20260925
+publicsuffixlist==1.0.2.20261007
 
 # Excel support
 openpyxl==3.1.5
@@ -38,10 +38,10 @@ openpyxl==3.1.5
 rich==15.0.0
 
 # Async HTTP for threat intelligence lookups
-aiohttp==3.14.3
+aiohttp==3.14.4
 
 # Local environment variables
-python-dotenv==1.2.3
+python-dotenv==1.2.4
 
 # ---------------------------------------------------------------------------
 # Optional extras. None of these are needed for a scan: detection, risk
