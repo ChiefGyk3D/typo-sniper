@@ -29,7 +29,7 @@ dnspython==2.8.0
 # Public Suffix List for correct registrable-domain splitting. Bundles its data
 # offline (no network at runtime) and is released on the PSL's own cadence, so
 # newly delegated TLDs are handled without a code change. MPL-2.0.
-publicsuffixlist==1.1.0.20261010
+publicsuffixlist==1.1.0.20261018
 
 # Excel support
 openpyxl==3.1.5
