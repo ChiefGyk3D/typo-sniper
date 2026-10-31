@@ -1,4 +1,4 @@
-# Lint, tests on Python 3.10-3.13, CLI smoke test, example-config load check,
+# Lint, tests on Python 3.11-3.13, CLI smoke test, example-config load check,
 # Docker build. The jobs live in ChiefGyk3D/git-your-ship-together; this file only
 # says what is specific to Typo Sniper.
 name: CI
@@ -28,7 +28,7 @@ jobs:
       runners: '["ubuntu-24.04", "ubuntu-24.04-arm"]'
       distros: '["debian:12", "debian:13", "ubuntu:24.04", "kalilinux/kali-rolling", "parrotsec/core"]'
       distro-runners: '["ubuntu-24.04", "ubuntu-24.04-arm"]'
-      python-versions: '["3.10", "3.11", "3.12", "3.13"]'
+      python-versions: '["3.11", "3.12", "3.13"]'
       coverage-python-version: "3.13"
       install-command: |
         python -m pip install --upgrade pip

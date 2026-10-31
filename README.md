@@ -7,7 +7,7 @@
 
 **Advanced Domain Typosquatting Detection Tool**
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ChiefGyk3D/typo-sniper/actions/workflows/ci.yml/badge.svg)](https://github.com/ChiefGyk3D/typo-sniper/actions/workflows/ci.yml)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Commercial licence available](https://img.shields.io/badge/Commercial-available-green.svg)](COMMERCIAL.md)
@@ -381,7 +381,7 @@ See [docker/DOCKER.md](docker/DOCKER.md) for comprehensive Docker usage guide.
 ### Standard Installation
 
 #### Prerequisites
-- Python 3.10 or higher
+- Python 3.11 or higher
 - pip package manager
 
 #### Quick Install

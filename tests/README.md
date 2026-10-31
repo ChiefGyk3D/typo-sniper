@@ -86,7 +86,7 @@ ruff check src/ tests/
 ```
 
 Both commands run in CI on every push and pull request, across Python
-3.10 through 3.13.
+3.11 through 3.13.
 
 ## Manual / Integration Testing
 

@@ -417,7 +417,7 @@ chmod +x scan.sh
 2. **Read-only filesystem**: Consider making the container filesystem read-only
 3. **No privileged mode**: Never run with `--privileged`
 4. **Scan images**: Regularly scan the Docker image for vulnerabilities
-5. **Minimal base image**: The Dockerfile uses `python:3.10-slim` for smaller attack surface
+5. **Minimal base image**: The Dockerfile uses `python:3.13-slim` for smaller attack surface
 
 ## Next Steps
 

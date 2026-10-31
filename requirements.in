@@ -2,12 +2,12 @@
 # dependency pinned and hashed; regenerate it after editing here:
 #
 #   pip install uv
-#   uv pip compile requirements.in --universal --generate-hashes --python-version 3.10 -o requirements.txt
+#   uv pip compile requirements.in --universal --generate-hashes --python-version 3.11 -o requirements.txt
 #
 # pip enters hash-checking mode by itself when it reads requirements.txt, so
 # `pip install -r requirements.txt` verifies every download against the lock.
 # Typo Sniper Requirements
-# Python 3.10+
+# Python 3.11+
 #
 # SECURITY NOTE: All versions are pinned to protect against supply chain attacks
 # (e.g. Shai-Hulud and similar compromised library incidents). These versions
@@ -24,7 +24,7 @@ PyYAML==6.0.3
 # Required by dnstwist for DNS resolution. Without it dnstwist silently falls
 # back to socket lookups: no MX or NS records are collected, mxcheck becomes a
 # no-op, and more permutations come back as unresolvable error sentinels.
-dnspython==2.8.0
+dnspython==2.9.0
 
 # Public Suffix List for correct registrable-domain splitting. Bundles its data
 # offline (no network at runtime) and is released on the PSL's own cadence, so
@@ -69,7 +69,7 @@ python-dotenv==1.2.4
 # Only training needs this. Scoring a trained model is pure Python: the model
 # is JSON, so hosts that run scans install nothing.
 #
-# scikit-learn==1.7.2  # 1.8+ requires Python 3.11
+# scikit-learn==1.7.2
 
 # AI providers for --ai triage
 #

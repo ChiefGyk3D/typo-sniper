@@ -2,7 +2,7 @@
 # requirements-dev.txt is generated from this file, constrained to the versions
 # requirements.txt already pins so the two locks never disagree:
 #
-#   uv pip compile requirements-dev.in --universal --generate-hashes --python-version 3.10 -c requirements.txt -o requirements-dev.txt
+#   uv pip compile requirements-dev.in --universal --generate-hashes --python-version 3.11 -c requirements.txt -o requirements-dev.txt
 # Development and CI dependencies
 -r requirements.in
 
@@ -15,6 +15,6 @@ ruff==0.17.1
 # pure Python, so hosts that run scans never install it. Present here so CI
 # exercises the training path rather than skipping it.
 #
-# Held at 1.7.x: this project supports Python 3.10, and scikit-learn 1.8
-# dropped it. Raise this pin only alongside requires-python.
+# Held at 1.7.x: the pin predates the 3.11 floor, and 1.8 was not evaluated here.
+# Raising it is a separate change.
 scikit-learn==1.7.2
