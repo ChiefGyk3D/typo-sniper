@@ -8,7 +8,7 @@ description = "Advanced domain typosquatting detection and monitoring"
 readme = "README.md"
 license = { text = "AGPL-3.0-or-later" }
 authors = [{ name = "chiefgyk3d" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dynamic = ["version"]
 
 # Runtime dependencies. Ranges rather than the exact pins in requirements.txt:
@@ -35,7 +35,6 @@ classifiers = [
     "Intended Audience :: Information Technology",
     "Topic :: Security",
     "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -123,7 +122,7 @@ filterwarnings = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 src = ["src", "tests"]
 
 [tool.ruff.lint]

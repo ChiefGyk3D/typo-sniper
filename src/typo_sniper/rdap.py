@@ -22,7 +22,7 @@ RDAP endpoint.
 
 import asyncio
 import logging
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
 
 import aiohttp
@@ -181,7 +181,7 @@ class RDAPClient:
                     self.logger.debug(f"RDAP HTTP {response.status} for {domain}")
                     return None
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 self.logger.debug(f"RDAP timeout for {domain}")
                 return None
             except Exception as e:
@@ -269,7 +269,7 @@ class RDAPClient:
             # RDAP mandates RFC 3339; "Z" needs translating for fromisoformat
             dt = datetime.fromisoformat(text.replace('Z', '+00:00'))
             if dt.tzinfo:
-                dt = dt.astimezone(timezone.utc)
+                dt = dt.astimezone(UTC)
             return dt.date().isoformat()
         except ValueError:
             pass

@@ -14,7 +14,7 @@ reports/alerts on what changed.
 
 - Package: `src/typo_sniper/`, console script `typo-sniper`, entry point
   `typo_sniper.cli:run`, `python -m typo_sniper` also works.
-- Python ≥ 3.10. Licensed AGPL-3.0-or-later, dual-licensed commercially
+- Python ≥ 3.11. Licensed AGPL-3.0-or-later, dual-licensed commercially
   (COMMERCIAL.md). SPDX headers are present in source files — keep them.
 
 ## Two design rules that must never be violated
@@ -50,7 +50,7 @@ ruff format --check src/ tests/   # formatting (advisory in CI)
 typo-sniper --version             # smoke test
 ```
 
-CI (`.github/workflows/ci.yml`): lint, tests on Python 3.10–3.13, CLI smoke
+CI (`.github/workflows/ci.yml`): lint, tests on Python 3.11–3.13, CLI smoke
 test, config.yaml.example load check, Docker build. The ruff version comes
 from `requirements-dev.in` — that file is the single source for the pin.
 The three workflows (`ci.yml`, `release.yml`, `security.yml`) are thin

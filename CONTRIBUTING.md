@@ -52,7 +52,7 @@ pytest                      # full suite, no network access required
 ruff check src/ tests/      # lint
 ```
 
-Both run in CI across Python 3.10–3.13, alongside a CLI smoke test, a Docker
+Both run in CI across Python 3.11–3.13, alongside a CLI smoke test, a Docker
 build, `pip-audit`, and CodeQL.
 
 ## What good contributions look like

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Minimum supported Python is now 3.11.** The fixed dnspython (2.9.0, the
+  advisory fix) needs Python 3.11 or newer and no fixed 2.8.x exists. Python
+  3.10 is dropped from the CI matrix, `requires-python` and the docs, and
+  `dnspython` is locked at 2.9.0 in all three requirements locks.
 - **CI, release and security workflows are now callers of
   `ChiefGyk3D/git-your-ship-together`.** The jobs are unchanged in substance
   (same lint, matrix, smoke test, Docker build, CodeQL with `tests/` ignored,
