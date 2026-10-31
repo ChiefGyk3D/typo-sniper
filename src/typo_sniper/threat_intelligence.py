@@ -13,7 +13,7 @@ import logging
 import re
 import socket
 import ssl
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import quote
 
@@ -119,7 +119,7 @@ class ThreatIntelligence:
                             self._validated_keys.add(self.config.urlscan_api_key)
                         else:
                             self.logger.warning(f"URLScan.io API returned status {response.status} during validation")
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     self.logger.warning("URLScan.io API validation timed out - continuing anyway")
                 except Exception as e:
                     self.logger.warning(f"URLScan.io API validation failed: {e} - continuing anyway")
@@ -173,7 +173,7 @@ class ThreatIntelligence:
                         # Check if scan is recent enough
                         if scan_time:
                             scan_date = datetime.fromisoformat(scan_time.replace('Z', '+00:00'))
-                            age_days = (datetime.now(timezone.utc) - scan_date).days
+                            age_days = (datetime.now(UTC) - scan_date).days
                             
                             if age_days <= self.config.urlscan_max_age_days:
                                 # Recent scan found, return it
@@ -340,7 +340,7 @@ class ThreatIntelligence:
 
             return {'certificates_found': 0, 'status': 'unavailable'}
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self.logger.debug(f"CT log check timed out for {domain}")
             return {'certificates_found': 0, 'status': 'timeout'}
         except Exception as e:
@@ -607,7 +607,7 @@ class ThreatIntelligence:
                 'tls_verified': False,
             }
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self.logger.debug(f"Timeout probing {url}")
         except Exception as e:
             self.logger.debug(f"Probe failed for {url}: {e}")
@@ -665,7 +665,7 @@ class ThreatIntelligence:
         """
         report = {
             'domain': domain,
-            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'urlscan': None,
             'certificate_transparency': None,
             'http_probe': None,
