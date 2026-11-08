@@ -90,7 +90,7 @@ jobs:
   container:
     name: Container
     needs: build
-    uses: ChiefGyk3D/git-your-ship-together/.github/workflows/python-docker-release.yml@7501cb3fa19d83d0e0a131cb040e7c4da32a9504 # v1.28.0
+    uses: ChiefGyk3D/git-your-ship-together/.github/workflows/python-docker-release.yml@9d6825dd4e0e4d524fca3733f416437bbd7851e1 # v1.31.0
     permissions:
       contents: read
       packages: write
@@ -102,6 +102,11 @@ jobs:
     with:
       dockerfile: docker/Dockerfile
       push: ${{ startsWith(github.ref, 'refs/tags/v') || inputs.publish == true }}
+      # v1.31.0 publishes only from a tag push by default. This repository also
+      # publishes from a manual run with `publish` set (any ref), so that event
+      # and non-tag refs stay allowed. Branch pushes never trigger this workflow.
+      allowed-publish-events: push,workflow_dispatch
+      require-tag-ref: false
       tags: |
         type=semver,pattern={{version}}
         type=semver,pattern={{major}}.{{minor}}
