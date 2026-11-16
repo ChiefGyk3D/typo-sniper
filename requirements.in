@@ -24,7 +24,8 @@ PyYAML==6.0.3
 # Required by dnstwist for DNS resolution. Without it dnstwist silently falls
 # back to socket lookups: no MX or NS records are collected, mxcheck becomes a
 # no-op, and more permutations come back as unresolvable error sentinels.
-dnspython==2.9.0
+# GHSA-vvf4-9x63-8xvv: DoS fix in 2.9.2.
+dnspython==2.9.2
 
 # Public Suffix List for correct registrable-domain splitting. Bundles its data
 # offline (no network at runtime) and is released on the PSL's own cadence, so
