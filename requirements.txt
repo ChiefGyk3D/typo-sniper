@@ -654,9 +654,9 @@ propcache==0.5.4 \
     # via
     #   aiohttp
     #   yarl
-publicsuffixlist==1.1.0.20261018 \
-    --hash=sha256:87861b9d9af2f035e68ad1fd95f9ff1caf92c8c2187ca9cf5c7d8785db0f221b \
-    --hash=sha256:8a9f487ad9a501a56f76d20827d58a5847d34a345df854e3b6a1f301e292e9d4
+publicsuffixlist==1.1.2.20261117 \
+    --hash=sha256:25a1a53b24d711f97a725fc90ab6a9f0c043115fbc3bb5beb46c489f65b7cbff \
+    --hash=sha256:98eac3d071ab247f27f71d626c956f08e163ca8b2ea3a29bedc2f80ba8190a16
     # via -r requirements.in
 pygments==2.21.0 \
     --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
@@ -757,7 +757,7 @@ six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
     # via python-dateutil
-typing-extensions==4.16.0 \
+typing-extensions==4.16.0 ; python_full_version < '3.13' \
     --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
     --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
     # via
